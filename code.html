@@ -1178,9 +1178,11 @@
 
             // Unmortgage
             let unmortgagableProperties = getPlayerOwnedProperties(player).filter(prop => prop.mortgaged && player.money >= Math.ceil(prop.price / 2 * 1.1));
-            populateSelect(unmortgageSelect, unmortmortgagableProperties, 'Unmortgage');
-            unmortgageSelect.style.display = unmortmortgagableProperties.length > 0 ? 'block' : 'none';
-            unmortgagePropertyBtn.style.display = unmortmortgagableProperties.length > 0 ? 'inline-block' : 'none';
+            // FIX: Corrected typo from unmortmortgagableProperties to unmortgagableProperties
+            populateSelect(unmortgageSelect, unmortgagableProperties, 'Unmortgage');
+            unmortgageSelect.style.display = unmortgagableProperties.length > 0 ? 'block' : 'none';
+            // FIX: Corrected typo here as well
+            unmortgagePropertyBtn.style.display = unmortgagableProperties.length > 0 ? 'inline-block' : 'none';
 
             // Sell Houses (Must be able to sell evenly from a group, for simplicity, list all properties with houses)
             let sellableHouseProperties = getPlayerOwnedProperties(player, 'property').filter(prop => prop.houses > 0);
