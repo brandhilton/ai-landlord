@@ -1379,7 +1379,8 @@
                 player.jailTurns = 0;
                 logMessage(`${player.name} paid $50 bail to get out of Jail.`, 'success');
                 updatePlayerInfo();
-                setControls(); // Player can now roll
+                // FIX: Call setControlsForTurnStart to allow rolling
+                setControlsForTurnStart(); 
             } else {
                 logMessage("Not enough money to pay bail.", "error");
             }
@@ -1393,7 +1394,8 @@
                 player.jailTurns = 0;
                 logMessage(`${player.name} used a Get Out of Jail Free card to get out of Jail!`, 'success');
                 updatePlayerInfo();
-                setControls(); // Player can now roll
+                // FIX: Call setControlsForTurnStart to allow rolling
+                setControlsForTurnStart(); 
             } else {
                 logMessage("No Get Out of Jail Free cards available.", "error");
             }
