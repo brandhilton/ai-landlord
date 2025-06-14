@@ -756,15 +756,17 @@
         }
 
 
-        function rollDice() {
-            const die1 = Math.floor(Math.random() * 6) + 1;
-            const die2 = Math.floor(Math.random() * 6) + 1;
+        // MODIFIED: rollDice function to accept optional dice values
+        function rollDice(simulatedDie1 = null, simulatedDie2 = null) {
+            const die1 = simulatedDie1 !== null ? simulatedDie1 : Math.floor(Math.random() * 6) + 1;
+            const die2 = simulatedDie2 !== null ? simulatedDie2 : Math.floor(Math.random() * 6) + 1;
+            
             diceRoll = [die1, die2];
             diceDisplay.textContent = `Dice: ${die1}, ${die2}`;
             logMessage(`${players[currentPlayerIndex].name} rolled a ${die1} and a ${die2} (total ${die1 + die2}).`);
 
-            rollDiceBtn.disabled = true; // Disable roll button after rolling
-            endTurnBtn.disabled = true; // Disable end turn while action is pending
+            // REMOVED: rollDiceBtn.disabled = true; and endTurnBtn.disabled = true;
+            // These are now managed by setControls() after the move/action.
 
             const player = players[currentPlayerIndex];
             player.hasRolled = true; // Mark that player has rolled this turn
@@ -776,8 +778,9 @@
                 if (player.doublesRolledThisTurn === 3) {
                     logMessage(`${player.name} rolled 3 consecutive doubles! Go directly to Jail!`, 'error');
                     sendToJail(player);
-                    doublesCount = 0; // Reset doubles count
-                    // sendToJail already calls setControls, which will end the turn.
+                    player.doublesRolledThisTurn = 0; // Reset doubles count
+                    currentActionPending = 'none'; // Turn ends
+                    setControls(); // Ensure controls are updated for turn end
                     return;
                 }
             } else {
@@ -1362,16 +1365,27 @@
                 currentActionPending = 'none'; // Ensure turn ends
             }
             // Scenario 2: Player is starting their turn in Jail (hasRolled is false)
-            // This path is handled by setControlsForJailStartTurn, which is called from setControlsForTurnStart
-            // We only need to handle the case where currentActionPending is 'jail' (e.g., after 3rd failed roll)
-            else if (player.inJail) { // This means they are in jail and it's not their first turn in jail (i.e., hasRolled is false)
-                // This block should ideally not be reached if setControlsForJailStartTurn is doing its job.
-                // However, as a fallback, ensure jail actions are shown.
+            else if (player.inJail) {
                 jailActionsDiv.style.display = 'flex';
                 payBailBtn.disabled = (player.money < 50);
                 useJailCardBtn.disabled = (player.getOutOfJailFreeCards === 0);
-                rollDiceBtn.disabled = false; // Can roll to try to get out
-                endTurnBtn.disabled = true; // Cannot end turn until resolved jail
+
+                // If it's their 3rd turn in jail and they can't pay/use card, they are bankrupt.
+                // This check is also in setControlsForJailStartTurn, but good to have a fallback here.
+                if (player.jailTurns === 3 && payBailBtn.disabled && useJailCardBtn.disabled) {
+                    logMessage(`${player.name} cannot pay bail or use a card and is bankrupt!`, 'error');
+                    handleBankruptcy(player, 'bank', 50);
+                    currentActionPending = 'none';
+                    rollDiceBtn.disabled = true;
+                    endTurnBtn.disabled = false; // Allow ending turn after bankruptcy
+                    return;
+                } else if (player.jailTurns < 3) { // Can roll to try to get out
+                    rollDiceBtn.disabled = false;
+                    endTurnBtn.disabled = true; // Can't end turn until resolved jail
+                } else { // Must pay bail or use card (3rd turn, not bankrupt yet)
+                    rollDiceBtn.disabled = true; // Cannot roll
+                    endTurnBtn.disabled = true; // Cannot end turn until bail is paid/card used
+                }
             }
             // Original logic for non-jail scenarios (order matters here)
             else if (player.doublesRolledThisTurn > 0 && player.doublesRolledThisTurn < 3) {
@@ -1499,7 +1513,7 @@
         });
 
         startGameBtn.addEventListener('click', startGame);
-        rollDiceBtn.addEventListener('click', rollDice);
+        rollDiceBtn.addEventListener('click', () => rollDice()); // Call rollDice without arguments for random roll
         endTurnBtn.addEventListener('click', endTurn);
 
         mortgagePropertyBtn.addEventListener('click', () => {
@@ -1523,7 +1537,6 @@
                 player.jailTurns = 0;
                 logMessage(`${player.name} paid $50 bail to get out of Jail.`, 'success');
                 updatePlayerInfo();
-                // FIX: Call setControlsForTurnStart to allow rolling immediately after paying bail
                 setControlsForTurnStart(); 
             } else {
                 logMessage("Not enough money to pay bail.", "error");
@@ -1538,7 +1551,6 @@
                 player.jailTurns = 0;
                 logMessage(`${player.name} used a Get Out of Jail Free card to get out of Jail!`, 'success');
                 updatePlayerInfo();
-                // FIX: Call setControlsForTurnStart to allow rolling immediately after using card
                 setControlsForTurnStart(); 
             } else {
                 logMessage("No Get Out of Jail Free cards available.", "error");
@@ -1608,6 +1620,13 @@
                 return;
             }
 
+            // Reset player's jail status if they were in jail and moved
+            if (player.inJail && spaceId !== 10) { // If moving out of jail space
+                player.inJail = false;
+                player.jailTurns = 0;
+                logMessage(`DEBUG: ${player.name} moved out of Jail.`, 'debug');
+            }
+
             player.position = spaceId;
             logMessage(`DEBUG: ${player.name} moved directly to ${board[spaceId].name}.`, 'debug');
             updatePlayerInfo();
@@ -1615,7 +1634,7 @@
             landOnSpace(player); // Trigger landOnSpace logic for the new position
         });
 
-        // Simulate Dice Roll
+        // MODIFIED: Simulate Dice Roll button now calls the main rollDice function
         debugRollBtn.addEventListener('click', () => {
             const die1 = parseInt(debugDie1Input.value);
             const die2 = parseInt(debugDie2Input.value);
@@ -1625,38 +1644,9 @@
                 return;
             }
 
-            // Temporarily override diceRoll for landOnSpace utility calculations (e.g., utilities rent)
-            diceRoll = [die1, die2];
-
-            const player = players[currentPlayerIndex];
-            diceDisplay.textContent = `Dice: ${die1}, ${die2} (Simulated)`;
-            logMessage(`DEBUG: ${player.name} simulated a roll of ${die1} and ${die2} (total ${die1 + die2}).`, 'debug');
-
-            // This part mimics the core of the original rollDice function
-            rollDiceBtn.disabled = true;
-            endTurnBtn.disabled = true;
-            player.hasRolled = true;
-
-            if (die1 === die2) {
-                player.doublesRolledThisTurn++;
-                logMessage(`${player.name} rolled doubles!`, 'warning');
-                if (player.doublesRolledThisTurn === 3) {
-                    logMessage(`${player.name} rolled 3 consecutive doubles! Go directly to Jail!`, 'error');
-                    sendToJail(player);
-                    player.doublesRolledThisTurn = 0; // Reset doubles count
-                    currentActionPending = 'none'; // Turn ends
-                    setControls();
-                    return;
-                }
-            } else {
-                player.doublesRolledThisTurn = 0;
-            }
-
-            if (player.inJail) {
-                handleJailRoll(player, die1, die2);
-            } else {
-                movePlayer(player, die1 + die2);
-            }
+            // Call the main rollDice function with the simulated values
+            rollDice(die1, die2);
+            logMessage(`DEBUG: Simulated roll of ${die1}, ${die2}.`, 'debug');
         });
 
         // Change Property Ownership
