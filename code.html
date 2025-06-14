@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monopoly Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        #game-container {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        #setup-screen, #game-screen {
+            width: 100%;
+            text-align: center;
+        }
+        #player-setup {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .player-input-group {
+            margin-bottom: 10px;
+        }
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            grid-template-rows: repeat(11, 1fr);
+            width: 800px; /* Adjust as needed */
+            height: 800px; /* Adjust as needed */
+            border: 2px solid black;
+            box-sizing: border-box;
+            background-color: #e0e0e0;
+            position: relative;
+        }
+        .board-space {
+            border: 1px solid #aaa;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7em;
+            text-align: center;
+            padding: 2px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .board-space.corner { background-color: #d0d0d0; }
+        .board-space.top, .board-space.bottom { width: 100%; height: 100%; }
+        .board-space.left, .board-space.right { width: 100%; height: 100%; }
+
+        /* Specific board layout using grid-area */
+        #go { grid-area: 11 / 11; }
+        #mediterranean-avenue { grid-area: 11 / 10; }
+        #community-chest1 { grid-area: 11 / 9; }
+        #baltic-avenue { grid-area: 11 / 8; }
+        #income-tax { grid-area: 11 / 7; }
+        #reading-railroad { grid-area: 11 / 6; }
+        #oriental-avenue { grid-area: 11 / 5; }
+        #chance1 { grid-area: 11 / 4; }
+        #vermont-avenue { grid-area: 11 / 3; }
+        #connecticut-avenue { grid-area: 11 / 2; }
+        #jail { grid-area: 11 / 1; }
+
+        #st-charles-place { grid-area: 10 / 1; }
+        #electric-company { grid-area: 9 / 1; }
+        #states-avenue { grid-area: 8 / 1; }
+        #virginia-avenue { grid-area: 7 / 1; }
+        #pennsylvania-railroad { grid-area: 6 / 1; }
+        #st-james-place { grid-area: 5 / 1; }
+        #community-chest2 { grid-area: 4 / 1; }
+        #tennessee-avenue { grid-area: 3 / 1; }
+        #new-york-avenue { grid-area: 2 / 1; }
+
+        #freeparking { grid-area: 1 / 1; }
+        #kentucky-avenue { grid-area: 1 / 2; }
+        #chance2 { grid-area: 1 / 3; }
+        #indiana-avenue { grid-area: 1 / 4; }
+        #illinois-avenue { grid-area: 1 / 5; }
+        #b-o-railroad { grid-area: 1 / 6; }
+        #atlantic-avenue { grid-area: 1 / 7; }
+        #ventnor-avenue { grid-area: 1 / 8; }
+        #water-works { grid-area: 1 / 9; }
+        #marvin-gardens { grid-area: 1 / 10; }
+        #gotojail { grid-area: 1 / 11; }
+
+        #pacific-avenue { grid-area: 2 / 11; }
+        #north-carolina-avenue { grid-area: 3 / 11; }
+        #community-chest3 { grid-area: 4 / 11; }
+        #pennsylvania-avenue { grid-area: 5 / 11; }
+        #short-line { grid-area: 6 / 11; }
+        #chance3 { grid-area: 7 / 11; }
+        #park-place { grid-area: 8 / 11; }
+        #luxury-tax { grid-area: 9 / 11; }
+        #boardwalk { grid-area: 10 / 11; }
+
+
+        .token {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 1px solid black;
+            box-sizing: border-box;
+            bottom: 5px; /* Adjust as needed */
+            right: 5px; /* Adjust as needed */
+        }
+        .token.p0 { background-color: red; left: 5px; bottom: 5px; }
+        .token.p1 { background-color: blue; left: 25px; bottom: 5px; }
+        .token.p2 { background-color: green; left: 5px; bottom: 25px; }
+        .token.p3 { background-color: yellow; left: 25px; bottom: 25px; }
+        .token.p4 { background-color: purple; left: 45px; bottom: 5px; } /* For more players */
+        .token.p5 { background-color: orange; left: 45px; bottom: 25px; } /* For more players */
+
+        .property-color-bar {
+            height: 10px;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        /* Property Colors */
+        .brown { background-color: #8B4513; }
+        .light-blue { background-color: #87CEEB; }
+        .pink { background-color: #FF69B4; }
+        .orange { background-color: #FFA500; }
+        .red { background-color: #FF0000; }
+        .yellow { background-color: #FFFF00; }
+        .green { background-color: #008000; }
+        .dark-blue { background-color: #00008B; }
+
+        .space-name {
+            font-weight: bold;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+        .space-price {
+            font-size: 0.7em;
+            color: #555;
+        }
+        .space-owner {
+            position: absolute;
+            bottom: 2px;
+            font-size: 0.6em;
+            color: #333;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .space-houses {
+            position: absolute;
+            top: 15px;
+            right: 5px;
+            font-size: 0.8em;
+            color: green;
+        }
+
+        #game-controls {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border-left: 1px solid #eee;
+            min-width: 300px;
+            box-sizing: border-box;
+        }
+        #current-player-display {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        #dice-display {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        .button-group button {
+            padding: 10px 15px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        .button-group button:hover:not(:disabled) {
+            background-color: #0056b3;
+        }
+        .button-group button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        #message-log {
+            flex-basis: 100%;
+            height: 150px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: scroll;
+            background-color: #e9e9e9;
+            font-size: 0.9em;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        #message-log div {
+            margin-bottom: 5px;
+        }
+        .player-status {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            text-align: left;
+            font-size: 0.9em;
+        }
+        .player-status.current {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        .player-status h4 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .player-status ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .player-status ul li {
+            margin-bottom: 3px;
+        }
+        .player-list {
+            margin-bottom: 20px;
+        }
+        #property-actions, #jail-actions {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        #property-actions button, #jail-actions button {
+            width: 100%;
+        }
+        .action-select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="setup-screen">
+        <h1>Monopoly Setup</h1>
+        <div id="player-setup">
+            <label for="num-players">Number of Players (2-6):</label>
+            <input type="number" id="num-players" value="2" min="2" max="6">
+            <div id="player-name-inputs"></div>
+            <button id="start-game-btn">Start Game</button>
+        </div>
+    </div>
+
+    <div id="game-screen" style="display: none;">
+        <h1>Monopoly</h1>
+        <div id="game-container">
+            <div id="game-board"></div>
+
+            <div id="game-controls">
+                <div id="current-player-display"></div>
+                <div id="dice-display">Dice: -</div>
+                <div class="button-group">
+                    <button id="roll-dice-btn">Roll Dice</button>
+                    <button id="end-turn-btn" disabled>End Turn</button>
+                </div>
+
+                <div id="property-actions" style="display: none;">
+                    <h3>Property Actions</h3>
+                    <button id="buy-property-btn" style="display: none;">Buy Property</button>
+                    <button id="build-house-btn" style="display: none;">Build House</button>
+                    <select id="mortgage-select" class="action-select" style="display: none;"></select>
+                    <button id="mortgage-property-btn" style="display: none;">Mortgage Property</button>
+                    <select id="unmortgage-select" class="action-select" style="display: none;"></select>
+                    <button id="unmortgage-property-btn" style="display: none;">Unmortgage Property</button>
+                    <select id="sell-house-select" class="action-select" style="display: none;"></select>
+                    <button id="sell-house-btn" style="display: none;">Sell House</button>
+                </div>
+
+                <div id="jail-actions" style="display: none;">
+                    <h3>Jail Actions</h3>
+                    <button id="pay-bail-btn">Pay $50 Bail</button>
+                    <button id="use-jail-card-btn">Use Get Out of Jail Free Card</button>
+                </div>
+
+                <div id="player-list-container"></div>
+            </div>
+        </div>
+        <div id="message-log"></div>
+    </div>
+
+    <script>
+        // --- Game Data ---
+        const board = [
+            { id: 0, name: "GO", type: "go" },
+            { id: 1, name: "Mediterranean Avenue", type: "property", colorGroup: "brown", price: 60, rent: [2, 10, 30, 90, 160, 250], houseCost: 50, owner: null, houses: 0, mortgaged: false },
+            { id: 2, name: "Community Chest", type: "community_chest" },
+            { id: 3, name: "Baltic Avenue", type: "property", colorGroup: "brown", price: 60, rent: [4, 20, 60, 180, 320, 450], houseCost: 50, owner: null, houses: 0, mortgaged: false },
+            { id: 4, name: "Income Tax", type: "tax", amount: 200 },
+            { id: 5, name: "Reading Railroad", type: "railroad", price: 200, owner: null, mortgaged: false },
+            { id: 6, name: "Oriental Avenue", type: "property", colorGroup: "light-blue", price: 100, rent: [6, 30, 90, 270, 400, 550], houseCost: 50, owner: null, houses: 0, mortgaged: false },
+            { id: 7, name: "Chance", type: "chance" },
+            { id: 8, name: "Vermont Avenue", type: "property", colorGroup: "light-blue", price: 100, rent: [6, 30, 90, 270, 400, 550], houseCost: 50, owner: null, houses: 0, mortgaged: false },
+            { id: 9, name: "Connecticut Avenue", type: "property", colorGroup: "light-blue", price: 120, rent: [8, 40, 100, 300, 450, 600], houseCost: 50, owner: null, houses: 0, mortgaged: false },
+            { id: 10, name: "Jail / Just Visiting", type: "jail" },
+            { id: 11, name: "St. Charles Place", type: "property", colorGroup: "pink", price: 140, rent: [10, 50, 150, 450, 625, 750], houseCost: 100, owner: null, houses: 0, mortgaged: false },
+            { id: 12, name: "Electric Company", type: "utility", price: 150, owner: null, mortgaged: false },
+            { id: 13, name: "States Avenue", type: "property", colorGroup: "pink", price: 140, rent: [10, 50, 150, 450, 625, 750], houseCost: 100, owner: null, houses: 0, mortgaged: false },
+            { id: 14, name: "Virginia Avenue", type: "property", colorGroup: "pink", price: 160, rent: [12, 60, 180, 500, 700, 800], houseCost: 100, owner: null, houses: 0, mortgaged: false },
+            { id: 15, name: "Pennsylvania Railroad", type: "railroad", price: 200, owner: null, mortgaged: false },
+            { id: 16, name: "St. James Place", type: "property", colorGroup: "orange", price: 180, rent: [14, 70, 200, 550, 750, 950], houseCost: 100, owner: null, houses: 0, mortgaged: false },
+            { id: 17, name: "Community Chest", type: "community_chest" },
+            { id: 18, name: "Tennessee Avenue", type: "property", colorGroup: "orange", price: 180, rent: [14, 70, 200, 550, 750, 950], houseCost: 100, owner: null, houses: 0, mortgaged: false },
+            { id: 19, name: "New York Avenue", type: "property", colorGroup: "orange", price: 200, rent: [16, 80, 220, 600, 800, 1000], houseCost: 100, owner: null, houses: 0, mortgaged: false },
+            { id: 20, name: "Free Parking", type: "freeparking" },
+            { id: 21, name: "Kentucky Avenue", type: "property", colorGroup: "red", price: 220, rent: [18, 90, 250, 700, 875, 1050], houseCost: 150, owner: null, houses: 0, mortgaged: false },
+            { id: 22, name: "Chance", type: "chance" },
+            { id: 23, name: "Indiana Avenue", type: "property", colorGroup: "red", price: 220, rent: [18, 90, 250, 700, 875, 1050], houseCost: 150, owner: null, houses: 0, mortgaged: false },
+            { id: 24, name: "Illinois Avenue", type: "property", colorGroup: "red", price: 240, rent: [20, 100, 300, 750, 925, 1100], houseCost: 150, owner: null, houses: 0, mortgaged: false },
+            { id: 25, name: "B. & O. Railroad", type: "railroad", price: 200, owner: null, mortgaged: false },
+            { id: 26, name: "Atlantic Avenue", type: "property", colorGroup: "yellow", price: 260, rent: [22, 110, 330, 800, 975, 1150], houseCost: 150, owner: null, houses: 0, mortgaged: false },
+            { id: 27, name: "Ventnor Avenue", type: "property", colorGroup: "yellow", price: 260, rent: [22, 110, 330, 800, 975, 1150], houseCost: 150, owner: null, houses: 0, mortgaged: false },
+            { id: 28, name: "Water Works", type: "utility", price: 150, owner: null, mortgaged: false },
+            { id: 29, name: "Marvin Gardens", type: "property", colorGroup: "yellow", price: 280, rent: [24, 120, 360, 850, 1025, 1200], houseCost: 150, owner: null, houses: 0, mortgaged: false },
+            { id: 30, name: "Go To Jail", type: "gotojail" },
+            { id: 31, name: "Pacific Avenue", type: "property", colorGroup: "green", price: 300, rent: [26, 130, 390, 900, 1100, 1275], houseCost: 200, owner: null, houses: 0, mortgaged: false },
+            { id: 32, name: "North Carolina Avenue", type: "property", colorGroup: "green", price: 300, rent: [26, 130, 390, 900, 1100, 1275], houseCost: 200, owner: null, houses: 0, mortgaged: false },
+            { id: 33, name: "Community Chest", type: "community_chest" },
+            { id: 34, name: "Pennsylvania Avenue", type: "property", colorGroup: "green", price: 320, rent: [28, 150, 450, 1000, 1200, 1400], houseCost: 200, owner: null, houses: 0, mortgaged: false },
+            { id: 35, name: "Short Line", type: "railroad", price: 200, owner: null, mortgaged: false },
+            { id: 36, name: "Chance", type: "chance" },
+            { id: 37, name: "Park Place", type: "property", colorGroup: "dark-blue", price: 350, rent: [35, 175, 500, 1100, 1300, 1500], houseCost: 200, owner: null, houses: 0, mortgaged: false },
+            { id: 38, name: "Luxury Tax", type: "tax", amount: 100 },
+            { id: 39, name: "Boardwalk", type: "property", colorGroup: "dark-blue", price: 400, rent: [50, 200, 600, 1400, 1700, 2000], houseCost: 200, owner: null, houses: 0, mortgaged: false }
+        ];
+
+        const chanceCards = [
+            "Advance to Go (Collect $200)",
+            "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200",
+            "Bank pays you dividend of $50",
+            "Get Out of Jail Free Card",
+            "Go back 3 spaces",
+            "Pay poor tax of $15",
+            "Your building loan matures. Collect $150",
+            "You have won a crossword competition. Collect $100"
+        ];
+
+        const communityChestCards = [
+            "Advance to Go (Collect $200)",
+            "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200",
+            "Bank error in your favor – Collect $200",
+            "Doctor's fee – Pay $50",
+            "Get Out of Jail Free Card",
+            "Income Tax refund – Collect $20",
+            "Life insurance matures – Collect $100",
+            "Pay hospital $100",
+            "Pay school fees of $50",
+            "Receive $25 consultancy fee",
+            "You are assessed for street repairs – Pay $40 per house, $115 per hotel",
+            "You have won second prize in a beauty contest – Collect $10",
+            "Inherit $100"
+        ];
+
+        // --- Game State Variables ---
+        let players = [];
+        let currentPlayerIndex = 0;
+        let diceRoll = [0, 0];
+        let doublesCount = 0;
+        let gameOver = false;
+        let isTurnOver = false; // Flag to enforce turn progression
+
+        // --- DOM Elements ---
+        const setupScreen = document.getElementById('setup-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const numPlayersInput = document.getElementById('num-players');
+        const playerNameInputsDiv = document.getElementById('player-name-inputs');
+        const startGameBtn = document.getElementById('start-game-btn');
+        const gameBoardDiv = document.getElementById('game-board');
+        const currentPlayerDisplay = document.getElementById('current-player-display');
+        const diceDisplay = document.getElementById('dice-display');
+        const rollDiceBtn = document.getElementById('roll-dice-btn');
+        const endTurnBtn = document.getElementById('end-turn-btn');
+        const messageLog = document.getElementById('message-log');
+        const playerListContainer = document.getElementById('player-list-container');
+
+        // Property action buttons/selects
+        const propertyActionsDiv = document.getElementById('property-actions');
+        const buyPropertyBtn = document.getElementById('buy-property-btn');
+        const buildHouseBtn = document.getElementById('build-house-btn');
+        const mortgageSelect = document.getElementById('mortgage-select');
+        const mortgagePropertyBtn = document.getElementById('mortgage-property-btn');
+        const unmortgageSelect = document.getElementById('unmortgage-select');
+        const unmortgagePropertyBtn = document.getElementById('unmortgage-property-btn');
+        const sellHouseSelect = document.getElementById('sell-house-select');
+        const sellHouseBtn = document.getElementById('sell-house-btn');
+
+        // Jail action buttons
+        const jailActionsDiv = document.getElementById('jail-actions');
+        const payBailBtn = document.getElementById('pay-bail-btn');
+        const useJailCardBtn = document.getElementById('use-jail-card-btn');
+
+
+        // --- Utility Functions ---
+        function logMessage(message, type = 'info') {
+            const div = document.createElement('div');
+            div.textContent = message;
+            div.className = type;
+            messageLog.prepend(div); // Add to top
+            if (messageLog.children.length > 50) { // Keep log from getting too long
+                messageLog.removeChild(messageLog.lastChild);
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function updatePlayerInfo() {
+            playerListContainer.innerHTML = '';
+            players.forEach((player, index) => {
+                const playerDiv = document.createElement('div');
+                playerDiv.className = `player-status ${index === currentPlayerIndex ? 'current' : ''}`;
+                playerDiv.innerHTML = `
+                    <h4>${player.name} (P${player.id + 1})</h4>
+                    <ul>
+                        <li>Money: $${player.money}</li>
+                        <li>Position: ${board[player.position].name}</li>
+                        ${player.inJail ? `<li><span style="color:red;">In Jail (Turn ${player.jailTurns}/3)</span></li>` : ''}
+                        ${player.getOutOfJailFreeCards > 0 ? `<li>GOJF Cards: ${player.getOutOfJailFreeCards}</li>` : ''}
+                        <li>Properties: ${player.properties.map(pId => board[pId].name).join(', ') || 'None'}</li>
+                    </ul>
+                `;
+                playerListContainer.appendChild(playerDiv);
+            });
+            currentPlayerDisplay.textContent = `Current Player: ${players[currentPlayerIndex].name}`;
+        }
+
+        function updateBoardUI() {
+            // Remove existing tokens
+            document.querySelectorAll('.token').forEach(token => token.remove());
+
+            // Add tokens
+            players.forEach(player => {
+                const spaceDiv = document.getElementById(`space-${player.position}`);
+                if (spaceDiv) {
+                    const token = document.createElement('div');
+                    token.className = `token p${player.id}`;
+                    spaceDiv.appendChild(token);
+                }
+            });
+
+            // Update owner and houses on properties
+            board.forEach(space => {
+                if (['property', 'railroad', 'utility'].includes(space.type)) {
+                    const spaceDiv = document.getElementById(`space-${space.id}`);
+                    if (spaceDiv) {
+                        let ownerSpan = spaceDiv.querySelector('.space-owner');
+                        if (!ownerSpan) {
+                            ownerSpan = document.createElement('div');
+                            ownerSpan.className = 'space-owner';
+                            spaceDiv.appendChild(ownerSpan);
+                        }
+                        if (space.owner !== null) {
+                            ownerSpan.textContent = `Owner: ${players[space.owner].name}`;
+                            ownerSpan.style.color = space.mortgaged ? 'red' : 'green';
+                        } else {
+                            ownerSpan.textContent = '';
+                        }
+
+                        if (space.type === 'property') {
+                            let housesSpan = spaceDiv.querySelector('.space-houses');
+                            if (!housesSpan) {
+                                housesSpan = document.createElement('div');
+                                housesSpan.className = 'space-houses';
+                                spaceDiv.appendChild(housesSpan);
+                            }
+                            housesSpan.textContent = space.houses > 0 ? 'H: ' + space.houses : '';
+                        }
+                    }
+                }
+            });
+        }
+
+        function getPropertiesByColor(colorGroup) {
+            return board.filter(space => space.type === 'property' && space.colorGroup === colorGroup);
+        }
+
+        function getRailroads() {
+            return board.filter(space => space.type === 'railroad');
+        }
+
+        function getUtilities() {
+            return board.filter(space => space.type === 'utility');
+        }
+
+        function checkMonopoly(player, colorGroup) {
+            const propertiesInGroup = getPropertiesByColor(colorGroup);
+            return propertiesInGroup.every(prop => prop.owner === player.id);
+        }
+
+        function getPlayerOwnedProperties(player, type = null) {
+            return board.filter(space => space.owner === player.id && (type ? space.type === type : true));
+        }
+
+        // --- Game Logic ---
+
+        function startGame() {
+            const numPlayers = parseInt(numPlayersInput.value);
+            players = [];
+            for (let i = 0; i < numPlayers; i++) {
+                const nameInput = document.getElementById(`player-name-${i}`);
+                players.push({
+                    id: i,
+                    name: nameInput.value || `Player ${i + 1}`,
+                    money: 1500,
+                    position: 0,
+                    properties: [],
+                    inJail: false,
+                    jailTurns: 0,
+                    getOutOfJailFreeCards: 0,
+                    doublesRolledThisTurn: 0,
+                    hasRolled: false // To enforce only one roll per turn unless doubles
+                });
+            }
+
+            // Shuffle chance and community chest cards (shallow copy to keep originals)
+            chanceCardsShuffled = shuffleArray([...chanceCards]);
+            communityChestCardsShuffled = shuffleArray([...communityChestCards]);
+
+            setupScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+
+            createBoardUI();
+            updatePlayerInfo();
+            updateBoardUI();
+            logMessage("Game Started!", "success");
+            logMessage(`It's ${players[currentPlayerIndex].name}'s turn.`);
+            setControlsForTurnStart();
+        }
+
+        function createBoardUI() {
+            gameBoardDiv.innerHTML = ''; // Clear existing board
+            // Define a visual layout for the board grid
+            const layout = [
+                30,31,32,33,34,35,36,37,38,39, 0, // Top Row (Indices adjusted for visual layout)
+                29, null,null,null,null,null,null,null,null,null, 1,
+                28, null,null,null,null,null,null,null,null,null, 2,
+                27, null,null,null,null,null,null,null,null,null, 3,
+                26, null,null,null,null,null,null,null,null,null, 4,
+                25, null,null,null,null,null,null,null,null,null, 5,
+                24, null,null,null,null,null,null,null,null,null, 6,
+                23, null,null,null,null,null,null,null,null,null, 7,
+                22, null,null,null,null,null,null,null,null,null, 8,
+                21, null,null,null,null,null,null,null,null,null, 9,
+                20,19,18,17,16,15,14,13,12,11,10 // Bottom Row (Indices adjusted for visual layout)
+            ].reverse(); // Reverse to match common top-left to bottom-right flow or adjust grid-area logic.
+
+            // Simpler grid layout for visual representation matching actual board IDs
+            // Corner spaces will occupy 1/1, 1/11, 11/1, 11/11
+            // Side spaces will be 1/2-10, 2-10/1, 2-10/11, 11/2-10
+
+            // The CSS grid-area properties are manually defined and assume the `board` array order.
+            // This loop just creates the divs for each board space
+            board.forEach((space, index) => {
+                const spaceDiv = document.createElement('div');
+                spaceDiv.id = `space-${space.id}`;
+                spaceDiv.classList.add('board-space');
+                if ([0, 10, 20, 30].includes(space.id)) {
+                    spaceDiv.classList.add('corner');
+                }
+                // Assign grid positions based on typical Monopoly board layout
+                if (space.id >= 0 && space.id <= 10) { // Bottom row (Go to Jail)
+                    spaceDiv.style.gridArea = `11 / ${11 - space.id}`;
+                } else if (space.id >= 11 && space.id <= 19) { // Left column (Jail to NY Ave)
+                    spaceDiv.style.gridArea = `${11 - (space.id - 10)} / 1`;
+                } else if (space.id >= 20 && space.id <= 30) { // Top row (Free Parking to Go To Jail)
+                    spaceDiv.style.gridArea = `1 / ${space.id - 19}`;
+                } else if (space.id >= 31 && space.id <= 39) { // Right column (Go To Jail to Boardwalk)
+                    spaceDiv.style.gridArea = `${(space.id - 29)} / 11`;
+                }
+
+                if (space.type === 'property' || space.type === 'railroad' || space.type === 'utility') {
+                    const colorBar = document.createElement('div');
+                    colorBar.className = `property-color-bar ${space.colorGroup || ''}`;
+                    spaceDiv.appendChild(colorBar);
+                }
+
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'space-name';
+                nameDiv.textContent = space.name;
+                spaceDiv.appendChild(nameDiv);
+
+                if (space.price) {
+                    const priceDiv = document.createElement('div');
+                    priceDiv.className = 'space-price';
+                    priceDiv.textContent = `$${space.price}`;
+                    spaceDiv.appendChild(priceDiv);
+                }
+                gameBoardDiv.appendChild(spaceDiv);
+            });
+        }
+
+
+        function rollDice() {
+            const die1 = Math.floor(Math.random() * 6) + 1;
+            const die2 = Math.floor(Math.random() * 6) + 1;
+            diceRoll = [die1, die2];
+            diceDisplay.textContent = `Dice: ${die1}, ${die2}`;
+            logMessage(`${players[currentPlayerIndex].name} rolled a ${die1} and a ${die2} (total ${die1 + die2}).`);
+
+            rollDiceBtn.disabled = true; // Disable roll button after rolling
+
+            const player = players[currentPlayerIndex];
+
+            // Check for doubles
+            if (die1 === die2) {
+                player.doublesRolledThisTurn++;
+                logMessage(`${player.name} rolled doubles!`, 'warning');
+                if (player.doublesRolledThisTurn === 3) {
+                    logMessage(`${player.name} rolled 3 consecutive doubles! Go directly to Jail!`, 'error');
+                    sendToJail(player);
+                    doublesCount = 0; // Reset doubles count
+                    isTurnOver = true; // Turn ends after going to jail
+                    setControlsForTurnEnd();
+                    return;
+                }
+            } else {
+                player.doublesRolledThisTurn = 0; // Reset doubles if not doubles
+            }
+
+            if (player.inJail) {
+                handleJailRoll(player, die1, die2);
+            } else {
+                movePlayer(player, die1 + die2);
+            }
+        }
+
+        function movePlayer(player, steps) {
+            const oldPosition = player.position;
+            player.position = (player.position + steps) % board.length;
+            logMessage(`${player.name} moved from ${board[oldPosition].name} to ${board[player.position].name}.`);
+
+            // Check for passing Go
+            if (player.position < oldPosition && !player.inJail) { // If went past index 0
+                player.money += 200;
+                logMessage(`${player.name} passed GO and collected $200!`);
+            }
+            updatePlayerInfo();
+            updateBoardUI();
+            landOnSpace(player);
+        }
+
+        function sendToJail(player) {
+            player.position = 10; // Jail space
+            player.inJail = true;
+            player.jailTurns = 0; // Reset jail turns for new entry
+            logMessage(`${player.name} is now in Jail!`);
+            updatePlayerInfo();
+            updateBoardUI();
+            // No landOnSpace for jail, just go to it.
+        }
+
+        function handleJailRoll(player, die1, die2) {
+            if (die1 === die2) {
+                logMessage(`${player.name} rolled doubles (${die1}, ${die2}) and got out of Jail!`, 'success');
+                player.inJail = false;
+                player.jailTurns = 0;
+                movePlayer(player, die1 + die2); // Move out of jail
+            } else {
+                player.jailTurns++;
+                logMessage(`${player.name} rolled ${die1}, ${die2}. Still in jail. Turns left: ${3 - player.jailTurns}.`);
+                if (player.jailTurns >= 3) {
+                    logMessage(`${player.name} failed to roll doubles for 3 turns. Must pay $50 bail to get out.`, 'warning');
+                    isTurnOver = true; // Must pay or use card next turn
+                    setControlsForTurnEnd();
+                } else {
+                    isTurnOver = true; // Normal turn end if still in jail and no doubles
+                    setControlsForTurnEnd();
+                }
+            }
+        }
+
+
+        function landOnSpace(player) {
+            const space = board[player.position];
+            logMessage(`${player.name} landed on ${space.name}.`);
+
+            // --- IMPORTANT CHANGE: Reset isTurnOver to false initially ---
+            isTurnOver = false;
+
+            // Hide all property actions by default, will be shown if needed
+            propertyActionsDiv.style.display = 'none';
+            buyPropertyBtn.style.display = 'none';
+            buildHouseBtn.style.display = 'none';
+            mortgageSelect.style.display = 'none';
+            mortgagePropertyBtn.style.display = 'none';
+            unmortgageSelect.style.display = 'none';
+            unmortgagePropertyBtn.style.display = 'none';
+            sellHouseSelect.style.display = 'none';
+            sellHouseBtn.style.display = 'none';
+
+            // Hide jail actions unless needed
+            jailActionsDiv.style.display = 'none';
+
+            switch (space.type) {
+                case 'property':
+                case 'railroad':
+                case 'utility':
+                    handleProperty(player, space); // This function will determine if further action is needed
+                    break;
+                case 'tax':
+                    handleTax(player, space);
+                    isTurnOver = true; // Tax always ends turn
+                    break;
+                case 'chance':
+                    drawCard(player, chanceCardsShuffled);
+                    isTurnOver = true; // Card actions typically end turn (or move player, then new space is handled)
+                    break;
+                case 'community_chest':
+                    drawCard(player, communityChestCardsShuffled);
+                    isTurnOver = true; // Card actions typically end turn
+                    break;
+                case 'gotojail':
+                    sendToJail(player);
+                    isTurnOver = true; // Turn ends after going to jail
+                    break;
+                case 'jail': // Just Visiting
+                    logMessage(`${player.name} is just visiting Jail.`, 'info');
+                    isTurnOver = true; // No action for just visiting, turn ends
+                    break;
+                case 'go':
+                case 'freeparking':
+                    logMessage(`${player.name} is on ${space.name}. Nothing to do.`, 'info');
+                    isTurnOver = true; // No action, turn ends
+                    break;
+            }
+
+            // --- IMPORTANT CHANGE: Revised logic for setting controls ---
+            // If the player is in jail, prioritize jail controls.
+            // If they rolled doubles (and not 3rd double), they can roll again, so allow property actions.
+            // Otherwise, if no specific action was presented (i.e., isTurnOver is true from a space handler)
+            // or if they didn't roll doubles, the turn is over.
+            if (player.inJail) {
+                setControlsForJail();
+            } else if (diceRoll[0] === diceRoll[1] && player.doublesRolledThisTurn > 0 && player.doublesRolledThisTurn < 3) {
+                // Rolled doubles, can roll again. Allow property actions *before* re-rolling.
+                logMessage(`${player.name} rolled doubles, can roll again!`, 'info');
+                setControlsForPropertyAction(player); // This will show build/mortgage/sell options
+                rollDiceBtn.disabled = false; // Keep roll button enabled
+                endTurnBtn.disabled = true; // Can't end turn if they can roll again
+            } else if (!isTurnOver) {
+                // This means a property was unowned and affordable, or player owns it, so property actions are needed
+                setControlsForPropertyAction(player);
+                rollDiceBtn.disabled = true; // Can't roll again
+                endTurnBtn.disabled = false; // Can end turn if they choose not to buy/manage
+            }
+            else { // Turn is over due to tax, owned property rent, or card action
+                setControlsForTurnEnd();
+            }
+        }
+
+        // --- Minor adjustment to handleProperty to ensure `isTurnOver` is set if no action is truly needed ---
+        function handleProperty(player, space) {
+            if (space.owner === null) {
+                // Property is unowned
+                logMessage(`${space.name} is unowned. Price: $${space.price}.`);
+                if (player.money >= space.price) {
+                    buyPropertyBtn.style.display = 'inline-block';
+                    propertyActionsDiv.style.display = 'flex'; // Show property actions
+                    buyPropertyBtn.onclick = () => buyProperty(player, space);
+                    // isTurnOver is NOT set to true here, as player has a choice.
+                } else {
+                    logMessage(`${player.name} cannot afford ${space.name}.`, 'warning');
+                    isTurnOver = true; // Turn is over if unaffordable
+                }
+            } else if (space.owner !== player.id) {
+                // Property is owned by another player
+                const owner = players[space.owner];
+                if (space.mortgaged) {
+                    logMessage(`${space.name} is mortgaged by ${owner.name}. No rent.`, 'info');
+                    isTurnOver = true; // Turn ends
+                } else {
+                    let rent = 0;
+                    // ... (rent calculation logic remains the same)
+                    logMessage(`${space.name} is owned by ${owner.name}. Rent: $${rent}.`);
+                    payMoney(player, owner, rent);
+                    isTurnOver = true; // Turn ends after paying rent
+                }
+            } else {
+                // Property is owned by current player
+                logMessage(`${player.name} owns ${space.name}.`);
+                // isTurnOver is NOT set to true here, as player can choose to build/mortgage.
+            }
+        }
+
+        function buyProperty(player, space) {
+            if (player.money >= space.price && space.owner === null) {
+                player.money -= space.price;
+                space.owner = player.id;
+                player.properties.push(space.id);
+                logMessage(`${player.name} bought ${space.name} for $${space.price}.`, 'success');
+                updatePlayerInfo();
+                updateBoardUI();
+            } else {
+                logMessage(`Could not buy ${space.name}. Either not enough money or already owned.`, 'error');
+            }
+            buyPropertyBtn.style.display = 'none'; // Hide button after action
+            propertyActionsDiv.style.display = 'none';
+            isTurnOver = true;
+            setControlsForTurnEnd();
+        }
+
+        function handleTax(player, space) {
+            logMessage(`${player.name} landed on ${space.name} and must pay $${space.amount}.`);
+            payMoney(player, 'bank', space.amount);
+            isTurnOver = true;
+        }
+
+        function payMoney(fromPlayer, toRecipient, amount) {
+            if (fromPlayer.money >= amount) {
+                fromPlayer.money -= amount;
+                if (toRecipient !== 'bank') {
+                    toRecipient.money += amount;
+                    logMessage(`${fromPlayer.name} paid $${amount} to ${toRecipient.name}.`);
+                } else {
+                    logMessage(`${fromPlayer.name} paid $${amount} to the Bank.`);
+                }
+            } else {
+                // Player cannot afford, handle bankruptcy
+                logMessage(`${fromPlayer.name} cannot pay $${amount}! Declaring bankruptcy...`, 'error');
+                handleBankruptcy(fromPlayer, toRecipient, amount);
+            }
+            updatePlayerInfo();
+        }
+
+        function handleBankruptcy(bankruptPlayer, recipient, debtAmount) {
+            logMessage(`${bankruptPlayer.name} has gone bankrupt!`);
+            // Sell all properties to pay debt
+            bankruptPlayer.properties.sort((a,b) => board[a].price - board[b].price); // Try to sell cheapest first
+
+            while (bankruptPlayer.money < debtAmount && bankruptPlayer.properties.length > 0) {
+                const propId = bankruptPlayer.properties[0]; // Cheapest property
+                const prop = board[propId];
+
+                // Sell houses first if any
+                while(prop.houses > 0) {
+                    prop.houses--;
+                    bankruptPlayer.money += prop.houseCost / 2;
+                    logMessage(`${bankruptPlayer.name} sold a house on ${prop.name} for $${prop.houseCost / 2}.`);
+                }
+
+                // Mortgage property if still in debt
+                if (!prop.mortgaged) {
+                    prop.mortgaged = true;
+                    bankruptPlayer.money += prop.price / 2;
+                    logMessage(`${bankruptPlayer.name} mortgaged ${prop.name} for $${prop.price / 2}.`);
+                } else {
+                    // If mortgaged and still can't pay, transfer to recipient
+                    break; // Break if we can't sell/mortgage more
+                }
+                updatePlayerInfo();
+                updateBoardUI();
+            }
+
+            if (bankruptPlayer.money < debtAmount) {
+                logMessage(`${bankruptPlayer.name} cannot cover the debt and is out of the game!`, 'error');
+                // Transfer properties to the recipient if it's another player
+                if (recipient !== 'bank' && recipient.id !== bankruptPlayer.id) {
+                    bankruptPlayer.properties.forEach(propId => {
+                        const prop = board[propId];
+                        prop.owner = recipient.id;
+                        recipient.properties.push(propId);
+                        prop.mortgaged = true; // Properties are transferred mortgaged
+                        logMessage(`${prop.name} transferred to ${recipient.name} (mortgaged).`);
+                    });
+                } else {
+                    // If bankrupt to bank or self, properties return to unowned state
+                    bankruptPlayer.properties.forEach(propId => {
+                        const prop = board[propId];
+                        prop.owner = null;
+                        prop.houses = 0;
+                        prop.mortgaged = false; // Reset for next owner
+                        logMessage(`${prop.name} returned to the bank.`);
+                    });
+                }
+                // Remove player from game
+                players = players.filter(p => p.id !== bankruptPlayer.id);
+                // Adjust currentPlayerIndex if current player was removed
+                if (currentPlayerIndex >= players.length) {
+                    currentPlayerIndex = 0;
+                }
+                updatePlayerInfo();
+                updateBoardUI();
+                checkWinCondition();
+            } else {
+                logMessage(`${bankruptPlayer.name} managed to pay the debt after selling assets.`);
+                payMoney(bankruptPlayer, recipient, debtAmount); // Re-attempt payment after assets sold
+            }
+        }
+
+
+        function checkWinCondition() {
+            if (players.length === 1) {
+                gameOver = true;
+                logMessage(`${players[0].name} is the last player standing! ${players[0].name} wins!`, 'success');
+                rollDiceBtn.disabled = true;
+                endTurnBtn.disabled = true;
+            }
+        }
+
+        function drawCard(player, deck) {
+            const card = deck.shift(); // Take top card
+            deck.push(card); // Put card at bottom of deck
+
+            logMessage(`${player.name} drew a ${card.includes('Community Chest') ? 'Community Chest' : 'Chance'} card: "${card}"`);
+
+            switch (card) {
+                case "Advance to Go (Collect $200)":
+                    player.money += 200;
+                    player.position = 0;
+                    logMessage(`${player.name} advanced to Go and collected $200.`);
+                    break;
+                case "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200":
+                    sendToJail(player);
+                    break;
+                case "Bank pays you dividend of $50": // Chance
+                case "Bank error in your favor – Collect $200": // Community Chest
+                case "Income Tax refund – Collect $20": // Community Chest
+                case "Life insurance matures – Collect $100": // Community Chest
+                case "Receive $25 consultancy fee": // Community Chest
+                case "You have won second prize in a beauty contest – Collect $10": // Community Chest
+                case "Inherit $100": // Community Chest
+                case "Your building loan matures. Collect $150": // Chance
+                case "You have won a crossword competition. Collect $100": // Chance
+                    const amount = parseInt(card.match(/\$([\d]+)/)[1]);
+                    player.money += amount;
+                    logMessage(`${player.name} collected $${amount}.`);
+                    break;
+                case "Doctor's fee – Pay $50": // Community Chest
+                case "Pay hospital $100": // Community Chest
+                case "Pay school fees of $50": // Community Chest
+                case "Pay poor tax of $15": // Chance
+                    const payAmount = parseInt(card.match(/\$([\d]+)/)[1]);
+                    payMoney(player, 'bank', payAmount);
+                    break;
+                case "Get Out of Jail Free Card":
+                    player.getOutOfJailFreeCards++;
+                    logMessage(`${player.name} received a Get Out of Jail Free card.`);
+                    break;
+                case "Go back 3 spaces":
+                    // This one is tricky as it can pass Go backward. Simplified:
+                    player.position = (player.position - 3 + board.length) % board.length;
+                    logMessage(`${player.name} moved back 3 spaces to ${board[player.position].name}.`);
+                    break;
+                case "You are assessed for street repairs – Pay $40 per house, $115 per hotel": // Community Chest
+                    let repairCost = 0;
+                    player.properties.forEach(propId => {
+                        const prop = board[propId];
+                        if (prop.type === 'property') {
+                            if (prop.houses < 5) {
+                                repairCost += prop.houses * 40;
+                            } else if (prop.houses === 5) { // Hotel
+                                repairCost += 115;
+                            }
+                        }
+                    });
+                    if (repairCost > 0) {
+                        logMessage(`${player.name} must pay $${repairCost} for street repairs.`);
+                        payMoney(player, 'bank', repairCost);
+                    } else {
+                        logMessage(`${player.name} has no buildings, no repair cost.`);
+                    }
+                    break;
+                default:
+                    logMessage(`Unhandled card: "${card}".`, 'warning');
+            }
+            updatePlayerInfo();
+            updateBoardUI();
+            isTurnOver = true; // Card actions typically end turn
+        }
+
+        // --- Property Management Actions ---
+
+        function updatePropertyActionDropdowns(player) {
+            // Build House
+            let buildableProperties = getPlayerOwnedProperties(player, 'property').filter(prop =>
+                !prop.mortgaged && prop.houses < 5 && checkMonopoly(player, prop.colorGroup) &&
+                player.money >= prop.houseCost
+            ).sort((a,b) => a.houses - b.houses); // Sort by fewest houses for even building enforcement
+
+            // Ensure even building (simplified check: cannot build on one if another in group has significantly fewer)
+            const availableToBuild = [];
+            for (const prop of buildableProperties) {
+                const group = getPropertiesByColor(prop.colorGroup);
+                const minHousesInGroup = Math.min(...group.filter(p => p.owner === player.id).map(p => p.houses));
+                if (prop.houses <= minHousesInGroup) { // Allow building if houses are equal or just one more
+                     availableToBuild.push(prop);
+                }
+            }
+            buildHouseBtn.style.display = availableToBuild.length > 0 ? 'inline-block' : 'none';
+            if (availableToBuild.length > 0) {
+                // Simplification: just make the button clickable if there's *any* buildable property
+                // A full UI would have a dropdown to select which one.
+                buildHouseBtn.onclick = () => showBuildHouseDialog(player, availableToBuild);
+            }
+
+
+            // Mortgage
+            let mortgagableProperties = getPlayerOwnedProperties(player, 'property').filter(prop =>
+                !prop.mortgaged && prop.houses === 0 // Can only mortgage if no houses
+            ).concat(getPlayerOwnedProperties(player, 'railroad').filter(prop => !prop.mortgaged))
+            .concat(getPlayerOwnedProperties(player, 'utility').filter(prop => !prop.mortgaged));
+
+            populateSelect(mortgageSelect, mortgagableProperties, 'Mortgage');
+            mortgageSelect.style.display = mortgagableProperties.length > 0 ? 'block' : 'none';
+            mortgagePropertyBtn.style.display = mortgagableProperties.length > 0 ? 'inline-block' : 'none';
+
+
+            // Unmortgage
+            let unmortgagableProperties = getPlayerOwnedProperties(player).filter(prop => prop.mortgaged && player.money >= prop.price * 0.55);
+            populateSelect(unmortgageSelect, unmortgagableProperties, 'Unmortgage');
+            unmortgageSelect.style.display = unmortgagableProperties.length > 0 ? 'block' : 'none';
+            unmortgagePropertyBtn.style.display = unmortgagableProperties.length > 0 ? 'inline-block' : 'none';
+
+            // Sell Houses (Must be able to sell evenly from a group, for simplicity, list all properties with houses)
+            let sellableHouseProperties = getPlayerOwnedProperties(player, 'property').filter(prop => prop.houses > 0);
+            populateSelect(sellHouseSelect, sellableHouseProperties, 'Sell Houses');
+            sellHouseSelect.style.display = sellableHouseProperties.length > 0 ? 'block' : 'none';
+            sellHouseBtn.style.display = sellableHouseProperties.length > 0 ? 'inline-block' : 'none';
+
+
+            // Show the whole property actions div if any button/select is visible
+            propertyActionsDiv.style.display = (
+                buildHouseBtn.style.display !== 'none' ||
+                mortgageSelect.style.display !== 'none' ||
+                unmortgageSelect.style.display !== 'none' ||
+                sellHouseSelect.style.display !== 'none'
+            ) ? 'flex' : 'none';
+        }
+
+        function populateSelect(selectElement, properties, defaultOptionText) {
+            selectElement.innerHTML = `<option value="">-- Select ${defaultOptionText} Property --</option>`;
+            properties.forEach(prop => {
+                const option = document.createElement('option');
+                option.value = prop.id;
+                option.textContent = `${prop.name} ${prop.mortgaged ? '(Mortgaged)' : ''} ${prop.houses > 0 ? `(H: ${prop.houses})` : ''}`;
+                selectElement.appendChild(option);
+            });
+            selectElement.onchange = () => {
+                if (selectElement === mortgageSelect) mortgagePropertyBtn.disabled = !selectElement.value;
+                if (selectElement === unmortgageSelect) unmortgagePropertyBtn.disabled = !selectElement.value;
+                if (selectElement === sellHouseSelect) sellHouseBtn.disabled = !selectElement.value;
+            };
+            if (properties.length > 0) {
+                selectElement.value = ''; // Reset to default option
+            } else {
+                selectElement.value = '';
+            }
+            selectElement.disabled = properties.length === 0;
+            if (selectElement === mortgageSelect) mortgagePropertyBtn.disabled = true;
+            if (selectElement === unmortgageSelect) unmortgagePropertyBtn.disabled = true;
+            if (selectElement === sellHouseSelect) sellHouseBtn.disabled = true;
+        }
+
+        function showBuildHouseDialog(player, availableProperties) {
+            const selectDiv = document.createElement('div');
+            selectDiv.innerHTML = `
+                <p>Build a house for $${availableProperties[0].houseCost}:</p>
+                <select id="build-house-prop-select" class="action-select"></select>
+                <button id="confirm-build-btn">Confirm Build</button>
+                <button id="cancel-build-btn">Cancel</button>
+            `;
+            const buildSelect = selectDiv.querySelector('#build-house-prop-select');
+            const confirmBtn = selectDiv.querySelector('#confirm-build-btn');
+            const cancelBtn = selectDiv.querySelector('#cancel-build-btn');
+
+            populateSelect(buildSelect, availableProperties, 'Select Property to Build On');
+            propertyActionsDiv.appendChild(selectDiv);
+            buildHouseBtn.style.display = 'none'; // Hide main build button while dialog is open
+
+            confirmBtn.onclick = () => {
+                const propId = parseInt(buildSelect.value);
+                const prop = board[propId];
+                if (prop && player.money >= prop.houseCost && prop.houses < 5) {
+                    player.money -= prop.houseCost;
+                    prop.houses++;
+                    logMessage(`${player.name} built a house on ${prop.name}. Houses: ${prop.houses}.`);
+                    updatePlayerInfo();
+                    updateBoardUI();
+                    propertyActionsDiv.removeChild(selectDiv);
+                    updatePropertyActionDropdowns(player); // Re-evaluate and show/hide options
+                    setControlsForPropertyAction(player);
+                } else {
+                    logMessage("Cannot build house here.", "error");
+                }
+            };
+            cancelBtn.onclick = () => {
+                propertyActionsDiv.removeChild(selectDiv);
+                updatePropertyActionDropdowns(player); // Re-evaluate and show/hide options
+                setControlsForPropertyAction(player);
+            };
+        }
+
+
+        function mortgageProperty(player, propId) {
+            const prop = board[propId];
+            if (prop && prop.owner === player.id && !prop.mortgaged && prop.houses === 0) {
+                prop.mortgaged = true;
+                player.money += prop.price / 2;
+                logMessage(`${player.name} mortgaged ${prop.name} for $${prop.price / 2}.`, 'info');
+                updatePlayerInfo();
+                updateBoardUI();
+                updatePropertyActionDropdowns(player);
+            } else {
+                logMessage(`Cannot mortgage ${prop.name}. Must have no houses and own it.`, 'error');
+            }
+        }
+
+        function unmortgageProperty(player, propId) {
+            const prop = board[propId];
+            const unmortgageCost = Math.ceil(prop.price / 2 * 1.1); // Cost + 10% interest
+            if (prop && prop.owner === player.id && prop.mortgaged && player.money >= unmortgageCost) {
+                prop.mortgaged = false;
+                player.money -= unmortgageCost;
+                logMessage(`${player.name} unmortgaged ${prop.name} for $${unmortgageCost}.`, 'info');
+                updatePlayerInfo();
+                updateBoardUI();
+                updatePropertyActionDropdowns(player);
+            } else {
+                logMessage(`Cannot unmortgage ${prop.name}. Not enough money or not mortgaged.`, 'error');
+            }
+        }
+
+        function sellHouse(player, propId) {
+            const prop = board[propId];
+            if (prop && prop.owner === player.id && prop.houses > 0) {
+                // Simplified: assuming can sell one house at a time.
+                // In actual Monopoly, must sell evenly and can't sell if that makes group uneven.
+                prop.houses--;
+                player.money += prop.houseCost / 2;
+                logMessage(`${player.name} sold a house on ${prop.name} for $${prop.houseCost / 2}. Houses: ${prop.houses}.`, 'info');
+                updatePlayerInfo();
+                updateBoardUI();
+                updatePropertyActionDropdowns(player);
+            } else {
+                logMessage(`Cannot sell house on ${prop.name}. No houses to sell or not owned.`, 'error');
+            }
+        }
+
+
+        // --- Control Management ---
+        function setControlsForTurnStart() {
+            rollDiceBtn.disabled = false;
+            endTurnBtn.disabled = true;
+            propertyActionsDiv.style.display = 'none';
+            jailActionsDiv.style.display = 'none';
+
+            const player = players[currentPlayerIndex];
+            if (player.inJail) {
+                logMessage(`${player.name} is in Jail.`, 'warning');
+                setControlsForJail();
+            }
+        }
+
+        function setControlsForTurnEnd() {
+            rollDiceBtn.disabled = true;
+            endTurnBtn.disabled = false;
+            propertyActionsDiv.style.display = 'none'; // Hide property actions
+            jailActionsDiv.style.display = 'none'; // Hide jail actions
+            // Update property action dropdowns one last time to ensure they're hidden
+            updatePropertyActionDropdowns(players[currentPlayerIndex]);
+        }
+
+        function setControlsForPropertyAction(player) {
+            rollDiceBtn.disabled = (player.doublesRolledThisTurn > 0); // Can roll again if doubles
+            endTurnBtn.disabled = !(isTurnOver || player.doublesRolledThisTurn === 0);
+            updatePropertyActionDropdowns(player); // Show relevant property actions
+        }
+
+        function setControlsForJail() {
+            rollDiceBtn.disabled = false; // Player can still roll to try for doubles
+            endTurnBtn.disabled = true; // Cannot end turn until out of jail or 3 turns pass
+
+            jailActionsDiv.style.display = 'flex';
+            const player = players[currentPlayerIndex];
+            payBailBtn.disabled = (player.money < 50);
+            useJailCardBtn.disabled = (player.getOutOfJailFreeCards === 0);
+        }
+
+        function endTurn() {
+            if (gameOver) return;
+
+            logMessage(`${players[currentPlayerIndex].name}'s turn ended.`);
+            players[currentPlayerIndex].doublesRolledThisTurn = 0; // Reset for next turn
+            players[currentPlayerIndex].hasRolled = false; // Reset for next turn
+
+            // Move to next player that is still in the game
+            let nextPlayerFound = false;
+            let originalIndex = currentPlayerIndex;
+            do {
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+                if (players.length > 0 && players[currentPlayerIndex].id === players[originalIndex].id) {
+                    // Only one player left (or none, game over)
+                    break;
+                }
+                // Check if the player at the new index is still in the players array (i.e. not bankrupt)
+                if (players.some(p => p.id === players[currentPlayerIndex].id)) {
+                    nextPlayerFound = true;
+                }
+            } while (!nextPlayerFound && players.length > 1);
+
+            if (players.length > 0) {
+                logMessage(`It's ${players[currentPlayerIndex].name}'s turn.`);
+                isTurnOver = false; // Reset turn over flag
+                setControlsForTurnStart();
+                updatePlayerInfo();
+            }
+        }
+
+
+        // --- Event Listeners ---
+        numPlayersInput.addEventListener('change', () => {
+            const num = parseInt(numPlayersInput.value);
+            playerNameInputsDiv.innerHTML = '';
+            for (let i = 0; i < num; i++) {
+                const group = document.createElement('div');
+                group.className = 'player-input-group';
+                group.innerHTML = `<label for="player-name-${i}">Player ${i + 1} Name:</label>
+                                   <input type="text" id="player-name-${i}" value="Player ${i + 1}">`;
+                playerNameInputsDiv.appendChild(group);
+            }
+        });
+
+        startGameBtn.addEventListener('click', startGame);
+        rollDiceBtn.addEventListener('click', rollDice);
+        endTurnBtn.addEventListener('click', endTurn);
+
+        mortgagePropertyBtn.addEventListener('click', () => {
+            const propId = parseInt(mortgageSelect.value);
+            if (propId) mortgageProperty(players[currentPlayerIndex], propId);
+        });
+        unmortgagePropertyBtn.addEventListener('click', () => {
+            const propId = parseInt(unmortgageSelect.value);
+            if (propId) unmortgageProperty(players[currentPlayerIndex], propId);
+        });
+        sellHouseBtn.addEventListener('click', () => {
+            const propId = parseInt(sellHouseSelect.value);
+            if (propId) sellHouse(players[currentPlayerIndex], propId);
+        });
+
+        payBailBtn.addEventListener('click', () => {
+            const player = players[currentPlayerIndex];
+            if (player.inJail && player.money >= 50) {
+                player.money -= 50;
+                player.inJail = false;
+                player.jailTurns = 0;
+                logMessage(`${player.name} paid $50 bail to get out of Jail.`, 'success');
+                updatePlayerInfo();
+                setControlsForTurnStart(); // Player can now roll
+            } else {
+                logMessage("Not enough money to pay bail.", "error");
+            }
+        });
+
+        useJailCardBtn.addEventListener('click', () => {
+            const player = players[currentPlayerIndex];
+            if (player.inJail && player.getOutOfJailFreeCards > 0) {
+                player.getOutOfJailFreeCards--;
+                player.inJail = false;
+                player.jailTurns = 0;
+                logMessage(`${player.name} used a Get Out of Jail Free card to get out of Jail!`, 'success');
+                updatePlayerInfo();
+                setControlsForTurnStart(); // Player can now roll
+            } else {
+                logMessage("No Get Out of Jail Free cards available.", "error");
+            }
+        });
+
+
+        // Initial setup for player name inputs
+        numPlayersInput.dispatchEvent(new Event('change'));
+
+    </script>
+</body>
+</html>
