@@ -121,8 +121,7 @@
             border-radius: 50%;
             border: 1px solid black;
             box-sizing: border-box;
-            bottom: 5px; /* Adjust as needed */
-            right: 5px; /* Adjust as needed */
+            /* Default positioning, overridden by pX classes */
         }
         .token.p0 { background-color: red; left: 5px; bottom: 5px; }
         .token.p1 { background-color: blue; left: 25px; bottom: 5px; }
@@ -131,12 +130,21 @@
         .token.p4 { background-color: purple; left: 45px; bottom: 5px; } /* For more players */
         .token.p5 { background-color: orange; left: 45px; bottom: 25px; } /* For more players */
 
-        /* NEW: Style for players in jail */
+        /* Style for players in jail (visual effect) */
         .token.in-jail {
             border: 2px dashed #333; /* Dashed border */
             opacity: 0.7; /* Slightly transparent */
             box-shadow: 0 0 5px rgba(0,0,0,0.5); /* A subtle shadow */
         }
+
+        /* NEW: Positioning for tokens *actually in jail* (on space 10) */
+        /* These override the default pX positions when applied */
+        .token.in-jail-position.p0 { top: 5px; right: 5px; left: auto; bottom: auto; }
+        .token.in-jail-position.p1 { top: 5px; right: 25px; left: auto; bottom: auto; }
+        .token.in-jail-position.p2 { top: 25px; right: 5px; left: auto; bottom: auto; }
+        .token.in-jail-position.p3 { top: 25px; right: 25px; left: auto; bottom: auto; }
+        .token.in-jail-position.p4 { top: 5px; right: 45px; left: auto; bottom: auto; }
+        .token.in-jail-position.p5 { top: 25px; right: 45px; left: auto; bottom: auto; }
 
 
         .property-color-bar {
@@ -625,9 +633,10 @@
                 if (spaceDiv) {
                     const token = document.createElement('div');
                     token.className = `token p${player.id}`;
-                    // NEW: Add 'in-jail' class if player is in jail and on the jail space
+                    // NEW: Add 'in-jail' and 'in-jail-position' classes if player is in jail and on the jail space
                     if (player.position === 10 && player.inJail) {
-                        token.classList.add('in-jail');
+                        token.classList.add('in-jail'); // For visual effects (dashed border, opacity)
+                        token.classList.add('in-jail-position'); // For positioning in the corner
                     }
                     spaceDiv.appendChild(token);
                 }
