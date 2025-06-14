@@ -14,9 +14,11 @@
             margin: 0;
             padding: 20px;
         }
-        #game-container { /* This ID is effectively replaced by #game-board-and-controls-wrapper */
+        /* Renamed #game-container to #game-board-and-controls-wrapper in HTML */
+        /* This style block is now effectively for #game-board-and-controls-wrapper */
+        #game-board-and-controls-wrapper {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* Allows game controls to wrap below board on smaller screens */
             background-color: white;
             border: 1px solid #ccc;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -232,7 +234,6 @@
             overflow-y: scroll;
             background-color: #e9e9e9;
             font-size: 0.9em;
-            /* Removed margin-top, gap will handle spacing */
             border-radius: 5px;
         }
         #message-log div {
@@ -265,7 +266,7 @@
             margin-bottom: 3px;
         }
         .player-list {
-            /* Removed margin-bottom, gap will handle spacing */
+            margin-bottom: 20px; /* Keep margin-bottom for spacing within game-controls */
         }
         #property-actions, #jail-actions {
             margin-top: 15px;
@@ -290,22 +291,22 @@
             flex-wrap: wrap; /* Allows columns to wrap on very small screens */
             justify-content: center; /* Centers the content horizontally */
             align-items: flex-start; /* Aligns items to the top */
-            gap: 20px; /* Space between the left column and debug controls */
+            gap: 20px; /* Space between the main game content and debug controls */
             max-width: 1800px; /* Increased max-width to accommodate both side-by-side */
             width: 100%; /* Take full width available within body's centering */
         }
 
-        /* NEW: Left column content (board, game controls, player list, message log) */
-        #left-column-content {
+        /* NEW: Main game content (board, controls, player list, message log) */
+        #main-game-content {
             display: flex;
             flex-direction: column; /* Stack children vertically */
-            gap: 20px; /* Space between sections in the left column */
+            gap: 20px; /* Space between sections in this column */
             flex: 1; /* Allows it to grow/shrink */
-            min-width: 1150px; /* Minimum width for the left column */
-            max-width: 1200px; /* Max width for the left column */
+            min-width: 1150px; /* Minimum width for this column */
+            max-width: 1200px; /* Max width for this column */
         }
 
-        /* NEW: Wrapper for game board and its immediate controls */
+        /* Wrapper for game board and its immediate controls (now inside main-game-content) */
         #game-board-and-controls-wrapper {
             display: flex;
             flex-wrap: wrap; /* Allows game controls to wrap below board on smaller screens */
@@ -314,7 +315,7 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             padding: 20px;
             border-radius: 8px;
-            flex: 1; /* Allows it to take available space in left-column-content */
+            flex: 1; /* Allows it to take available space in main-game-content */
         }
 
         /* Debug Controls Styling */
@@ -466,9 +467,9 @@
         <h1>Monopoly</h1>
         <!-- NEW: Overall game layout container -->
         <div id="overall-game-layout">
-            <!-- NEW: Left column content (board, game controls, player list, message log) -->
-            <div id="left-column-content">
-                <!-- NEW: Wrapper for game board and its immediate controls -->
+            <!-- NEW: Main game content (board, controls, player list, message log) -->
+            <div id="main-game-content">
+                <!-- Wrapper for game board and its immediate controls -->
                 <div id="game-board-and-controls-wrapper">
                     <div id="game-board"></div>
 
@@ -499,11 +500,13 @@
                         </div>
                     </div>
                 </div>
+                <!-- Player List Container (now a direct child of main-game-content, below board/controls) -->
                 <div id="player-list-container"></div>
+                <!-- Message Log (now a direct child of main-game-content, below player list) -->
                 <div id="message-log"></div>
             </div>
 
-            <!-- Debug Controls Section (now a sibling to left-column-content) -->
+            <!-- Debug Controls Section (now a sibling to main-game-content) -->
             <div id="debug-controls" style="display: none;">
                 <h2>Debug Controls</h2>
 
