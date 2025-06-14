@@ -122,7 +122,8 @@
             border-radius: 50%;
             border: 1px solid black;
             box-sizing: border-box;
-            /* Default positioning, overridden by pX classes */
+            bottom: 5px; /* Adjust as needed */
+            right: 5px; /* Adjust as needed */
         }
         .token.p0 { background-color: red; left: 5px; bottom: 5px; }
         .token.p1 { background-color: blue; left: 25px; bottom: 5px; }
@@ -131,21 +132,7 @@
         .token.p4 { background-color: purple; left: 45px; bottom: 5px; } /* For more players */
         .token.p5 { background-color: orange; left: 45px; bottom: 25px; } /* For more players */
 
-        /* Style for players in jail (visual effect) */
-        .token.in-jail {
-            border: 2px dashed #333; /* Dashed border */
-            opacity: 0.7; /* Slightly transparent */
-            box-shadow: 0 0 5px rgba(0,0,0,0.5); /* A subtle shadow */
-        }
-
-        /* NEW: Positioning for tokens *actually in jail* (on space 10) */
-        /* These override the default pX positions when applied */
-        .token.in-jail-position.p0 { top: 5px; right: 5px; left: auto; bottom: auto; }
-        .token.in-jail-position.p1 { top: 5px; right: 25px; left: auto; bottom: auto; }
-        .token.in-jail-position.p2 { top: 25px; right: 5px; left: auto; bottom: auto; }
-        .token.in-jail-position.p3 { top: 25px; right: 25px; left: auto; bottom: auto; }
-        .token.in-jail-position.p4 { top: 5px; right: 45px; left: auto; bottom: auto; }
-        .token.in-jail-position.p5 { top: 25px; right: 45px; left: auto; bottom: auto; }
+        /* Removed: .token.in-jail and .token.in-jail-position styles */
 
 
         .property-color-bar {
@@ -749,11 +736,7 @@
                 if (spaceDiv) {
                     const token = document.createElement('div');
                     token.className = `token p${player.id}`;
-                    // NEW: Add 'in-jail' and 'in-jail-position' classes if player is in jail and on the jail space
-                    if (player.position === 10 && player.inJail) {
-                        token.classList.add('in-jail'); // For visual effects (dashed border, opacity)
-                        token.classList.add('in-jail-position'); // For positioning in the corner
-                    }
+                    // Removed: 'in-jail' and 'in-jail-position' classes
                     spaceDiv.appendChild(token);
                 }
             });
@@ -909,7 +892,7 @@
             if (die1 === die2) {
                 player.doublesRolledThisTurn++;
                 logMessage(`${player.name} rolled doubles!`, 'warning');
-                if (player.doublesRolledThisTurn === 3) {
+                if (player.doublesRolblesRolledThisTurn === 3) {
                     logMessage(`${player.name} rolled 3 consecutive doubles! Go directly to Jail!`, 'error');
                     sendToJail(player);
                     player.doublesRolledThisTurn = 0; // Reset doubles count
@@ -1864,7 +1847,7 @@
             landOnSpace(player); // Trigger landOnSpace logic for the new position
         });
 
-        // MODIFIED: Simulate Dice Roll button now calls the main rollDice function
+        // Simulate Dice Roll button now calls the main rollDice function
         debugRollBtn.addEventListener('click', () => {
             const die1 = parseInt(debugDie1Input.value);
             const die2 = parseInt(debugDie2Input.value);
