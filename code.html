@@ -1185,7 +1185,7 @@
                     toRecipient.money += amount;
                     logMessage(`${fromPlayer.name} paid $${amount} to ${toRecipient.name}.`);
                 } else {
-                    logMessage(`${player.name} paid $${amount} to the Bank.`);
+                    logMessage(`${fromPlayer.name} paid $${amount} to the Bank.`);
                 }
             } else {
                 // Player cannot afford, handle bankruptcy
