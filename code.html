@@ -903,14 +903,18 @@
 
             logMessage(`${player.name} drew a ${card.includes('Community Chest') ? 'Community Chest' : 'Chance'} card: "${card}"`);
 
+            let movedByCard = false; // Flag to indicate if the player was moved by this card
+
             switch (card) {
                 case "Advance to Go (Collect $200)":
                     player.money += 200;
                     player.position = 0;
                     logMessage(`${player.name} advanced to Go and collected $200.`);
+                    movedByCard = true; // Player moved
                     break;
                 case "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200":
                     sendToJail(player);
+                    // sendToJail already handles setting controls and logging, no need for landOnSpace here
                     break;
                 case "Bank pays you dividend of $50": // Chance
                 case "Bank error in your favor – Collect $200": // Community Chest
@@ -939,6 +943,7 @@
                 case "Go back 3 spaces":
                     player.position = (player.position - 3 + board.length) % board.length;
                     logMessage(`${player.name} moved back 3 spaces to ${board[player.position].name}.`);
+                    movedByCard = true; // Player moved
                     break;
                 case "You are assessed for street repairs – Pay $40 per house, $115 per hotel": // Community Chest
                     let repairCost = 0;
@@ -964,7 +969,17 @@
             }
             updatePlayerInfo();
             updateBoardUI();
+
+            // IMPORTANT FIX: If the player was moved by the card, land on the new space
+            if (movedByCard) {
+                landOnSpace(player);
+            } else {
+                // If no movement, the turn typically ends after a card action
+                currentActionPending = 'none';
+                setControls();
+            }
         }
+
 
         // --- Property Management Actions ---
 
