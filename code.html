@@ -40,16 +40,44 @@
         .player-input-group {
             margin-bottom: 10px;
         }
+
+        /* NEW: Overall layout wrapper for main game and debug controls */
+        #overall-layout-wrapper {
+            display: flex;
+            flex-wrap: wrap; /* Allows columns to wrap on smaller screens */
+            justify-content: center; /* Centers the content horizontally */
+            align-items: flex-start; /* Aligns items to the top */
+            gap: 20px; /* Space between main game area and debug controls */
+            max-width: 1800px; /* Max width for the entire game display */
+            width: 100%; /* Take full width available within body's centering */
+        }
+
+        /* NEW: Main game area (board + right-side panel) */
+        #main-game-area {
+            display: flex;
+            flex-wrap: wrap; /* Allows right-side panel to wrap below board on very small screens */
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            border-radius: 8px;
+            flex: 1; /* Allows it to grow/shrink within overall-layout-wrapper */
+            min-width: 1150px; /* Minimum width for board + right panel */
+            max-width: 1200px; /* Max width for board + right panel */
+            gap: 20px; /* Space between game board and right-side panel */
+        }
+
         #game-board {
             display: grid;
             grid-template-columns: repeat(11, 1fr);
             grid-template-rows: repeat(11, 1fr);
-            width: 800px; /* Adjust as needed */
-            height: 800px; /* Adjust as needed */
+            width: 800px; /* Fixed width for the board */
+            height: 800px; /* Fixed height for the board */
             border: 2px solid black;
             box-sizing: border-box;
             background-color: #e0e0e0;
             position: relative;
+            flex-shrink: 0; /* Prevent board from shrinking */
         }
         .board-space {
             border: 1px solid #aaa;
@@ -70,8 +98,6 @@
         .board-space.left, .board-space.right { width: 100%; height: 100%; }
 
         /* Specific board layout using grid-area (as before, but less reliant on it now) */
-        /* The CSS grid-area properties are manually defined and assume the `board` array order.
-           This loop just creates the divs for each board space */
         #go { grid-area: 11 / 11; }
         #mediterranean-avenue { grid-area: 11 / 10; }
         #community-chest1 { grid-area: 11 / 9; }
@@ -188,14 +214,24 @@
             color: green;
         }
 
+        /* NEW: Right-side panel for controls, player list, message log */
+        #right-side-panel {
+            display: flex;
+            flex-direction: column; /* Stack children vertically */
+            gap: 20px; /* Space between sections */
+            flex: 1; /* Allows it to grow/shrink within main-game-area */
+            min-width: 300px; /* Minimum width for this panel */
+            max-width: 350px; /* Max width for this panel */
+        }
+
         #game-controls {
-            flex: 1;
             padding: 20px;
+            border: 1px solid #eee; /* Added border for visual separation */
+            border-radius: 8px;
+            background-color: #f9f9f9; /* Added background for visual separation */
             display: flex;
             flex-direction: column;
             gap: 15px;
-            border-left: 1px solid #eee;
-            min-width: 300px;
             box-sizing: border-box;
         }
         #current-player-display {
@@ -226,18 +262,11 @@
             cursor: not-allowed;
         }
 
-        #message-log {
-            flex-basis: 100%;
-            height: 150px;
-            border: 1px solid #ccc;
+        #player-list-container {
             padding: 10px;
-            overflow-y: scroll;
-            background-color: #e9e9e9;
-            font-size: 0.9em;
-            border-radius: 5px;
-        }
-        #message-log div {
-            margin-bottom: 5px;
+            border: 1px solid #eee; /* Added border for visual separation */
+            border-radius: 8px;
+            background-color: #f9f9f9; /* Added background for visual separation */
         }
         .player-status {
             background-color: #f5f5f5;
@@ -268,6 +297,19 @@
         .player-list {
             margin-bottom: 20px; /* Keep margin-bottom for spacing within game-controls */
         }
+        #message-log {
+            flex-basis: 100%;
+            height: 150px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: scroll;
+            background-color: #e9e9e9;
+            font-size: 0.9em;
+            border-radius: 5px;
+        }
+        #message-log div {
+            margin-bottom: 5px;
+        }
         #property-actions, #jail-actions {
             margin-top: 15px;
             display: flex;
@@ -285,49 +327,15 @@
             border: 1px solid #ccc;
         }
 
-        /* NEW: Overall game layout container */
-        #overall-game-layout {
-            display: flex;
-            flex-wrap: wrap; /* Allows columns to wrap on very small screens */
-            justify-content: center; /* Centers the content horizontally */
-            align-items: flex-start; /* Aligns items to the top */
-            gap: 20px; /* Space between the main game content and debug controls */
-            max-width: 1800px; /* Increased max-width to accommodate both side-by-side */
-            width: 100%; /* Take full width available within body's centering */
-        }
-
-        /* NEW: Main game content (board, controls, player list, message log) */
-        #main-game-content {
-            display: flex;
-            flex-direction: column; /* Stack children vertically */
-            gap: 20px; /* Space between sections in this column */
-            flex: 1; /* Allows it to grow/shrink */
-            min-width: 1150px; /* Minimum width for this column */
-            max-width: 1200px; /* Max width for this column */
-        }
-
-        /* Wrapper for game board and its immediate controls (now inside main-game-content) */
-        #game-board-and-controls-wrapper {
-            display: flex;
-            flex-wrap: wrap; /* Allows game controls to wrap below board on smaller screens */
-            background-color: white;
-            border: 1px solid #ccc;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            padding: 20px;
-            border-radius: 8px;
-            flex: 1; /* Allows it to take available space in main-game-content */
-        }
-
-        /* Debug Controls Styling */
+        /* Debug Controls Styling (now a separate column) */
         #debug-controls {
-            margin-top: 0; /* Removed margin-top as gap handles spacing */
             padding: 20px;
             border: 1px solid #ddd;
             background-color: #fff;
             border-radius: 8px;
-            flex: 0 0 350px; /* Fixed width, won't grow/shrink much */
-            max-width: 400px; /* Cap its max width */
-            min-width: 300px; /* Ensure it doesn't get too small */
+            flex: 0 0 350px; /* Fixed width for the debug panel */
+            max-width: 400px;
+            min-width: 300px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -350,8 +358,8 @@
             border-radius: 5px;
             background-color: #f9f9f9;
             flex: 1; /* Allow groups to grow/shrink */
-            min-width: 250px; /* Minimum width for each group */
-            max-width: 350px; /* Max width for each group */
+            min-width: 250px;
+            max-width: 350px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -465,14 +473,14 @@
 
     <div id="game-screen" style="display: none;">
         <h1>Monopoly</h1>
-        <!-- NEW: Overall game layout container -->
-        <div id="overall-game-layout">
-            <!-- NEW: Main game content (board, controls, player list, message log) -->
-            <div id="main-game-content">
-                <!-- Wrapper for game board and its immediate controls -->
-                <div id="game-board-and-controls-wrapper">
-                    <div id="game-board"></div>
+        <!-- NEW: Overall layout wrapper for main game and debug controls -->
+        <div id="overall-layout-wrapper">
+            <!-- NEW: Main game area (board + right-side panel) -->
+            <div id="main-game-area">
+                <div id="game-board"></div>
 
+                <!-- NEW: Right-side panel for controls, player list, message log -->
+                <div id="right-side-panel">
                     <div id="game-controls">
                         <div id="current-player-display"></div>
                         <div id="dice-display">Dice: -</div>
@@ -499,14 +507,12 @@
                             <button id="use-jail-card-btn">Use Get Out of Jail Free Card</button>
                         </div>
                     </div>
+                    <div id="player-list-container"></div>
+                    <div id="message-log"></div>
                 </div>
-                <!-- Player List Container (now a direct child of main-game-content, below board/controls) -->
-                <div id="player-list-container"></div>
-                <!-- Message Log (now a direct child of main-game-content, below player list) -->
-                <div id="message-log"></div>
             </div>
 
-            <!-- Debug Controls Section (now a sibling to main-game-content) -->
+            <!-- Debug Controls Section (now a sibling to main-game-area) -->
             <div id="debug-controls" style="display: none;">
                 <h2>Debug Controls</h2>
 
