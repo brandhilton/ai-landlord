@@ -1,3 +1,4 @@
+html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,14 +37,13 @@
             width: 100%; /* Take full width available */
         }
 
-        /* Container for the two main columns (Board/Log & Controls/Debug) */
+        /* Container for the three main columns */
         #main-game-layout {
             display: flex;
-            gap: 20px; /* Space between the left and right columns */
+            gap: 20px; /* Space between the columns */
             justify-content: center; /* Center the entire layout horizontally */
             align-items: flex-start; /* Align columns to the top */
-            max-width: 1200px; /* Max width to contain both columns and gap */
-            width: 100%; /* Ensure it uses available width up to max */
+            flex-wrap: wrap; /* Allow columns to wrap on smaller screens */
         }
 
         /* Left Column (Board + Message Log) */
@@ -54,13 +54,16 @@
             flex-shrink: 0; /* Prevent it from shrinking */
         }
 
-        /* Right Column (Controls + Player List + Debug Controls) */
+        /* Middle Column (Game Controls) */
+        #middle-column {
+            width: 350px;
+            flex-shrink: 0;
+        }
+
+        /* Right Column (Debug Controls) */
         #right-column {
-            display: flex;
-            flex-direction: column;
-            gap: 20px; /* Space between game controls and debug controls */
-            flex-shrink: 0; /* Prevent it from shrinking */
-            width: 350px; /* Fixed width for the right column elements */
+            width: 350px;
+            flex-shrink: 0;
         }
 
         /* Game Board Styling (now a distinct block) */
@@ -211,8 +214,8 @@
             color: green;
         }
 
-        /* Right-side panel for controls, player list */
-        #right-side-panel {
+        /* Game Controls Panel (Middle Column) */
+        #game-controls-panel {
             display: flex;
             flex-direction: column; /* Stack children vertically */
             gap: 20px; /* Space between game controls and player list */
@@ -295,7 +298,7 @@
             margin-bottom: 3px;
         }
         
-        /* Message Log Area (bottom-left grid cell) */
+        /* Message Log Area (bottom-left) */
         #message-log-area {
             display: flex;
             flex-direction: column;
@@ -494,9 +497,9 @@
                 </div>
             </div>
 
-            <!-- Right Column: Game Controls, Player List, and Debug Controls -->
-            <div id="right-column">
-                <div id="right-side-panel">
+            <!-- Middle Column: Game Controls and Player List -->
+            <div id="middle-column">
+                <div id="game-controls-panel">
                     <div id="game-controls">
                         <div id="current-player-display"></div>
                         <div id="dice-display">Dice: -</div>
@@ -525,8 +528,10 @@
                     </div>
                     <div id="player-list-container"></div>
                 </div>
+            </div>
 
-                <!-- Debug Controls Section -->
+            <!-- Right Column: Debug Controls -->
+            <div id="right-column">
                 <div id="debug-controls" style="display: none;">
                     <h2>Debug Controls</h2>
                     <div>
