@@ -131,12 +131,7 @@
         .token.p4 { background-color: purple; left: 45px; bottom: 5px; } /* For more players */
         .token.p5 { background-color: orange; left: 45px; bottom: 25px; } /* For more players */
 
-        /* Style for players in jail (visual effect) */
-        .token.in-jail {
-            border: 2px dashed #333; /* Dashed border */
-            opacity: 0.7; /* Slightly transparent */
-            box-shadow: 0 0 5px rgba(0,0,0,0.5); /* A subtle shadow */
-        }
+        /* Removed: .token.in-jail styles (dashed border, opacity, shadow) */
 
         /* Positioning for tokens *actually in jail* (on space 10) */
         /* These override the default pX positions when applied */
@@ -749,9 +744,8 @@
                 if (spaceDiv) {
                     const token = document.createElement('div');
                     token.className = `token p${player.id}`;
-                    // Re-add: 'in-jail' and 'in-jail-position' classes if player is in jail and on the jail space
+                    // Re-add: 'in-jail-position' class if player is in jail and on the jail space
                     if (player.position === 10 && player.inJail) {
-                        token.classList.add('in-jail'); // For visual effects (dashed border, opacity)
                         token.classList.add('in-jail-position'); // For positioning in the corner
                     }
                     spaceDiv.appendChild(token);
@@ -909,7 +903,7 @@
             if (die1 === die2) {
                 player.doublesRolledThisTurn++;
                 logMessage(`${player.name} rolled doubles!`, 'warning');
-                if (player.doublesRolledThisTurn === 3) {
+                if (player.doublesRolbledThisTurn === 3) {
                     logMessage(`${player.name} rolled 3 consecutive doubles! Go directly to Jail!`, 'error');
                     sendToJail(player);
                     player.doublesRolledThisTurn = 0; // Reset doubles count
