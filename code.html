@@ -45,7 +45,7 @@
             width: 800px; /* Adjust as needed */
             height: 800px; /* Adjust as needed */
             border: 2px solid black;
-            box-sizing: border-box;
+            box-sizing: border;
             background-color: #e0e0e0;
             position: relative;
         }
@@ -131,8 +131,6 @@
         .token.p4 { background-color: purple; left: 45px; bottom: 5px; } /* For more players */
         .token.p5 { background-color: orange; left: 45px; bottom: 25px; } /* For more players */
 
-        /* Removed: .token.in-jail styles (dashed border, opacity, shadow) */
-
         /* Positioning for tokens *actually in jail* (on space 10) */
         /* These override the default pX positions when applied */
         .token.in-jail-position.p0 { top: 5px; right: 5px; left: auto; bottom: auto; }
@@ -162,7 +160,7 @@
 
         .space-name {
             font-weight: bold;
-            font-size: 0.8em;
+            font-size: 0.7em;
             margin-top: 5px;
         }
         .space-price {
@@ -903,7 +901,8 @@
             if (die1 === die2) {
                 player.doublesRolledThisTurn++;
                 logMessage(`${player.name} rolled doubles!`, 'warning');
-                if (player.doublesRolbledThisTurn === 3) {
+                // FIX: Corrected typo here
+                if (player.doublesRolledThisTurn === 3) {
                     logMessage(`${player.name} rolled 3 consecutive doubles! Go directly to Jail!`, 'error');
                     sendToJail(player);
                     player.doublesRolledThisTurn = 0; // Reset doubles count
