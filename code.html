@@ -632,24 +632,37 @@
             { id: 39, name: "Boardwalk", type: "property", colorGroup: "dark-blue", price: 400, rent: [50, 200, 600, 1400, 1700, 2000], houseCost: 200, owner: null, houses: 0, mortgaged: false }
         ];
 
+        // Updated Chance Cards (Standard Monopoly Set of 16)
         let chanceCards = [
             "Advance to Go (Collect $200)",
-            "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200",
+            "Advance to Illinois Ave. If you pass Go, collect $200.",
+            "Advance to St. Charles Place. If you pass Go, collect $200.",
+            "Advance to nearest Utility. If unowned, you may buy it from the Bank. If owned, pay owner 10 times amount shown on dice.",
+            "Advance to nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which he/she is otherwise entitled.",
             "Bank pays you dividend of $50",
             "Get Out of Jail Free Card",
             "Go back 3 spaces",
+            "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200",
+            "Make general repairs on all your property. For each house pay $25. For each hotel pay $100.",
             "Pay poor tax of $15",
+            "Take a trip to Reading Railroad. If you pass Go, collect $200.",
+            "Advance to Boardwalk.",
+            "You have been elected Chairman of the Board – Pay each player $50.",
             "Your building loan matures. Collect $150",
             "You have won a crossword competition. Collect $100"
         ];
 
+        // Updated Community Chest Cards (Standard Monopoly Set of 16)
         let communityChestCards = [
             "Advance to Go (Collect $200)",
-            "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200",
             "Bank error in your favor – Collect $200",
             "Doctor's fee – Pay $50",
+            "From sale of stock you get $45.",
             "Get Out of Jail Free Card",
+            "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200",
+            "Holiday Fund matures. Receive $100.",
             "Income Tax refund – Collect $20",
+            "It is your birthday. Collect $10 from each player.",
             "Life insurance matures – Collect $100",
             "Pay hospital $100",
             "Pay school fees of $50",
@@ -855,6 +868,38 @@
             return board.filter(space => space.owner === player.id && (type ? space.type === type : true));
         }
 
+        // NEW: Helper function to find the next space of a given type, wrapping around the board
+        function findNextSpaceType(startPosition, type) {
+            for (let i = 1; i <= board.length; i++) { // Iterate up to board.length to ensure wrapping
+                const targetIndex = (startPosition + i) % board.length;
+                const space = board[targetIndex];
+                if (space.type === type) {
+                    return space; // Return the first space of the specified type found after startPosition
+                }
+            }
+            return null; // Should not happen for Utilities/Railroads as they always exist
+        }
+
+        // NEW: Helper function to calculate utility rent based on dice roll and owner's utility count
+        function calculateUtilityRent(owner, diceSum) {
+            const ownedUtilities = getPlayerOwnedProperties(owner, 'utility').filter(u => !u.mortgaged).length;
+            if (ownedUtilities === 1) {
+                return diceSum * 4;
+            } else if (ownedUtilities === 2) {
+                return diceSum * 10;
+            }
+            return 0;
+        }
+
+        // NEW: Helper function to calculate railroad rent based on owner's railroad count
+        function calculateRailroadRent(owner, railroadSpace) {
+            const ownedRailroads = getPlayerOwnedProperties(owner, 'railroad').filter(r => !r.mortgaged).length;
+            if (ownedRailroads > 0 && ownedRailroads <= railroadSpace.rent.length) {
+                return railroadSpace.rent[ownedRailroads - 1];
+            }
+            return 0;
+        }
+
         // --- Game Logic ---
 
         function startGame() {
@@ -871,7 +916,8 @@
                     inJail: false,
                     jailTurns: 0,
                     doublesRolledThisTurn: 0,
-                    hasRolled: false // To enforce only one roll per turn unless doubles
+                    hasRolled: false, // To enforce only one roll per turn unless doubles
+                    getOutOfJailFreeCards: 0
                 });
             }
 
@@ -1222,68 +1268,224 @@
             const card = deck.shift(); // Take top card
             deck.push(card); // Put card at bottom of deck
 
-            logMessage(`${player.name} drew a ${card.includes('Community Chest') ? 'Community Chest' : 'Chance'} card: "${card}"`);
+            logMessage(`${player.name} drew a ${deck === chanceCardsShuffled ? 'Chance' : 'Community Chest'} card: "${card}"`);
 
             let movedByCard = false; // Flag to indicate if the player was moved by this card
+            let oldPosition = player.position; // Store current position for 'pass Go' check
 
             switch (card) {
                 case "Advance to Go (Collect $200)":
-                    player.money += 200;
                     player.position = 0;
+                    player.money += 200;
                     logMessage(`${player.name} advanced to Go and collected $200.`);
-                    movedByCard = true; // Player moved
+                    movedByCard = true;
+                    break;
+                case "Advance to Illinois Ave. If you pass Go, collect $200.":
+                    player.position = 24; // Illinois Avenue ID
+                    if (player.position < oldPosition) { // Passed Go
+                        player.money += 200;
+                        logMessage(`${player.name} passed GO and collected $200!`);
+                    }
+                    logMessage(`${player.name} advanced to Illinois Avenue.`);
+                    movedByCard = true;
+                    break;
+                case "Advance to St. Charles Place. If you pass Go, collect $200.":
+                    player.position = 11; // St. Charles Place ID
+                    if (player.position < oldPosition) { // Passed Go
+                        player.money += 200;
+                        logMessage(`${player.name} passed GO and collected $200!`);
+                    }
+                    logMessage(`${player.name} advanced to St. Charles Place.`);
+                    movedByCard = true;
+                    break;
+                case "Advance to nearest Utility. If unowned, you may buy it from the Bank. If owned, pay owner 10 times amount shown on dice.":
+                    const nearestUtility = findNextSpaceType(oldPosition, 'utility');
+                    player.position = nearestUtility.id;
+                    if (player.position < oldPosition) { // Passed Go
+                        player.money += 200;
+                        logMessage(`${player.name} passed GO and collected $200!`);
+                    }
+                    logMessage(`${player.name} advanced to nearest Utility: ${nearestUtility.name}.`);
+
+                    if (nearestUtility.owner !== null && nearestUtility.owner !== player.id) {
+                        const owner = players[nearestUtility.owner];
+                        if (!nearestUtility.mortgaged) {
+                            const rent = calculateUtilityRent(owner, diceRoll[0] + diceRoll[1]);
+                            logMessage(`${player.name} pays ${owner.name} $${rent} rent for ${nearestUtility.name}.`);
+                            payMoney(player, owner, rent);
+                            currentActionPending = 'none'; // Rent paid, no further action needed from landOnSpace for this space
+                        } else {
+                            logMessage(`${nearestUtility.name} is mortgaged. No rent due.`);
+                        }
+                    }
+                    movedByCard = true;
+                    break;
+                case "Advance to nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which he/she is otherwise entitled.":
+                    const nearestRailroad = findNextSpaceType(oldPosition, 'railroad');
+                    player.position = nearestRailroad.id;
+                    if (player.position < oldPosition) { // Passed Go
+                        player.money += 200;
+                        logMessage(`${player.name} passed GO and collected $200!`);
+                    }
+                    logMessage(`${player.name} advanced to nearest Railroad: ${nearestRailroad.name}.`);
+
+                    if (nearestRailroad.owner !== null && nearestRailroad.owner !== player.id) {
+                        const owner = players[nearestRailroad.owner];
+                        if (!nearestRailroad.mortgaged) {
+                            const rent = calculateRailroadRent(owner, nearestRailroad) * 2; // Double rent for card
+                            logMessage(`${player.name} pays ${owner.name} $${rent} rent for ${nearestRailroad.name}.`);
+                            payMoney(player, owner, rent);
+                            currentActionPending = 'none'; // Rent paid, no further action needed from landOnSpace for this space
+                        } else {
+                            logMessage(`${nearestRailroad.name} is mortgaged. No rent due.`);
+                        }
+                    }
+                    movedByCard = true;
+                    break;
+                case "Take a trip to Reading Railroad. If you pass Go, collect $200.":
+                    player.position = 5; // Reading Railroad ID
+                    if (player.position < oldPosition) { // Passed Go
+                        player.money += 200;
+                        logMessage(`${player.name} passed GO and collected $200!`);
+                    }
+                    logMessage(`${player.name} advanced to Reading Railroad.`);
+                    movedByCard = true;
+                    break;
+                case "Advance to Boardwalk.":
+                    player.position = 39; // Boardwalk ID
+                    if (player.position < oldPosition) { // Passed Go
+                        player.money += 200;
+                        logMessage(`${player.name} passed GO and collected $200!`);
+                    }
+                    logMessage(`${player.name} advanced to Boardwalk.`);
+                    movedByCard = true;
                     break;
                 case "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200":
-                    sendToJail(player);
-                    // sendToJail already handles setting controls and logging, no need for landOnSpace here
+                    sendToJail(player); // sendToJail already sets controls, so movedByCard stays false
                     break;
-                case "Bank pays you dividend of $50": // Chance
-                case "Bank error in your favor – Collect $200": // Community Chest
-                case "Income Tax refund – Collect $20": // Community Chest
-                case "Life insurance matures – Collect $100": // Community Chest
-                case "Receive $25 consultancy fee": // Community Chest
-                case "You have won second prize in a beauty contest – Collect $10": // Community Chest
-                case "Inherit $100": // Community Chest
-                case "Your building loan matures. Collect $150": // Chance
-                case "You have won a crossword competition. Collect $100": // Chance
-                    const amount = parseInt(card.match(/\$([\d]+)/)[1]);
-                    player.money += amount;
-                    logMessage(`${player.name} collected $${amount}.`);
-                    break;
-                case "Doctor's fee – Pay $50": // Community Chest
-                case "Pay hospital $100": // Community Chest
-                case "Pay school fees of $50": // Community Chest
-                case "Pay poor tax of $15": // Chance
-                    const payAmount = parseInt(card.match(/\$([\d]+)/)[1]);
-                    payMoney(player, 'bank', payAmount);
+                case "Go back 3 spaces":
+                    player.position = (player.position - 3 + board.length) % board.length;
+                    logMessage(`${player.name} moved back 3 spaces to ${board[player.position].name}.`);
+                    movedByCard = true;
                     break;
                 case "Get Out of Jail Free Card":
                     player.getOutOfJailFreeCards++;
                     logMessage(`${player.name} received a Get Out of Jail Free card.`);
                     break;
-                case "Go back 3 spaces":
-                    player.position = (player.position - 3 + board.length) % board.length;
-                    logMessage(`${player.name} moved back 3 spaces to ${board[player.position].name}.`);
-                    movedByCard = true; // Player moved
+                case "Bank pays you dividend of $50":
+                    player.money += 50;
+                    logMessage(`${player.name} collected $50 dividend from the Bank.`);
                     break;
-                case "You are assessed for street repairs – Pay $40 per house, $115 per hotel": // Community Chest
-                    let repairCost = 0;
+                case "Your building loan matures. Collect $150":
+                    player.money += 150;
+                    logMessage(`${player.name} collected $150 from building loan maturity.`);
+                    break;
+                case "You have won a crossword competition. Collect $100":
+                    player.money += 100;
+                    logMessage(`${player.name} collected $100 from winning a crossword competition.`);
+                    break;
+                case "Pay poor tax of $15":
+                    payMoney(player, 'bank', 15);
+                    break;
+                case "Make general repairs on all your property. For each house pay $25. For each hotel pay $100.":
+                    let repairCostChance = 0;
                     player.properties.forEach(propId => {
                         const prop = board[propId];
-                        if (prop.type === 'property') {
+                        if (prop.type === 'property' && prop.owner === player.id) {
                             if (prop.houses < 5) {
-                                repairCost += prop.houses * 40;
+                                repairCostChance += prop.houses * 25;
                             } else if (prop.houses === 5) { // Hotel
-                                repairCost += 115;
+                                repairCostChance += 100;
                             }
                         }
                     });
-                    if (repairCost > 0) {
-                        logMessage(`${player.name} must pay $${repairCost} for street repairs.`);
-                        payMoney(player, 'bank', repairCost);
+                    if (repairCostChance > 0) {
+                        logMessage(`${player.name} must pay $${repairCostChance} for general repairs.`);
+                        payMoney(player, 'bank', repairCostChance);
                     } else {
                         logMessage(`${player.name} has no buildings, no repair cost.`);
                     }
+                    break;
+                case "You have been elected Chairman of the Board – Pay each player $50.":
+                    let totalPaid = 0;
+                    players.forEach(p => {
+                        if (p.id !== player.id) {
+                            payMoney(player, p, 50); // Player pays 50 to each other player
+                            totalPaid += 50;
+                        }
+                    });
+                    logMessage(`${player.name} paid $50 to each other player (total $${totalPaid}).`);
+                    break;
+                // Community Chest Cards
+                case "Bank error in your favor – Collect $200":
+                    player.money += 200;
+                    logMessage(`${player.name} collected $200 due to a bank error.`);
+                    break;
+                case "Doctor's fee – Pay $50":
+                    payMoney(player, 'bank', 50);
+                    break;
+                case "From sale of stock you get $45.":
+                    player.money += 45;
+                    logMessage(`${player.name} collected $45 from stock sale.`);
+                    break;
+                case "Holiday Fund matures. Receive $100.":
+                    player.money += 100;
+                    logMessage(`${player.name} received $100 from Holiday Fund.`);
+                    break;
+                case "Income Tax refund – Collect $20":
+                    player.money += 20;
+                    logMessage(`${player.name} collected $20 income tax refund.`);
+                    break;
+                case "It is your birthday. Collect $10 from each player.":
+                    let totalCollected = 0;
+                    players.forEach(p => {
+                        if (p.id !== player.id) {
+                            payMoney(p, player, 10); // Each other player pays 10 to current player
+                            totalCollected += 10;
+                        }
+                    });
+                    logMessage(`${player.name} collected $10 from each other player (total $${totalCollected}).`);
+                    break;
+                case "Life insurance matures – Collect $100":
+                    player.money += 100;
+                    logMessage(`${player.name} collected $100 from life insurance maturity.`);
+                    break;
+                case "Pay hospital $100":
+                    payMoney(player, 'bank', 100);
+                    break;
+                case "Pay school fees of $50":
+                    payMoney(player, 'bank', 50);
+                    break;
+                case "Receive $25 consultancy fee":
+                    player.money += 25;
+                    logMessage(`${player.name} collected $25 consultancy fee.`);
+                    break;
+                case "You are assessed for street repairs – Pay $40 per house, $115 per hotel":
+                    let repairCostCC = 0;
+                    player.properties.forEach(propId => {
+                        const prop = board[propId];
+                        if (prop.type === 'property' && prop.owner === player.id) {
+                            if (prop.houses < 5) {
+                                repairCostCC += prop.houses * 40;
+                            } else if (prop.houses === 5) { // Hotel
+                                repairCostCC += 115;
+                            }
+                        }
+                    });
+                    if (repairCostCC > 0) {
+                        logMessage(`${player.name} must pay $${repairCostCC} for street repairs.`);
+                        payMoney(player, 'bank', repairCostCC);
+                    } else {
+                        logMessage(`${player.name} has no buildings, no repair cost.`);
+                    }
+                    break;
+                case "You have won second prize in a beauty contest – Collect $10":
+                    player.money += 10;
+                    logMessage(`${player.name} collected $10 from beauty contest prize.`);
+                    break;
+                case "Inherit $100":
+                    player.money += 100;
+                    logMessage(`${player.name} inherited $100.`);
                     break;
                 default:
                     logMessage(`Unhandled card: "${card}".`, 'warning');
@@ -1291,7 +1493,8 @@
             updatePlayerInfo();
             updateBoardUI();
 
-            // IMPORTANT FIX: If the player was moved by the card, land on the new space
+            // IMPORTANT: If the player was moved by the card and not sent to jail, land on the new space.
+            // If they were sent to jail, sendToJail already handles setting currentActionPending and controls.
             if (movedByCard) {
                 landOnSpace(player);
             } else {
@@ -1384,6 +1587,10 @@
                 const option = document.createElement('option');
                 option.value = prop.id;
                 option.textContent = `${prop.name} ${prop.mortgaged ? '(Mortgaged)' : ''} ${prop.houses > 0 ? `(H: ${prop.houses})` : ''} - Cost: $${prop.type === 'property' && prop.houses < 5 ? (prop.houses < 4 ? prop.houseCost : (prop.houses === 4 ? prop.houseCost : '')) : (prop.type === 'railroad' || prop.type === 'utility' ? prop.price/2 : '')}`;
+                // For unmortgage cost:
+                if (selectElement === unmortgageSelect && prop.mortgaged) {
+                    option.textContent = `${prop.name} (M) - Cost: $${Math.ceil(prop.price / 2 * 1.1)}`;
+                }
                 selectElement.appendChild(option);
             });
             selectElement.onchange = () => {
@@ -1419,7 +1626,7 @@
             availableProperties.forEach(prop => {
                 const option = document.createElement('option');
                 option.value = prop.id;
-                option.textContent = `${prop.name} (H: ${prop.houses}) - Cost: $${prop.houseCost}`;
+                option.textContent = `${prop.name} (H: ${prop.houses}) - Cost: $${prop.houses === 4 ? 'Hotel' : prop.houseCost}`;
                 buildSelect.appendChild(option);
             });
             confirmBtn.disabled = true; // Initially disabled
@@ -1446,7 +1653,7 @@
 
                     player.money -= prop.houseCost;
                     prop.houses++;
-                    logMessage(`${player.name} built a house on ${prop.name}. Houses: ${prop.houses}.`);
+                    logMessage(`${player.name} built a ${prop.houses === 5 ? 'hotel' : 'house'} on ${prop.name}. Houses: ${prop.houses}.`);
                     updatePlayerInfo();
                     updateBoardUI();
                     propertyActionsDiv.removeChild(selectDiv);
@@ -1505,7 +1712,7 @@
                 
                 prop.houses--;
                 player.money += prop.houseCost / 2;
-                logMessage(`${player.name} sold a house on ${prop.name} for $${prop.houseCost / 2}. Houses: ${prop.houses}.`, 'info');
+                logMessage(`${player.name} sold a ${prop.houses === 4 ? 'hotel (now 4 houses)' : 'house'} on ${prop.name} for $${prop.houseCost / 2}. Houses: ${prop.houses}.`, 'info');
                 updatePlayerInfo();
                 updateBoardUI();
                 showPropertyManagementActions(player); // Refresh actions
@@ -1531,7 +1738,8 @@
             jailActionsDiv.style.display = 'none';
             buyPropertyBtn.style.display = 'none';
             buildHouseBtn.style.display = 'none';
-            showPropertyManagementActions(player); // This will manage its own internal elements
+            // showPropertyManagementActions(player); // This will manage its own internal elements
+                                                // Call this below, after determining primary action.
 
             if (gameOver) {
                 console.log("setControls: Game Over.");
