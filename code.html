@@ -645,8 +645,7 @@
                     logMessage(`${player.name} rolled 3 consecutive doubles! Go directly to Jail!`, 'error');
                     sendToJail(player);
                     doublesCount = 0; // Reset doubles count
-                    currentActionPending = 'none'; // Turn ends
-                    setControls();
+                    // sendToJail already calls setControls, which will end the turn.
                     return;
                 }
             } else {
@@ -688,6 +687,7 @@
             setControls(); // Update controls to reflect turn end
         }
 
+        // MODIFIED: handleJailRoll logic
         function handleJailRoll(player, die1, die2) {
             if (die1 === die2) {
                 logMessage(`${player.name} rolled doubles (${die1}, ${die2}) and got out of Jail!`, 'success');
@@ -698,20 +698,14 @@
                 player.jailTurns++;
                 logMessage(`${player.name} rolled ${die1}, ${die2}. Still in jail. Turns left: ${3 - player.jailTurns}.`);
 
-                if (player.jailTurns === 3) {
-                    logMessage(`${player.name} failed to roll doubles for the 3rd time. Must pay $50 bail or use a Get Out of Jail Free card.`, 'warning');
-                    // If player cannot afford bail and has no GOJF cards, they go bankrupt
-                    if (player.money < 50 && player.getOutOfJailFreeCards === 0) {
-                        logMessage(`${player.name} cannot pay bail or use a card and is bankrupt!`, 'error');
-                        handleBankruptcy(player, 'bank', 50); // Debt is 50 for bail
-                        currentActionPending = 'none'; // Turn ends after bankruptcy
-                    } else {
-                        // Player has options (pay bail/use card), so set action pending to 'jail'
-                        currentActionPending = 'jail'; // This will make setControls show jail options
-                    }
-                } else {
-                    currentActionPending = 'none'; // If they stay in jail and it's not 3rd turn, their turn ends.
+                // If player is still in jail after 3rd roll attempt, their turn ends.
+                // The forcing of bail/card will be handled by setControlsForJailStartTurn on the *next* turn.
+                // However, if they are bankrupt immediately, handle that.
+                if (player.jailTurns === 3 && player.money < 50 && player.getOutOfJailFreeCards === 0) {
+                    logMessage(`${player.name} cannot pay bail or use a card and is bankrupt!`, 'error');
+                    handleBankruptcy(player, 'bank', 50); // Debt is 50 for bail
                 }
+                currentActionPending = 'none'; // Turn ends after rolling in jail (unless doubles)
                 setControls(); // Update controls based on currentActionPending
             }
         }
@@ -1053,9 +1047,9 @@
 
             // Unmortgage
             let unmortgagableProperties = getPlayerOwnedProperties(player).filter(prop => prop.mortgaged && player.money >= Math.ceil(prop.price / 2 * 1.1));
-            populateSelect(unmortgageSelect, unmortgagableProperties, 'Unmortgage');
-            unmortgageSelect.style.display = unmortgagableProperties.length > 0 ? 'block' : 'none';
-            unmortgagePropertyBtn.style.display = unmortgagableProperties.length > 0 ? 'inline-block' : 'none';
+            populateSelect(unmortgageSelect, unmortmortgagableProperties, 'Unmortgage');
+            unmortgageSelect.style.display = unmortmortgagableProperties.length > 0 ? 'block' : 'none';
+            unmortgagePropertyBtn.style.display = unmortmortgagableProperties.length > 0 ? 'inline-block' : 'none';
 
             // Sell Houses (Must be able to sell evenly from a group, for simplicity, list all properties with houses)
             let sellableHouseProperties = getPlayerOwnedProperties(player, 'property').filter(prop => prop.houses > 0);
@@ -1211,15 +1205,15 @@
 
 
         // --- Control Management ---
+        // MODIFIED: setControls logic for jail
         function setControls() {
             const player = players[currentPlayerIndex];
 
             // Hide all action divs first
             propertyActionsDiv.style.display = 'none';
             jailActionsDiv.style.display = 'none';
-            buyPropertyBtn.style.display = 'none'; // Ensure buy button is hidden
-            buildHouseBtn.style.display = 'none'; // Ensure build button is hidden
-            // Call showPropertyManagementActions to hide/show its components correctly
+            buyPropertyBtn.style.display = 'none';
+            buildHouseBtn.style.display = 'none';
             showPropertyManagementActions(player); // This will manage its own internal elements
 
             if (gameOver) {
@@ -1235,15 +1229,19 @@
                 rollDiceBtn.disabled = true; // Cannot roll again
                 endTurnBtn.disabled = false; // Can end turn
                 jailActionsDiv.style.display = 'none'; // No jail actions this turn, just went there
+                currentActionPending = 'none'; // Ensure turn ends
             }
             // Scenario 2: Player is starting their turn in Jail (hasRolled is false)
-            // They must attempt to get out.
-            else if (player.inJail) {
-                rollDiceBtn.disabled = false; // Can still roll in jail
-                endTurnBtn.disabled = true; // Can't end turn until resolved jail
+            // This path is handled by setControlsForJailStartTurn, which is called from setControlsForTurnStart
+            // We only need to handle the case where currentActionPending is 'jail' (e.g., after 3rd failed roll)
+            else if (player.inJail) { // This means they are in jail and it's not their first turn in jail (i.e., hasRolled is false)
+                // This block should ideally not be reached if setControlsForJailStartTurn is doing its job.
+                // However, as a fallback, ensure jail actions are shown.
                 jailActionsDiv.style.display = 'flex';
                 payBailBtn.disabled = (player.money < 50);
                 useJailCardBtn.disabled = (player.getOutOfJailFreeCards === 0);
+                rollDiceBtn.disabled = false; // Can roll to try to get out
+                endTurnBtn.disabled = true; // Cannot end turn until out of jail or 3 turns pass
             }
             // Original logic for non-jail scenarios (order matters here)
             else if (player.doublesRolledThisTurn > 0 && player.doublesRolledThisTurn < 3) {
@@ -1291,15 +1289,32 @@
             }
         }
 
+        // MODIFIED: setControlsForJailStartTurn logic
         function setControlsForJailStartTurn() {
-            const player = players[currentPlayerIndex]; // Ensure player is defined here
-            rollDiceBtn.disabled = false; // Player can still roll to try for doubles
-            endTurnBtn.disabled = true; // Cannot end turn until out of jail or 3 turns pass
-
+            const player = players[currentPlayerIndex];
             jailActionsDiv.style.display = 'flex';
             payBailBtn.disabled = (player.money < 50);
             useJailCardBtn.disabled = (player.getOutOfJailFreeCards === 0);
-            // The logic for forcing payment after 3 turns is now in handleJailRoll
+
+            if (player.jailTurns === 3) {
+                logMessage(`${player.name} is on their 3rd turn in Jail. Must pay $50 bail or use a Get Out of Jail Free card.`, 'warning');
+                rollDiceBtn.disabled = true; // Cannot roll, must pay
+                endTurnBtn.disabled = true; // Cannot end turn until bail is paid/card used
+                // Hide property actions if they are forced to pay bail
+                propertyActionsDiv.style.display = 'none';
+
+                // If they can't pay or use card, they are bankrupt.
+                if (payBailBtn.disabled && useJailCardBtn.disabled) {
+                    logMessage(`${player.name} cannot pay bail or use a card and is bankrupt!`, 'error');
+                    handleBankruptcy(player, 'bank', 50); // Debt is 50 for bail
+                    currentActionPending = 'none'; // Turn ends after bankruptcy
+                    setControls(); // Re-call setControls to update after bankruptcy
+                    return; // Exit to prevent further control setting
+                }
+            } else { // Not 3rd turn, can roll
+                rollDiceBtn.disabled = false;
+                endTurnBtn.disabled = true; // Can't end turn until resolved jail
+            }
         }
 
 
@@ -1371,6 +1386,7 @@
             if (propId) sellHouse(players[currentPlayerIndex], propId);
         });
 
+        // MODIFIED: Pay Bail and Use Jail Card buttons
         payBailBtn.addEventListener('click', () => {
             const player = players[currentPlayerIndex];
             if (player.inJail && player.money >= 50) {
@@ -1379,7 +1395,7 @@
                 player.jailTurns = 0;
                 logMessage(`${player.name} paid $50 bail to get out of Jail.`, 'success');
                 updatePlayerInfo();
-                // FIX: Call setControlsForTurnStart to allow rolling
+                // FIX: Call setControlsForTurnStart to allow rolling immediately after paying bail
                 setControlsForTurnStart(); 
             } else {
                 logMessage("Not enough money to pay bail.", "error");
@@ -1394,7 +1410,7 @@
                 player.jailTurns = 0;
                 logMessage(`${player.name} used a Get Out of Jail Free card to get out of Jail!`, 'success');
                 updatePlayerInfo();
-                // FIX: Call setControlsForTurnStart to allow rolling
+                // FIX: Call setControlsForTurnStart to allow rolling immediately after using card
                 setControlsForTurnStart(); 
             } else {
                 logMessage("No Get Out of Jail Free cards available.", "error");
