@@ -61,6 +61,7 @@
             padding: 2px;
             box-sizing: border-box;
             position: relative;
+            cursor: pointer; /* Indicate clickable */
         }
         .board-space.corner { background-color: #d0d0d0; }
         .board-space.top, .board-space.bottom { width: 100%; height: 100%; }
@@ -340,6 +341,84 @@
             width: 100%;
             margin-top: 5px;
         }
+
+        /* Property Info Modal Styles */
+        #property-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none; /* Hidden by default */
+        }
+
+        #property-modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 400px;
+            position: relative;
+            text-align: left;
+            font-size: 0.95em;
+        }
+
+        #property-modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        #property-modal-content .color-bar {
+            height: 15px;
+            width: 100%;
+            margin-bottom: 15px;
+            border-radius: 3px;
+        }
+
+        #property-modal-content p {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        #property-modal-content strong {
+            color: #000;
+        }
+
+        #property-modal-content ul {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+            border-top: 1px dashed #eee;
+            padding-top: 10px;
+        }
+
+        #property-modal-content ul li {
+            margin-bottom: 5px;
+        }
+
+        #property-modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.8em;
+            cursor: pointer;
+            color: #888;
+            border: none;
+            background: none;
+            padding: 0;
+        }
+        #property-modal-close:hover {
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -441,6 +520,27 @@
     </div>
 
     <button id="toggle-debug-btn" style="margin-top: 10px; padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">Toggle Debug Controls</button>
+
+    <!-- Property Info Modal -->
+    <div id="property-modal-overlay">
+        <div id="property-modal-content">
+            <button id="property-modal-close">&times;</button>
+            <h3 id="modal-property-name"></h3>
+            <div id="modal-property-color-bar" class="color-bar"></div>
+            <p><strong>Type:</strong> <span id="modal-property-type"></span></p>
+            <p><strong>Price:</strong> $<span id="modal-property-price"></span></p>
+            <p><strong>Owner:</strong> <span id="modal-property-owner"></span></p>
+            <p><strong>Mortgaged:</strong> <span id="modal-property-mortgaged"></span></p>
+            <p id="modal-property-houses-row"><strong>Houses:</strong> <span id="modal-property-houses"></span></p>
+            <p id="modal-property-house-cost-row"><strong>House Cost:</strong> $<span id="modal-property-house-cost"></span></p>
+            <p><strong>Mortgage Value:</strong> $<span id="modal-property-mortgage-value"></span></p>
+
+            <h4>Rent:</h4>
+            <ul id="modal-property-rent-list">
+                <!-- Rent details will be inserted here -->
+            </ul>
+        </div>
+    </div>
 
     <script>
         // --- Game Data ---
@@ -582,6 +682,22 @@
         // Put Player in Jail
         const debugJailPlayerSelect = document.getElementById('debug-jail-player-select');
         const debugSendToJailBtn = document.getElementById('debug-send-to-jail-btn');
+
+        // --- Property Info Modal Elements ---
+        const propertyModalOverlay = document.getElementById('property-modal-overlay');
+        const propertyModalCloseBtn = document.getElementById('property-modal-close');
+        const modalPropertyName = document.getElementById('modal-property-name');
+        const modalPropertyColorBar = document.getElementById('modal-property-color-bar');
+        const modalPropertyType = document.getElementById('modal-property-type');
+        const modalPropertyPrice = document.getElementById('modal-property-price');
+        const modalPropertyOwner = document.getElementById('modal-property-owner');
+        const modalPropertyMortgaged = document.getElementById('modal-property-mortgaged');
+        const modalPropertyHousesRow = document.getElementById('modal-property-houses-row');
+        const modalPropertyHouses = document.getElementById('modal-property-houses');
+        const modalPropertyHouseCostRow = document.getElementById('modal-property-house-cost-row');
+        const modalPropertyHouseCost = document.getElementById('modal-property-house-cost');
+        const modalPropertyMortgageValue = document.getElementById('modal-property-mortgage-value');
+        const modalPropertyRentList = document.getElementById('modal-property-rent-list');
 
 
         // --- Utility Functions ---
@@ -740,6 +856,7 @@
                 const spaceDiv = document.createElement('div');
                 spaceDiv.id = `space-${space.id}`;
                 spaceDiv.classList.add('board-space');
+                spaceDiv.dataset.spaceId = space.id; // Add data-id for click handling
                 if ([0, 10, 20, 30].includes(space.id)) {
                     spaceDiv.classList.add('corner');
                 }
@@ -777,7 +894,6 @@
         }
 
 
-        // MODIFIED: rollDice function to accept optional dice values
         function rollDice(simulatedDie1 = null, simulatedDie2 = null) {
             const die1 = simulatedDie1 !== null ? simulatedDie1 : Math.floor(Math.random() * 6) + 1;
             const die2 = simulatedDie2 !== null ? simulatedDie2 : Math.floor(Math.random() * 6) + 1;
@@ -1536,6 +1652,65 @@
         }
 
 
+        // --- Property Info Modal Logic ---
+        function showPropertyModal(spaceId) {
+            const space = board[spaceId];
+            if (!space || !['property', 'railroad', 'utility'].includes(space.type)) {
+                // Only show modal for properties, railroads, and utilities
+                return;
+            }
+
+            modalPropertyName.textContent = space.name;
+            modalPropertyType.textContent = space.type.replace('_', ' ').toUpperCase();
+            modalPropertyPrice.textContent = space.price;
+            modalPropertyOwner.textContent = space.owner !== null ? players[space.owner].name : 'Unowned';
+            modalPropertyMortgaged.textContent = space.mortgaged ? 'Yes' : 'No';
+            modalPropertyMortgageValue.textContent = space.price / 2;
+
+            // Clear previous color bar classes
+            modalPropertyColorBar.className = 'color-bar';
+            if (space.colorGroup) {
+                modalPropertyColorBar.classList.add(space.colorGroup);
+            } else {
+                modalPropertyColorBar.style.backgroundColor = 'transparent'; // No color for railroads/utilities
+            }
+
+            modalPropertyRentList.innerHTML = ''; // Clear previous rent list
+
+            if (space.type === 'property') {
+                modalPropertyHousesRow.style.display = 'block';
+                modalPropertyHouseCostRow.style.display = 'block';
+                modalPropertyHouses.textContent = space.houses === 5 ? 'Hotel' : space.houses;
+                modalPropertyHouseCost.textContent = space.houseCost;
+
+                modalPropertyRentList.innerHTML += `<li><strong>Rent:</strong> $${space.rent[0]}</li>`;
+                modalPropertyRentList.innerHTML += `<li>With 1 House: $${space.rent[1]}</li>`;
+                modalPropertyRentList.innerHTML += `<li>With 2 Houses: $${space.rent[2]}</li>`;
+                modalPropertyRentList.innerHTML += `<li>With 3 Houses: $${space.rent[3]}</li>`;
+                modalPropertyRentList.innerHTML += `<li>With 4 Houses: $${space.rent[4]}</li>`;
+                modalPropertyRentList.innerHTML += `<li>With HOTEL: $${space.rent[5]}</li>`;
+            } else if (space.type === 'railroad') {
+                modalPropertyHousesRow.style.display = 'none';
+                modalPropertyHouseCostRow.style.display = 'none';
+                modalPropertyRentList.innerHTML += `<li><strong>Rent (1 RR):</strong> $${space.rent[0]}</li>`;
+                modalPropertyRentList.innerHTML += `<li><strong>Rent (2 RR):</strong> $${space.rent[1]}</li>`;
+                modalPropertyRentList.innerHTML += `<li><strong>Rent (3 RR):</strong> $${space.rent[2]}</li>`;
+                modalPropertyRentList.innerHTML += `<li><strong>Rent (4 RR):</strong> $${space.rent[3]}</li>`;
+            } else if (space.type === 'utility') {
+                modalPropertyHousesRow.style.display = 'none';
+                modalPropertyHouseCostRow.style.display = 'none';
+                modalPropertyRentList.innerHTML += `<li><strong>Rent (1 Utility):</strong> 4 times amount shown on dice</li>`;
+                modalPropertyRentList.innerHTML += `<li><strong>Rent (2 Utilities):</strong> 10 times amount shown on dice</li>`;
+            }
+
+            propertyModalOverlay.style.display = 'flex'; // Show the modal
+        }
+
+        function hidePropertyModal() {
+            propertyModalOverlay.style.display = 'none';
+        }
+
+
         // --- Event Listeners ---
         numPlayersInput.addEventListener('change', () => {
             const num = parseInt(numPlayersInput.value);
@@ -1591,6 +1766,24 @@
                 setControlsForTurnStart(); 
             } else {
                 logMessage("No Get Out of Jail Free cards available.", "error");
+            }
+        });
+
+        // NEW: Event listener for clicking on board spaces to show property info
+        gameBoardDiv.addEventListener('click', (event) => {
+            const clickedSpace = event.target.closest('.board-space');
+            if (clickedSpace && clickedSpace.dataset.spaceId) {
+                const spaceId = parseInt(clickedSpace.dataset.spaceId);
+                showPropertyModal(spaceId);
+            }
+        });
+
+        // NEW: Event listeners for closing the modal
+        propertyModalCloseBtn.addEventListener('click', hidePropertyModal);
+        propertyModalOverlay.addEventListener('click', (event) => {
+            // Close if clicking on the overlay itself, not the content
+            if (event.target === propertyModalOverlay) {
+                hidePropertyModal();
             }
         });
 
