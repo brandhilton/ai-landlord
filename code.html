@@ -17,13 +17,15 @@
         #game-container {
             display: flex;
             flex-wrap: wrap;
-            max-width: 1200px;
+            /* Removed max-width here, it will be managed by the new wrapper */
             background-color: white;
             border: 1px solid #ccc;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
+            /* NEW: Flex properties for game-container within the new wrapper */
+            flex: 0 0 auto; /* Don't grow, don't shrink, size based on content */
         }
         #setup-screen, #game-screen {
             width: 100%;
@@ -45,7 +47,7 @@
             width: 800px; /* Adjust as needed */
             height: 800px; /* Adjust as needed */
             border: 2px solid black;
-            box-sizing: border;
+            box-sizing: border-box;
             background-color: #e0e0e0;
             position: relative;
         }
@@ -122,7 +124,8 @@
             border-radius: 50%;
             border: 1px solid black;
             box-sizing: border-box;
-            /* Default positioning, overridden by pX classes */
+            bottom: 5px; /* Adjust as needed */
+            right: 5px; /* Adjust as needed */
         }
         .token.p0 { background-color: red; left: 5px; bottom: 5px; }
         .token.p1 { background-color: blue; left: 25px; bottom: 5px; }
@@ -283,15 +286,29 @@
             border: 1px solid #ccc;
         }
 
+        /* NEW: Wrapper for main game content and debug controls */
+        #main-game-area-wrapper {
+            display: flex;
+            flex-wrap: wrap; /* Allows debug controls to wrap below on smaller screens */
+            justify-content: center; /* Centers the content horizontally */
+            align-items: flex-start; /* Aligns items to the top */
+            gap: 20px; /* Space between game container and debug controls */
+            max-width: 1600px; /* Increased max-width to accommodate both side-by-side */
+            width: 100%; /* Take full width available within body's centering */
+        }
+
         /* Debug Controls Styling */
         #debug-controls {
-            margin-top: 20px;
+            margin-top: 0; /* Removed margin-top as gap handles spacing */
             padding: 20px;
             border: 1px solid #ddd;
             background-color: #fff;
             border-radius: 8px;
-            width: 100%;
-            max-width: 1200px;
+            /* NEW: Flex properties for debug-controls */
+            flex: 1 1 350px; /* Allows it to grow/shrink, with a basis of 350px */
+            max-width: 400px; /* Cap its max width */
+            min-width: 300px; /* Ensure it doesn't get too small */
+            box-sizing: border-box;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -428,88 +445,91 @@
 
     <div id="game-screen" style="display: none;">
         <h1>Monopoly</h1>
-        <div id="game-container">
-            <div id="game-board"></div>
+        <!-- NEW: Wrapper for main game content and debug controls -->
+        <div id="main-game-area-wrapper">
+            <div id="game-container">
+                <div id="game-board"></div>
 
-            <div id="game-controls">
-                <div id="current-player-display"></div>
-                <div id="dice-display">Dice: -</div>
-                <div class="button-group">
-                    <button id="roll-dice-btn">Roll Dice</button>
-                    <button id="end-turn-btn" disabled>End Turn</button>
+                <div id="game-controls">
+                    <div id="current-player-display"></div>
+                    <div id="dice-display">Dice: -</div>
+                    <div class="button-group">
+                        <button id="roll-dice-btn">Roll Dice</button>
+                        <button id="end-turn-btn" disabled>End Turn</button>
+                    </div>
+
+                    <div id="property-actions" style="display: none;">
+                        <h3>Property Actions</h3>
+                        <button id="buy-property-btn" style="display: none;">Buy Property</button>
+                        <button id="build-house-btn" style="display: none;">Build House</button>
+                        <select id="mortgage-select" class="action-select" style="display: none;"></select>
+                        <button id="mortgage-property-btn" style="display: none;">Mortgage Property</button>
+                        <select id="unmortgage-select" class="action-select" style="display: none;"></select>
+                        <button id="unmortgage-property-btn" style="display: none;">Unmortgage Property</button>
+                        <select id="sell-house-select" class="action-select" style="display: none;"></select>
+                        <button id="sell-house-btn" style="display: none;">Sell House</button>
+                    </div>
+
+                    <div id="jail-actions" style="display: none;">
+                        <h3>Jail Actions</h3>
+                        <button id="pay-bail-btn">Pay $50 Bail</button>
+                        <button id="use-jail-card-btn">Use Get Out of Jail Free Card</button>
+                    </div>
+
+                    <div id="player-list-container"></div>
                 </div>
+            </div>
 
-                <div id="property-actions" style="display: none;">
-                    <h3>Property Actions</h3>
-                    <button id="buy-property-btn" style="display: none;">Buy Property</button>
-                    <button id="build-house-btn" style="display: none;">Build House</button>
-                    <select id="mortgage-select" class="action-select" style="display: none;"></select>
-                    <button id="mortgage-property-btn" style="display: none;">Mortgage Property</button>
-                    <select id="unmortgage-select" class="action-select" style="display: none;"></select>
-                    <button id="unmortgage-property-btn" style="display: none;">Unmortgage Property</button>
-                    <select id="sell-house-select" class="action-select" style="display: none;"></select>
-                    <button id="sell-house-btn" style="display: none;">Sell House</button>
+            <!-- Debug Controls Section (moved inside the new wrapper) -->
+            <div id="debug-controls" style="display: none;">
+                <h2>Debug Controls</h2>
+
+                <div>
+                    <!-- Move Player -->
+                    <div class="debug-group">
+                        <h4>Move Player</h4>
+                        <select id="debug-move-player-select" class="action-select"></select>
+                        <select id="debug-move-space-select" class="action-select"></select>
+                        <button id="debug-move-btn" class="button-group button">Move</button>
+                    </div>
+
+                    <!-- Simulate Dice Roll -->
+                    <div class="debug-group">
+                        <h4>Simulate Dice Roll</h4>
+                        <label for="debug-die1">Die 1:</label>
+                        <input type="number" id="debug-die1" min="1" max="6" value="1">
+                        <label for="debug-die2">Die 2:</label>
+                        <input type="number" id="debug-die2" min="1" max="6" value="1">
+                        <button id="debug-roll-btn" class="button-group button">Simulate Roll</button>
+                    </div>
+
+                    <!-- Change Ownership -->
+                    <div class="debug-group">
+                        <h4>Change Property Ownership</h4>
+                        <select id="debug-property-select" class="action-select"></select>
+                        <select id="debug-owner-select" class="action-select"></select>
+                        <button id="debug-change-owner-btn" class="button-group button">Change Owner</button>
+                    </div>
+
+                    <!-- Manage Houses/Hotels -->
+                    <div class="debug-group">
+                        <h4>Manage Houses/Hotels</h4>
+                        <select id="debug-house-property-select" class="action-select"></select>
+                        <label for="debug-house-count">Houses (0-5):</label>
+                        <input type="number" id="debug-house-count" min="0" max="5" value="0">
+                        <button id="debug-set-houses-btn" class="button-group button">Set Houses</button>
+                    </div>
+
+                    <!-- Put Player in Jail -->
+                    <div class="debug-group">
+                        <h4>Put Player in Jail</h4>
+                        <select id="debug-jail-player-select" class="action-select"></select>
+                        <button id="debug-send-to-jail-btn" class="button-group button">Send to Jail</button>
+                    </div>
                 </div>
-
-                <div id="jail-actions" style="display: none;">
-                    <h3>Jail Actions</h3>
-                    <button id="pay-bail-btn">Pay $50 Bail</button>
-                    <button id="use-jail-card-btn">Use Get Out of Jail Free Card</button>
-                </div>
-
-                <div id="player-list-container"></div>
             </div>
         </div>
         <div id="message-log"></div>
-    </div>
-
-    <!-- Debug Controls Section -->
-    <div id="debug-controls" style="display: none;">
-        <h2>Debug Controls</h2>
-
-        <div>
-            <!-- Move Player -->
-            <div class="debug-group">
-                <h4>Move Player</h4>
-                <select id="debug-move-player-select" class="action-select"></select>
-                <select id="debug-move-space-select" class="action-select"></select>
-                <button id="debug-move-btn" class="button-group button">Move</button>
-            </div>
-
-            <!-- Simulate Dice Roll -->
-            <div class="debug-group">
-                <h4>Simulate Dice Roll</h4>
-                <label for="debug-die1">Die 1:</label>
-                <input type="number" id="debug-die1" min="1" max="6" value="1">
-                <label for="debug-die2">Die 2:</label>
-                <input type="number" id="debug-die2" min="1" max="6" value="1">
-                <button id="debug-roll-btn" class="button-group button">Simulate Roll</button>
-            </div>
-
-            <!-- Change Ownership -->
-            <div class="debug-group">
-                <h4>Change Property Ownership</h4>
-                <select id="debug-property-select" class="action-select"></select>
-                <select id="debug-owner-select" class="action-select"></select>
-                <button id="debug-change-owner-btn" class="button-group button">Change Owner</button>
-            </div>
-
-            <!-- Manage Houses/Hotels -->
-            <div class="debug-group">
-                <h4>Manage Houses/Hotels</h4>
-                <select id="debug-house-property-select" class="action-select"></select>
-                <label for="debug-house-count">Houses (0-5):</label>
-                <input type="number" id="debug-house-count" min="0" max="5" value="0">
-                <button id="debug-set-houses-btn" class="button-group button">Set Houses</button>
-            </div>
-
-            <!-- Put Player in Jail -->
-            <div class="debug-group">
-                <h4>Put Player in Jail</h4>
-                <select id="debug-jail-player-select" class="action-select"></select>
-                <button id="debug-send-to-jail-btn" class="button-group button">Send to Jail</button>
-            </div>
-        </div>
     </div>
 
     <button id="toggle-debug-btn" style="margin-top: 10px; padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">Toggle Debug Controls</button>
@@ -742,7 +762,7 @@
                 if (spaceDiv) {
                     const token = document.createElement('div');
                     token.className = `token p${player.id}`;
-                    // Re-add: 'in-jail-position' class if player is in jail and on the jail space
+                    // Add 'in-jail-position' class if player is in jail and on the jail space
                     if (player.position === 10 && player.inJail) {
                         token.classList.add('in-jail-position'); // For positioning in the corner
                     }
@@ -901,7 +921,6 @@
             if (die1 === die2) {
                 player.doublesRolledThisTurn++;
                 logMessage(`${player.name} rolled doubles!`, 'warning');
-                // FIX: Corrected typo here
                 if (player.doublesRolledThisTurn === 3) {
                     logMessage(`${player.name} rolled 3 consecutive doubles! Go directly to Jail!`, 'error');
                     sendToJail(player);
