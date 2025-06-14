@@ -131,6 +131,14 @@
         .token.p4 { background-color: purple; left: 45px; bottom: 5px; } /* For more players */
         .token.p5 { background-color: orange; left: 45px; bottom: 25px; } /* For more players */
 
+        /* NEW: Style for players in jail */
+        .token.in-jail {
+            border: 2px dashed #333; /* Dashed border */
+            opacity: 0.7; /* Slightly transparent */
+            box-shadow: 0 0 5px rgba(0,0,0,0.5); /* A subtle shadow */
+        }
+
+
         .property-color-bar {
             height: 10px;
             width: 100%;
@@ -617,6 +625,10 @@
                 if (spaceDiv) {
                     const token = document.createElement('div');
                     token.className = `token p${player.id}`;
+                    // NEW: Add 'in-jail' class if player is in jail and on the jail space
+                    if (player.position === 10 && player.inJail) {
+                        token.classList.add('in-jail');
+                    }
                     spaceDiv.appendChild(token);
                 }
             });
@@ -1178,10 +1190,8 @@
 
             // Unmortgage
             let unmortgagableProperties = getPlayerOwnedProperties(player).filter(prop => prop.mortgaged && player.money >= Math.ceil(prop.price / 2 * 1.1));
-            // FIX: Corrected typo from unmortmortgagableProperties to unmortgagableProperties
             populateSelect(unmortgageSelect, unmortgagableProperties, 'Unmortgage');
             unmortgageSelect.style.display = unmortgagableProperties.length > 0 ? 'block' : 'none';
-            // FIX: Corrected typo here as well
             unmortgagePropertyBtn.style.display = unmortgagableProperties.length > 0 ? 'inline-block' : 'none';
 
             // Sell Houses (Must be able to sell evenly from a group, for simplicity, list all properties with houses)
