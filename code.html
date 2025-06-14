@@ -765,9 +765,6 @@
             diceDisplay.textContent = `Dice: ${die1}, ${die2}`;
             logMessage(`${players[currentPlayerIndex].name} rolled a ${die1} and a ${die2} (total ${die1 + die2}).`);
 
-            // REMOVED: rollDiceBtn.disabled = true; and endTurnBtn.disabled = true;
-            // These are now managed by setControls() after the move/action.
-
             const player = players[currentPlayerIndex];
             player.hasRolled = true; // Mark that player has rolled this turn
 
@@ -1356,12 +1353,11 @@
             }
 
             // Scenario 1: Player just landed on "Go To Jail" (or drew a "Go To Jail" card)
-            // In this case, player.inJail is true AND player.hasRolled is true (because they just moved/drew card).
-            // Their turn should end immediately.
+            // OR Player just rolled in jail and did NOT get out (turn ends)
             if (player.inJail && player.hasRolled) {
                 rollDiceBtn.disabled = true; // Cannot roll again
                 endTurnBtn.disabled = false; // Can end turn
-                jailActionsDiv.style.display = 'none'; // No jail actions this turn, just went there
+                jailActionsDiv.style.display = 'none'; // No jail actions this turn, just went there or failed roll
                 currentActionPending = 'none'; // Ensure turn ends
             }
             // Scenario 2: Player is starting their turn in Jail (hasRolled is false)
@@ -1370,21 +1366,22 @@
                 payBailBtn.disabled = (player.money < 50);
                 useJailCardBtn.disabled = (player.getOutOfJailFreeCards === 0);
 
-                // If it's their 3rd turn in jail and they can't pay/use card, they are bankrupt.
-                // This check is also in setControlsForJailStartTurn, but good to have a fallback here.
-                if (player.jailTurns === 3 && payBailBtn.disabled && useJailCardBtn.disabled) {
-                    logMessage(`${player.name} cannot pay bail or use a card and is bankrupt!`, 'error');
-                    handleBankruptcy(player, 'bank', 50);
-                    currentActionPending = 'none';
-                    rollDiceBtn.disabled = true;
-                    endTurnBtn.disabled = false; // Allow ending turn after bankruptcy
-                    return;
-                } else if (player.jailTurns < 3) { // Can roll to try to get out
-                    rollDiceBtn.disabled = false;
-                    endTurnBtn.disabled = true; // Can't end turn until resolved jail
-                } else { // Must pay bail or use card (3rd turn, not bankrupt yet)
+                if (player.jailTurns === 3) { // On 3rd turn, must pay/use card
+                    logMessage(`${player.name} is on their 3rd turn in Jail. Must pay $50 bail or use a Get Out of Jail Free card.`, 'warning');
                     rollDiceBtn.disabled = true; // Cannot roll
                     endTurnBtn.disabled = true; // Cannot end turn until bail is paid/card used
+                    propertyActionsDiv.style.display = 'none'; // No property actions while forced to pay bail
+
+                    if (payBailBtn.disabled && useJailCardBtn.disabled) {
+                        logMessage(`${player.name} cannot pay bail or use a card and is bankrupt!`, 'error');
+                        handleBankruptcy(player, 'bank', 50);
+                        currentActionPending = 'none';
+                        setControls(); // Re-call to update after bankruptcy
+                        return;
+                    }
+                } else { // Not 3rd turn, can roll to try to get out
+                    rollDiceBtn.disabled = false; // Can roll
+                    endTurnBtn.disabled = true; // Cannot end turn until resolved jail
                 }
             }
             // Original logic for non-jail scenarios (order matters here)
@@ -1399,16 +1396,17 @@
                     showPropertyManagementActions(player);
                 }
             } else if (currentActionPending === 'buy') {
-                rollDiceBtn.disabled = true;
+                rollDiceBtn.disabled = true; // Cannot roll again
                 endTurnBtn.disabled = false; // Can choose to end turn without buying
                 const space = board[player.position];
                 showBuyPropertyAction(player, space);
             } else if (currentActionPending === 'manage') {
-                rollDiceBtn.disabled = true;
-                endTurnBtn.disabled = false;
+                rollDiceBtn.disabled = true; // Cannot roll again
+                endTurnBtn.disabled = false; // Can end turn
                 showPropertyManagementActions(player);
             } else { // Turn is over or no specific action required on space (currentActionPending === 'none')
-                rollDiceBtn.disabled = true; // Player has rolled or no action needed
+                // This is the default state after a non-doubles roll, or after an action is completed.
+                rollDiceBtn.disabled = true; // Player has rolled and no further action needed
                 endTurnBtn.disabled = false; // Can end turn
             }
         }
