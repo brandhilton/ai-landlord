@@ -683,6 +683,9 @@
             updatePlayerInfo();
             updateBoardUI();
             // No landOnSpace for jail, just go to it.
+            // The turn should end immediately after being sent to jail.
+            currentActionPending = 'none'; // Ensure turn ends
+            setControls(); // Update controls to reflect turn end
         }
 
         function handleJailRoll(player, die1, die2) {
@@ -690,13 +693,26 @@
                 logMessage(`${player.name} rolled doubles (${die1}, ${die2}) and got out of Jail!`, 'success');
                 player.inJail = false;
                 player.jailTurns = 0;
-                // Since they rolled doubles to get out, they move and then get another roll (if not 3rd double)
                 movePlayer(player, die1 + die2); // Move out of jail
             } else {
                 player.jailTurns++;
                 logMessage(`${player.name} rolled ${die1}, ${die2}. Still in jail. Turns left: ${3 - player.jailTurns}.`);
-                currentActionPending = 'none'; // If they stay in jail, their turn ends.
-                setControls(); // Update controls to allow ending turn or paying bail
+
+                if (player.jailTurns === 3) {
+                    logMessage(`${player.name} failed to roll doubles for the 3rd time. Must pay $50 bail or use a Get Out of Jail Free card.`, 'warning');
+                    // If player cannot afford bail and has no GOJF cards, they go bankrupt
+                    if (player.money < 50 && player.getOutOfJailFreeCards === 0) {
+                        logMessage(`${player.name} cannot pay bail or use a card and is bankrupt!`, 'error');
+                        handleBankruptcy(player, 'bank', 50); // Debt is 50 for bail
+                        currentActionPending = 'none'; // Turn ends after bankruptcy
+                    } else {
+                        // Player has options (pay bail/use card), so set action pending to 'jail'
+                        currentActionPending = 'jail'; // This will make setControls show jail options
+                    }
+                } else {
+                    currentActionPending = 'none'; // If they stay in jail and it's not 3rd turn, their turn ends.
+                }
+                setControls(); // Update controls based on currentActionPending
             }
         }
 
@@ -761,15 +777,15 @@
                     break;
                 case 'chance':
                     drawCard(player, chanceCardsShuffled);
-                    currentActionPending = 'none'; // Card actions usually end turn, or move player to a new space (which will trigger new landOnSpace)
+                    // currentActionPending will be set by drawCard based on if player moved or not
                     break;
                 case 'community_chest':
                     drawCard(player, communityChestCardsShuffled);
-                    currentActionPending = 'none'; // Card actions usually end turn
+                    // currentActionPending will be set by drawCard based on if player moved or not
                     break;
                 case 'gotojail':
                     sendToJail(player);
-                    currentActionPending = 'none'; // Turn ends after going to jail
+                    // sendToJail already sets currentActionPending = 'none' and calls setControls
                     break;
                 case 'jail': // Just Visiting
                     logMessage(`${player.name} is just visiting Jail.`, 'info');
@@ -980,7 +996,6 @@
             }
         }
 
-
         // --- Property Management Actions ---
 
         function showBuyPropertyAction(player, space) {
@@ -1009,24 +1024,14 @@
             ).sort((a,b) => a.houses - b.houses); // Sort by fewest houses for even building enforcement
 
             const availableToBuild = [];
-            for (const prop of buildableProperties) {
-                const group = getPropertiesByColor(prop.colorGroup);
-                const maxHousesInGroup = Math.max(...group.filter(p => p.owner === player.id).map(p => p.houses));
-                // Only allow building if the property's houses are equal to the max in group
-                // This is a strict interpretation of even building.
-                if (prop.houses < 5 && prop.houses === maxHousesInGroup) {
-                     availableToBuild.push(prop);
+            // First, find properties that are at the minimum house count within their monopoly group
+            if (buildableProperties.length > 0) {
+                const minHousesInAnyGroup = Math.min(...buildableProperties.map(p => p.houses));
+                for (const prop of buildableProperties) {
+                    if (prop.houses === minHousesInAnyGroup) {
+                        availableToBuild.push(prop);
+                    }
                 }
-            }
-            // If nothing can be built on yet, check if other properties are available to build on
-            // that might be behind in houses within the monopoly group
-            if(availableToBuild.length === 0) {
-                 const minHousesInGroup = Math.min(...buildableProperties.map(p => p.houses));
-                 buildableProperties.forEach(prop => {
-                     if (prop.houses === minHousesInGroup) {
-                         availableToBuild.push(prop);
-                     }
-                 });
             }
 
             buildHouseBtn.style.display = availableToBuild.length > 0 ? 'inline-block' : 'none';
@@ -1047,7 +1052,7 @@
 
 
             // Unmortgage
-            let unmortgagableProperties = getPlayerOwnedProperties(player).filter(prop => prop.mortgaged && player.money >= Math.ceil(prop.price * 0.55));
+            let unmortgagableProperties = getPlayerOwnedProperties(player).filter(prop => prop.mortgaged && player.money >= Math.ceil(prop.price / 2 * 1.1));
             populateSelect(unmortgageSelect, unmortgagableProperties, 'Unmortgage');
             unmortgageSelect.style.display = unmortgagableProperties.length > 0 ? 'block' : 'none';
             unmortgagePropertyBtn.style.display = unmortgagableProperties.length > 0 ? 'inline-block' : 'none';
@@ -1127,8 +1132,10 @@
                 if (prop && prop.owner === player.id && player.money >= prop.houseCost && prop.houses < 5) {
                     const group = getPropertiesByColor(prop.colorGroup);
                     const maxHousesInGroup = Math.max(...group.filter(p => p.owner === player.id).map(p => p.houses));
-                    if (prop.houses < maxHousesInGroup && prop.houses < 4) { // Enforce building evenly within a group
-                        logMessage("Must build houses evenly across the monopoly group.", "error");
+                    // Enforce building evenly within a group: can only build if this property has the minimum houses in the group
+                    const minHousesInGroup = Math.min(...group.filter(p => p.owner === player.id).map(p => p.houses));
+                    if (prop.houses > minHousesInGroup) {
+                        logMessage("Must build houses evenly across the monopoly group. Build on properties with fewer houses first.", "error");
                         return;
                     }
 
@@ -1187,7 +1194,7 @@
                 const group = getPropertiesByColor(prop.colorGroup);
                 const minHousesInGroup = Math.min(...group.filter(p => p.owner === player.id).map(p => p.houses));
                 if (prop.houses > minHousesInGroup) {
-                    logMessage("Must sell houses evenly across the monopoly group.", "error");
+                    logMessage("Must sell houses evenly across the monopoly group. Sell from properties with more houses first.", "error");
                     return;
                 }
                 
@@ -1212,7 +1219,6 @@
             jailActionsDiv.style.display = 'none';
             buyPropertyBtn.style.display = 'none'; // Ensure buy button is hidden
             buildHouseBtn.style.display = 'none'; // Ensure build button is hidden
-            // ... (ensure other property action buttons are initially hidden)
             // Call showPropertyManagementActions to hide/show its components correctly
             showPropertyManagementActions(player); // This will manage its own internal elements
 
@@ -1222,13 +1228,25 @@
                 return;
             }
 
-            if (player.inJail) {
+            // Scenario 1: Player just landed on "Go To Jail" (or drew a "Go To Jail" card)
+            // In this case, player.inJail is true AND player.hasRolled is true (because they just moved/drew card).
+            // Their turn should end immediately.
+            if (player.inJail && player.hasRolled) {
+                rollDiceBtn.disabled = true; // Cannot roll again
+                endTurnBtn.disabled = false; // Can end turn
+                jailActionsDiv.style.display = 'none'; // No jail actions this turn, just went there
+            }
+            // Scenario 2: Player is starting their turn in Jail (hasRolled is false)
+            // They must attempt to get out.
+            else if (player.inJail) {
                 rollDiceBtn.disabled = false; // Can still roll in jail
                 endTurnBtn.disabled = true; // Can't end turn until resolved jail
                 jailActionsDiv.style.display = 'flex';
                 payBailBtn.disabled = (player.money < 50);
                 useJailCardBtn.disabled = (player.getOutOfJailFreeCards === 0);
-            } else if (player.doublesRolledThisTurn > 0 && player.doublesRolledThisTurn < 3) {
+            }
+            // Original logic for non-jail scenarios (order matters here)
+            else if (player.doublesRolledThisTurn > 0 && player.doublesRolledThisTurn < 3) {
                 // Rolled doubles, can roll again. Actions for current space *before* re-roll.
                 rollDiceBtn.disabled = false; // Can roll again
                 endTurnBtn.disabled = true; // Must roll again or perform actions
@@ -1247,7 +1265,7 @@
                 rollDiceBtn.disabled = true;
                 endTurnBtn.disabled = false;
                 showPropertyManagementActions(player);
-            } else { // Turn is over or no specific action required on space
+            } else { // Turn is over or no specific action required on space (currentActionPending === 'none')
                 rollDiceBtn.disabled = true; // Player has rolled or no action needed
                 endTurnBtn.disabled = false; // Can end turn
             }
@@ -1274,30 +1292,14 @@
         }
 
         function setControlsForJailStartTurn() {
+            const player = players[currentPlayerIndex]; // Ensure player is defined here
             rollDiceBtn.disabled = false; // Player can still roll to try for doubles
             endTurnBtn.disabled = true; // Cannot end turn until out of jail or 3 turns pass
 
             jailActionsDiv.style.display = 'flex';
-            const player = players[currentPlayerIndex];
             payBailBtn.disabled = (player.money < 50);
             useJailCardBtn.disabled = (player.getOutOfJailFreeCards === 0);
-
-            // If player has exhausted 3 turns in jail, they *must* pay bail
-            if (player.jailTurns >= 3 && !player.inJail) { // If they got out by rolling doubles, this won't apply
-                logMessage(`${player.name} must pay $50 bail or use a Get Out of Jail Free card.`);
-                // If they don't have enough money or cards, they can't take action
-                if (player.money < 50 && player.getOutOfJailFreeCards === 0) {
-                    logMessage(`${player.name} cannot afford bail or use a card and is stuck.`, 'error');
-                    // This situation isn't explicitly handled for ending turn, would require bankruptcy.
-                    // For now, they're just stuck.
-                    endTurnBtn.disabled = true; // They can't end turn if they can't pay/use card
-                    rollDiceBtn.disabled = true;
-                } else {
-                    endTurnBtn.disabled = false; // They can choose to pay/use card THEN end turn
-                }
-            } else if (player.jailTurns < 3) {
-                 endTurnBtn.disabled = true; // Cannot end turn until tried rolling or action
-            }
+            // The logic for forcing payment after 3 turns is now in handleJailRoll
         }
 
 
@@ -1321,10 +1323,11 @@
                     return;
                 }
                 // Check if the player at the new index is still in the active players array
-                if (players.some(p => p.id === players[currentPlayerIndex].id)) {
-                    nextPlayerFound = true;
-                }
-            } while (!nextPlayerFound);
+                // This check is implicitly handled by `players.length` in the loop condition
+                // and `players` array being filtered on bankruptcy.
+                // The `players` array itself will only contain active players.
+                nextPlayerFound = true; // If we reached here, a next player exists in the filtered array
+            } while (!nextPlayerFound); // This loop will only run once if players.length > 0
 
             // If only one player left, game should have ended via checkWinCondition
             if (players.length <= 1) {
