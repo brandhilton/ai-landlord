@@ -361,7 +361,7 @@ html
         }
         #debug-controls > div { /* Inner debug control groups wrapper */
             display: flex;
-            flex-wrap: wrap; /* Allows debug groups to wrap */
+            flex-direction: column; /* Stack groups vertically */
             gap: 20px;
             justify-content: center;
             width: 100%;
@@ -371,8 +371,7 @@ html
             padding: 15px;
             border-radius: 5px;
             background-color: #f9f9f9;
-            flex: 1 1 calc(50% - 10px); /* Two columns within debug controls on wider screens */
-            max-width: calc(100% - 20px); /* Ensure it doesn't break out on small screens */
+            width: 100%; /* Each group takes full width of the column */
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
