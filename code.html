@@ -272,6 +272,58 @@
             border-radius: 4px;
             border: 1px solid #ccc;
         }
+
+        /* Debug Controls Styling */
+        #debug-controls {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #debug-controls h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        #debug-controls > div { /* Inner debug control groups */
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+        }
+        #debug-controls .debug-group {
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            flex: 1; /* Allow groups to grow/shrink */
+            min-width: 250px; /* Minimum width for each group */
+            max-width: 350px; /* Max width for each group */
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #debug-controls .debug-group h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        #debug-controls .debug-group select,
+        #debug-controls .debug-group input[type="number"] {
+            margin-bottom: 10px;
+            width: calc(100% - 16px); /* Adjust for padding */
+        }
+        #debug-controls .debug-group button {
+            width: 100%;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -322,6 +374,57 @@
         </div>
         <div id="message-log"></div>
     </div>
+
+    <!-- Debug Controls Section -->
+    <div id="debug-controls" style="display: none;">
+        <h2>Debug Controls</h2>
+
+        <div>
+            <!-- Move Player -->
+            <div class="debug-group">
+                <h4>Move Player</h4>
+                <select id="debug-move-player-select" class="action-select"></select>
+                <select id="debug-move-space-select" class="action-select"></select>
+                <button id="debug-move-btn" class="button-group button">Move</button>
+            </div>
+
+            <!-- Simulate Dice Roll -->
+            <div class="debug-group">
+                <h4>Simulate Dice Roll</h4>
+                <label for="debug-die1">Die 1:</label>
+                <input type="number" id="debug-die1" min="1" max="6" value="1">
+                <label for="debug-die2">Die 2:</label>
+                <input type="number" id="debug-die2" min="1" max="6" value="1">
+                <button id="debug-roll-btn" class="button-group button">Simulate Roll</button>
+            </div>
+
+            <!-- Change Ownership -->
+            <div class="debug-group">
+                <h4>Change Property Ownership</h4>
+                <select id="debug-property-select" class="action-select"></select>
+                <select id="debug-owner-select" class="action-select"></select>
+                <button id="debug-change-owner-btn" class="button-group button">Change Owner</button>
+            </div>
+
+            <!-- Manage Houses/Hotels -->
+            <div class="debug-group">
+                <h4>Manage Houses/Hotels</h4>
+                <select id="debug-house-property-select" class="action-select"></select>
+                <label for="debug-house-count">Houses (0-5):</label>
+                <input type="number" id="debug-house-count" min="0" max="5" value="0">
+                <button id="debug-set-houses-btn" class="button-group button">Set Houses</button>
+            </div>
+
+            <!-- Put Player in Jail -->
+            <div class="debug-group">
+                <h4>Put Player in Jail</h4>
+                <select id="debug-jail-player-select" class="action-select"></select>
+                <button id="debug-send-to-jail-btn" class="button-group button">Send to Jail</button>
+            </div>
+        </div>
+    </div>
+
+    <button id="toggle-debug-btn" style="margin-top: 10px; padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">Toggle Debug Controls</button>
 
     <script>
         // --- Game Data ---
@@ -435,6 +538,34 @@
         const jailActionsDiv = document.getElementById('jail-actions');
         const payBailBtn = document.getElementById('pay-bail-btn');
         const useJailCardBtn = document.getElementById('use-jail-card-btn');
+
+        // --- New DOM Elements for Debugging ---
+        const debugControlsDiv = document.getElementById('debug-controls');
+        const toggleDebugBtn = document.getElementById('toggle-debug-btn');
+
+        // Move Player
+        const debugMovePlayerSelect = document.getElementById('debug-move-player-select');
+        const debugMoveSpaceSelect = document.getElementById('debug-move-space-select');
+        const debugMoveBtn = document.getElementById('debug-move-btn');
+
+        // Simulate Dice Roll
+        const debugDie1Input = document.getElementById('debug-die1');
+        const debugDie2Input = document.getElementById('debug-die2');
+        const debugRollBtn = document.getElementById('debug-roll-btn');
+
+        // Change Ownership
+        const debugPropertySelect = document.getElementById('debug-property-select');
+        const debugOwnerSelect = document.getElementById('debug-owner-select');
+        const debugChangeOwnerBtn = document.getElementById('debug-change-owner-btn');
+
+        // Manage Houses/Hotels
+        const debugHousePropertySelect = document.getElementById('debug-house-property-select');
+        const debugHouseCountInput = document.getElementById('debug-house-count');
+        const debugSetHousesBtn = document.getElementById('debug-set-houses-btn');
+
+        // Put Player in Jail
+        const debugJailPlayerSelect = document.getElementById('debug-jail-player-select');
+        const debugSendToJailBtn = document.getElementById('debug-send-to-jail-btn');
 
 
         // --- Utility Functions ---
@@ -577,6 +708,7 @@
             logMessage("Game Started!", "success");
             logMessage(`It's ${players[currentPlayerIndex].name}'s turn.`);
             setControlsForTurnStart();
+            refreshDebugControls(); // Populate debug dropdowns after players are initialized
         }
 
         function createBoardUI() {
@@ -687,7 +819,6 @@
             setControls(); // Update controls to reflect turn end
         }
 
-        // MODIFIED: handleJailRoll logic
         function handleJailRoll(player, die1, die2) {
             if (die1 === die2) {
                 logMessage(`${player.name} rolled doubles (${die1}, ${die2}) and got out of Jail!`, 'success');
@@ -1205,7 +1336,6 @@
 
 
         // --- Control Management ---
-        // MODIFIED: setControls logic for jail
         function setControls() {
             const player = players[currentPlayerIndex];
 
@@ -1241,7 +1371,7 @@
                 payBailBtn.disabled = (player.money < 50);
                 useJailCardBtn.disabled = (player.getOutOfJailFreeCards === 0);
                 rollDiceBtn.disabled = false; // Can roll to try to get out
-                endTurnBtn.disabled = true; // Cannot end turn until out of jail or 3 turns pass
+                endTurnBtn.disabled = true; // Cannot end turn until resolved jail
             }
             // Original logic for non-jail scenarios (order matters here)
             else if (player.doublesRolledThisTurn > 0 && player.doublesRolledThisTurn < 3) {
@@ -1289,7 +1419,6 @@
             }
         }
 
-        // MODIFIED: setControlsForJailStartTurn logic
         function setControlsForJailStartTurn() {
             const player = players[currentPlayerIndex];
             jailActionsDiv.style.display = 'flex';
@@ -1386,7 +1515,6 @@
             if (propId) sellHouse(players[currentPlayerIndex], propId);
         });
 
-        // MODIFIED: Pay Bail and Use Jail Card buttons
         payBailBtn.addEventListener('click', () => {
             const player = players[currentPlayerIndex];
             if (player.inJail && player.money >= 50) {
@@ -1420,6 +1548,218 @@
 
         // Initial setup for player name inputs
         numPlayersInput.dispatchEvent(new Event('change'));
+
+
+        // --- Debug Utility Functions ---
+
+        function populateDebugPlayerSelects() {
+            const playerOptions = players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            debugMovePlayerSelect.innerHTML = `<option value="">-- Select Player --</option>` + playerOptions;
+            debugJailPlayerSelect.innerHTML = `<option value="">-- Select Player --</option>` + playerOptions;
+            debugOwnerSelect.innerHTML = `<option value="">-- Select Owner --</option><option value="bank">Bank</option>` + playerOptions;
+        }
+
+        function populateDebugSpaceSelect() {
+            const spaceOptions = board.map(s => `<option value="${s.id}">${s.name} (ID: ${s.id})</option>`).join('');
+            debugMoveSpaceSelect.innerHTML = `<option value="">-- Select Space --</option>` + spaceOptions;
+        }
+
+        function populateDebugPropertySelects() {
+            const propertyOptions = board.filter(s => ['property', 'railroad', 'utility'].includes(s.type))
+                                        .map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            debugPropertySelect.innerHTML = `<option value="">-- Select Property --</option>` + propertyOptions;
+
+            const housePropertyOptions = board.filter(s => s.type === 'property')
+                                            .map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            debugHousePropertySelect.innerHTML = `<option value="">-- Select Property --</option>` + housePropertyOptions;
+        }
+
+        function refreshDebugControls() {
+            populateDebugPlayerSelects();
+            populateDebugSpaceSelect();
+            populateDebugPropertySelects();
+        }
+
+        // --- Debug Control Logic ---
+
+        // Toggle Debug Controls Visibility
+        toggleDebugBtn.addEventListener('click', () => {
+            if (debugControlsDiv.style.display === 'none') {
+                debugControlsDiv.style.display = 'flex'; // Use flex to apply inner styling
+                refreshDebugControls(); // Populate dropdowns when shown
+            } else {
+                debugControlsDiv.style.display = 'none';
+            }
+        });
+
+        // Debug Move Player
+        debugMoveBtn.addEventListener('click', () => {
+            const playerId = parseInt(debugMovePlayerSelect.value);
+            const spaceId = parseInt(debugMoveSpaceSelect.value);
+
+            if (isNaN(playerId) || isNaN(spaceId)) {
+                logMessage("Please select a player and a space to move.", "error");
+                return;
+            }
+
+            const player = players.find(p => p.id === playerId);
+            if (!player) {
+                logMessage("Player not found.", "error");
+                return;
+            }
+
+            player.position = spaceId;
+            logMessage(`DEBUG: ${player.name} moved directly to ${board[spaceId].name}.`, 'debug');
+            updatePlayerInfo();
+            updateBoardUI();
+            landOnSpace(player); // Trigger landOnSpace logic for the new position
+        });
+
+        // Simulate Dice Roll
+        debugRollBtn.addEventListener('click', () => {
+            const die1 = parseInt(debugDie1Input.value);
+            const die2 = parseInt(debugDie2Input.value);
+
+            if (isNaN(die1) || isNaN(die2) || die1 < 1 || die1 > 6 || die2 < 1 || die2 > 6) {
+                logMessage("Please enter valid dice values (1-6).", "error");
+                return;
+            }
+
+            // Temporarily override diceRoll for landOnSpace utility calculations (e.g., utilities rent)
+            diceRoll = [die1, die2];
+
+            const player = players[currentPlayerIndex];
+            diceDisplay.textContent = `Dice: ${die1}, ${die2} (Simulated)`;
+            logMessage(`DEBUG: ${player.name} simulated a roll of ${die1} and ${die2} (total ${die1 + die2}).`, 'debug');
+
+            // This part mimics the core of the original rollDice function
+            rollDiceBtn.disabled = true;
+            endTurnBtn.disabled = true;
+            player.hasRolled = true;
+
+            if (die1 === die2) {
+                player.doublesRolledThisTurn++;
+                logMessage(`${player.name} rolled doubles!`, 'warning');
+                if (player.doublesRolledThisTurn === 3) {
+                    logMessage(`${player.name} rolled 3 consecutive doubles! Go directly to Jail!`, 'error');
+                    sendToJail(player);
+                    player.doublesRolledThisTurn = 0; // Reset doubles count
+                    currentActionPending = 'none'; // Turn ends
+                    setControls();
+                    return;
+                }
+            } else {
+                player.doublesRolledThisTurn = 0;
+            }
+
+            if (player.inJail) {
+                handleJailRoll(player, die1, die2);
+            } else {
+                movePlayer(player, die1 + die2);
+            }
+        });
+
+        // Change Property Ownership
+        debugChangeOwnerBtn.addEventListener('click', () => {
+            const propId = parseInt(debugPropertySelect.value);
+            const ownerValue = debugOwnerSelect.value; // Can be player ID or "bank"
+
+            if (isNaN(propId) || !ownerValue) {
+                logMessage("Please select a property and an owner.", "error");
+                return;
+            }
+
+            const property = board[propId];
+            if (!property || !['property', 'railroad', 'utility'].includes(property.type)) {
+                logMessage("Selected space is not a property, railroad, or utility.", "error");
+                return;
+            }
+
+            // Remove from old owner's properties
+            if (property.owner !== null) {
+                const oldOwner = players.find(p => p.id === property.owner);
+                if (oldOwner) {
+                    oldOwner.properties = oldOwner.properties.filter(p => p !== propId);
+                    // If property had houses, they are removed when ownership changes
+                    if (property.type === 'property') {
+                        oldOwner.money += property.houses * (property.houseCost / 2); // Refund half cost
+                        logMessage(`DEBUG: ${oldOwner.name} refunded $${property.houses * (property.houseCost / 2)} for houses on ${property.name}.`, 'debug');
+                        property.houses = 0;
+                    }
+                    property.mortgaged = false; // Unmortgage when ownership changes
+                }
+            }
+
+            // Assign to new owner
+            if (ownerValue === 'bank') {
+                property.owner = null;
+                logMessage(`DEBUG: ${property.name} is now unowned (Bank).`, 'debug');
+            } else {
+                const newOwnerId = parseInt(ownerValue);
+                const newOwner = players.find(p => p.id === newOwnerId);
+                if (newOwner) {
+                    property.owner = newOwnerId;
+                    newOwner.properties.push(propId);
+                    logMessage(`DEBUG: ${property.name} is now owned by ${newOwner.name}.`, 'debug');
+                } else {
+                    logMessage("New owner not found.", "error");
+                    return;
+                }
+            }
+
+            updatePlayerInfo();
+            updateBoardUI();
+        });
+
+        // Set Houses/Hotels
+        debugSetHousesBtn.addEventListener('click', () => {
+            const propId = parseInt(debugHousePropertySelect.value);
+            const houseCount = parseInt(debugHouseCountInput.value);
+
+            if (isNaN(propId) || isNaN(houseCount) || houseCount < 0 || houseCount > 5) {
+                logMessage("Please select a property and a valid house count (0-5).", "error");
+                return;
+            }
+
+            const property = board[propId];
+            if (!property || property.type !== 'property') {
+                logMessage("Selected space is not a buildable property.", "error");
+                return;
+            }
+
+            if (property.owner === null) {
+                logMessage("Property must be owned to set houses.", "error");
+                return;
+            }
+
+            // For debugging, we'll bypass money/monopoly checks for simplicity.
+            // In a real game, you'd enforce these.
+            property.houses = houseCount;
+            logMessage(`DEBUG: Set ${property.name} to ${houseCount} houses/hotel.`, 'debug');
+            updatePlayerInfo();
+            updateBoardUI();
+        });
+
+        // Put Player in Jail
+        debugSendToJailBtn.addEventListener('click', () => {
+            const playerId = parseInt(debugJailPlayerSelect.value);
+
+            if (isNaN(playerId)) {
+                logMessage("Please select a player to send to jail.", "error");
+                return;
+            }
+
+            const player = players.find(p => p.id === playerId);
+            if (!player) {
+                logMessage("Player not found.", "error");
+                return;
+            }
+
+            sendToJail(player); // Use the existing game function
+            logMessage(`DEBUG: ${player.name} sent to Jail.`, 'debug');
+            updatePlayerInfo();
+            updateBoardUI();
+        });
 
     </script>
 </body>
