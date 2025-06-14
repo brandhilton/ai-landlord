@@ -14,19 +14,6 @@
             margin: 0;
             padding: 20px;
         }
-        /* Renamed #game-container to #game-board-and-controls-wrapper in HTML */
-        /* This style block is now effectively for #game-board-and-controls-wrapper */
-        #game-board-and-controls-wrapper {
-            display: flex;
-            flex-wrap: wrap; /* Allows game controls to wrap below board on smaller screens */
-            background-color: white;
-            border: 1px solid #ccc;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            padding: 20px;
-            border-radius: 8px;
-            /* Removed margin-bottom here, gap will handle spacing */
-            flex: 0 0 auto; /* Don't grow, don't shrink, size based on content */
-        }
         #setup-screen, #game-screen {
             width: 100%;
             text-align: center;
@@ -41,18 +28,27 @@
             margin-bottom: 10px;
         }
 
-        /* NEW: Overall layout wrapper for main game and debug controls */
-        #overall-layout-wrapper {
+        /* NEW: Main game screen container - stacks sections vertically */
+        #game-screen {
             display: flex;
-            flex-wrap: wrap; /* Allows columns to wrap on smaller screens */
-            justify-content: center; /* Centers the content horizontally */
-            align-items: flex-start; /* Aligns items to the top */
-            gap: 20px; /* Space between main game area and debug controls */
-            max-width: 1800px; /* Max width for the entire game display */
-            width: 100%; /* Take full width available within body's centering */
+            flex-direction: column;
+            align-items: center; /* Centers content horizontally */
+            gap: 20px; /* Space between top section and message log */
+            width: 100%; /* Take full width available */
         }
 
-        /* NEW: Main game area (board + right-side panel) */
+        /* NEW: Wrapper for the top section (main game area + debug controls) */
+        #top-section-wrapper {
+            display: flex;
+            flex-wrap: wrap; /* Allows debug controls to wrap below on smaller screens */
+            justify-content: center; /* Centers content horizontally */
+            align-items: flex-start; /* Aligns items to the top */
+            gap: 20px; /* Space between main game area and debug controls */
+            max-width: 1800px; /* Max width for the entire top section */
+            width: 100%; /* Take full width available */
+        }
+
+        /* Main game area (board + right-side panel) */
         #main-game-area {
             display: flex;
             flex-wrap: wrap; /* Allows right-side panel to wrap below board on very small screens */
@@ -61,7 +57,7 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             padding: 20px;
             border-radius: 8px;
-            flex: 1; /* Allows it to grow/shrink within overall-layout-wrapper */
+            flex: 1; /* Allows it to grow/shrink within top-section-wrapper */
             min-width: 1150px; /* Minimum width for board + right panel */
             max-width: 1200px; /* Max width for board + right panel */
             gap: 20px; /* Space between game board and right-side panel */
@@ -161,7 +157,6 @@
         .token.p5 { background-color: orange; left: 45px; bottom: 25px; } /* For more players */
 
         /* Positioning for tokens *actually in jail* (on space 10) */
-        /* These override the default pX positions when applied */
         .token.in-jail-position.p0 { top: 5px; right: 5px; left: auto; bottom: auto; }
         .token.in-jail-position.p1 { top: 5px; right: 25px; left: auto; bottom: auto; }
         .token.in-jail-position.p2 { top: 25px; right: 5px; left: auto; bottom: auto; }
@@ -214,7 +209,7 @@
             color: green;
         }
 
-        /* NEW: Right-side panel for controls, player list, message log */
+        /* Right-side panel for controls, player list, message log */
         #right-side-panel {
             display: flex;
             flex-direction: column; /* Stack children vertically */
@@ -298,7 +293,6 @@
             margin-bottom: 20px; /* Keep margin-bottom for spacing within game-controls */
         }
         #message-log {
-            flex-basis: 100%;
             height: 150px;
             border: 1px solid #ccc;
             padding: 10px;
@@ -306,10 +300,12 @@
             background-color: #e9e9e9;
             font-size: 0.9em;
             border-radius: 5px;
-            margin-top: 20px; /* Added margin-top for spacing below main-game-area */
-            width: 100%; /* Ensure it takes full width below the main game area */
-            max-width: 1200px; /* Match main-game-area width for alignment */
+            /* NEW: Flex properties for message log */
+            flex: 1; /* Allows it to grow/shrink */
+            min-width: 300px; /* Minimum width */
+            max-width: 1200px; /* Max width to align with main-game-area */
             box-sizing: border-box; /* Include padding/border in width */
+            margin: 0 auto; /* Center it if it doesn't fill max-width */
         }
         #message-log div {
             margin-bottom: 5px;
@@ -477,13 +473,13 @@
 
     <div id="game-screen" style="display: none;">
         <h1>Monopoly</h1>
-        <!-- NEW: Overall layout wrapper for main game and debug controls -->
-        <div id="overall-layout-wrapper">
-            <!-- NEW: Main game area (board + right-side panel) -->
+        <!-- NEW: Wrapper for the top section (main game area + debug controls) -->
+        <div id="top-section-wrapper">
+            <!-- Main game area (board + right-side panel) -->
             <div id="main-game-area">
                 <div id="game-board"></div>
 
-                <!-- NEW: Right-side panel for controls, player list, message log -->
+                <!-- Right-side panel for controls, player list -->
                 <div id="right-side-panel">
                     <div id="game-controls">
                         <div id="current-player-display"></div>
@@ -515,7 +511,7 @@
                 </div>
             </div>
 
-            <!-- Debug Controls Section (now a sibling to main-game-area) -->
+            <!-- Debug Controls Section (now a sibling to main-game-area within top-section-wrapper) -->
             <div id="debug-controls" style="display: none;">
                 <h2>Debug Controls</h2>
 
@@ -564,7 +560,7 @@
                 </div>
             </div>
         </div>
-        <!-- Message Log (now outside overall-layout-wrapper, below it) -->
+        <!-- Message Log (now a direct child of game-screen, below top-section-wrapper) -->
         <div id="message-log"></div>
     </div>
 
@@ -874,7 +870,6 @@
                     properties: [],
                     inJail: false,
                     jailTurns: 0,
-                    getOutOfJailFreeCards: 0,
                     doublesRolledThisTurn: 0,
                     hasRolled: false // To enforce only one roll per turn unless doubles
                 });
