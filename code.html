@@ -122,8 +122,7 @@
             border-radius: 50%;
             border: 1px solid black;
             box-sizing: border-box;
-            bottom: 5px; /* Adjust as needed */
-            right: 5px; /* Adjust as needed */
+            /* Default positioning, overridden by pX classes */
         }
         .token.p0 { background-color: red; left: 5px; bottom: 5px; }
         .token.p1 { background-color: blue; left: 25px; bottom: 5px; }
@@ -132,7 +131,21 @@
         .token.p4 { background-color: purple; left: 45px; bottom: 5px; } /* For more players */
         .token.p5 { background-color: orange; left: 45px; bottom: 25px; } /* For more players */
 
-        /* Removed: .token.in-jail and .token.in-jail-position styles */
+        /* Style for players in jail (visual effect) */
+        .token.in-jail {
+            border: 2px dashed #333; /* Dashed border */
+            opacity: 0.7; /* Slightly transparent */
+            box-shadow: 0 0 5px rgba(0,0,0,0.5); /* A subtle shadow */
+        }
+
+        /* Positioning for tokens *actually in jail* (on space 10) */
+        /* These override the default pX positions when applied */
+        .token.in-jail-position.p0 { top: 5px; right: 5px; left: auto; bottom: auto; }
+        .token.in-jail-position.p1 { top: 5px; right: 25px; left: auto; bottom: auto; }
+        .token.in-jail-position.p2 { top: 25px; right: 5px; left: auto; bottom: auto; }
+        .token.in-jail-position.p3 { top: 25px; right: 25px; left: auto; bottom: auto; }
+        .token.in-jail-position.p4 { top: 5px; right: 45px; left: auto; bottom: auto; }
+        .token.in-jail-position.p5 { top: 25px; right: 45px; left: auto; bottom: auto; }
 
 
         .property-color-bar {
@@ -736,7 +749,11 @@
                 if (spaceDiv) {
                     const token = document.createElement('div');
                     token.className = `token p${player.id}`;
-                    // Removed: 'in-jail' and 'in-jail-position' classes
+                    // Re-add: 'in-jail' and 'in-jail-position' classes if player is in jail and on the jail space
+                    if (player.position === 10 && player.inJail) {
+                        token.classList.add('in-jail'); // For visual effects (dashed border, opacity)
+                        token.classList.add('in-jail-position'); // For positioning in the corner
+                    }
                     spaceDiv.appendChild(token);
                 }
             });
@@ -892,7 +909,7 @@
             if (die1 === die2) {
                 player.doublesRolledThisTurn++;
                 logMessage(`${player.name} rolled doubles!`, 'warning');
-                if (player.doublesRolblesRolledThisTurn === 3) {
+                if (player.doublesRolledThisTurn === 3) {
                     logMessage(`${player.name} rolled 3 consecutive doubles! Go directly to Jail!`, 'error');
                     sendToJail(player);
                     player.doublesRolledThisTurn = 0; // Reset doubles count
@@ -1752,7 +1769,7 @@
             }
         });
 
-        // NEW: Event listener for clicking on board spaces to show property info
+        // Event listener for clicking on board spaces to show property info
         gameBoardDiv.addEventListener('click', (event) => {
             const clickedSpace = event.target.closest('.board-space');
             if (clickedSpace && clickedSpace.dataset.spaceId) {
@@ -1761,7 +1778,7 @@
             }
         });
 
-        // NEW: Event listeners for closing the modal
+        // Event listeners for closing the modal
         propertyModalCloseBtn.addEventListener('click', hidePropertyModal);
         propertyModalOverlay.addEventListener('click', (event) => {
             // Close if clicking on the overlay itself, not the content
