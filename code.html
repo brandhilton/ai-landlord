@@ -15,68 +15,62 @@
             padding: 20px;
         }
         #setup-screen, #game-screen {
+            width: 100%;
             text-align: center;
         }
         #player-setup {
             margin-top: 20px;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centers content horizontally */
+            align-items: center;
         }
-
-        /* Main container for the 2x2 grid layout */
-        #main-content-layout {
-            display: grid;
-            /* Two columns: 800px for board/message-log, 350px for right-panel/debug */
-            grid-template-columns: 800px 350px;
-            grid-template-rows: auto auto; /* Rows size automatically based on content */
-            gap: 20px; /* Space between grid items */
-            justify-content: center; /* Center the entire grid within #game-screen */
-            max-width: calc(800px + 350px + 2 * 20px); /* Total width of grid + gaps */
-            width: 100%; /* Ensure it uses available width up to max */
-            box-sizing: border-box; /* Include padding/border in width calculation */
-        }
-
-        /* Game Screen: Now just stacks the H1 and the main content layout vertically */
-        #game-screen {
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Centers H1 and main-content-layout */
-            gap: 20px; /* Space between H1 and main-content-layout */
-            width: 100%; /* Take full width available */
-        }
-
         .player-input-group {
             margin-bottom: 10px;
         }
 
-        /* Game Board */
-        #game-board {
+        /* NEW: Main game screen container - stacks sections vertically */
+        #game-screen {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            
-            width: 800px; /* Fixed width for the entire board block including padding/border */
-            height: 800px; /* Fixed height for the entire board block including padding/border */
-            
+            align-items: center; /* Centers content horizontally */
+            gap: 20px; /* Space between top section and message log */
+            width: 100%; /* Take full width available */
+        }
+
+        /* NEW: Wrapper for the top section (main game area + debug controls) */
+        #top-section-wrapper {
+            display: flex;
+            flex-wrap: wrap; /* Allows debug controls to wrap below on smaller screens */
+            justify-content: center; /* Centers content horizontally */
+            align-items: flex-start; /* Aligns items to the top */
+            gap: 20px; /* Space between main game area and debug controls */
+            max-width: 1800px; /* Max width for the entire top section */
+            width: 100%; /* Take full width available */
+        }
+
+        /* Main game area (board + right-side panel) */
+        #main-game-area {
+            display: flex;
+            flex-wrap: wrap; /* Allows right-side panel to wrap below board on very small screens */
             background-color: white;
             border: 1px solid #ccc;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             padding: 20px;
             border-radius: 8px;
-            box-sizing: border-box; /* Include padding and border in the width/height */
+            flex: 1; /* Allows it to grow/shrink within top-section-wrapper */
+            min-width: 1150px; /* Minimum width for board + right panel */
+            max-width: 1200px; /* Max width for board + right panel */
+            gap: 20px; /* Space between game board and right-side panel */
         }
 
-        /* Inner grid for the board spaces itself */
-        #game-board > .grid-container {
+        #game-board {
             display: grid;
             grid-template-columns: repeat(11, 1fr);
             grid-template-rows: repeat(11, 1fr);
             width: 800px; /* Fixed width for the board */
             height: 800px; /* Fixed height for the board */
             border: 2px solid black;
-            box-sizing: content-box; /* The board itself should not include the padding/border of its parent in its size */
+            box-sizing: border-box;
             background-color: #e0e0e0;
             position: relative;
             flex-shrink: 0; /* Prevent board from shrinking */
@@ -217,14 +211,11 @@
 
         /* Right-side panel for controls, player list, message log */
         #right-side-panel {
-            display: flex; /* Stack children vertically */
-            flex-direction: column;
-            gap: 20px; /* Space between game controls and player list */
-            
-            background-color: white;
-            border: 1px solid #ccc;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            padding: 20px;
+            display: flex;
+            flex-direction: column; /* Stack children vertically */
+            gap: 20px; /* Space between sections */
+            flex: 1; /* Allows it to grow/shrink within main-game-area */
+            min-width: 300px; /* Minimum width for this panel */
             max-width: 350px; /* Max width for this panel */
         }
 
@@ -281,7 +272,7 @@
             text-align: left;
             font-size: 0.9em;
         }
-        .player-status.current { /* Highlight current player */
+        .player-status.current {
             border-color: #007bff;
             box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
         }
@@ -298,31 +289,23 @@
         .player-status ul li {
             margin-bottom: 3px;
         }
-        /* Container for message log and toggle button */
-        #message-log-area {
-            display: flex;
-            flex-direction: column;
-            gap: 10px; /* Space between message log and toggle button */
-            align-items: center; /* Center log and button horizontally */
-
-            background-color: white;
-            border: 1px solid #ccc;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            padding: 20px;
-            border-radius: 8px;
-            box-sizing: border-box; /* Include padding/border in cell width */
-            width: 800px; /* Explicitly set width to match game board's outer container */
+        .player-list {
+            margin-bottom: 20px; /* Keep margin-bottom for spacing within game-controls */
         }
-
-        #message-log { /* Message Log itself */
-            height: 150px; /* Fixed height */
+        #message-log {
+            height: 150px;
             border: 1px solid #ccc;
             padding: 10px;
             overflow-y: scroll;
             background-color: #e9e9e9;
             font-size: 0.9em;
             border-radius: 5px;
-            width: 100%;
+            /* NEW: Flex properties for message log */
+            flex: 1; /* Allows it to grow/shrink */
+            min-width: 300px; /* Minimum width */
+            max-width: 1200px; /* Max width to align with main-game-area */
+            box-sizing: border-box; /* Include padding/border in width */
+            margin: 0 auto; /* Center it if it doesn't fill max-width */
         }
         #message-log div {
             margin-bottom: 5px;
@@ -345,12 +328,12 @@
         }
 
         /* Debug Controls Styling (now a separate column) */
-        #debug-controls { /* This is now directly a grid item */
+        #debug-controls {
             padding: 20px;
             border: 1px solid #ddd;
             background-color: #fff;
             border-radius: 8px;
-            
+            flex: 0 0 350px; /* Fixed width for the debug panel */
             max-width: 400px;
             min-width: 300px;
             box-sizing: border-box;
@@ -490,48 +473,45 @@
 
     <div id="game-screen" style="display: none;">
         <h1>Monopoly</h1>
-        <!-- Main container for the 2x2 grid layout -->
-        <div id="main-content-layout">
-            <!-- Top-left grid cell: Game Board -->
-            <!-- The game-board element itself now acts as a container for its inner grid -->
-            <!-- Its previous styles are now applied directly to it, making it a distinct visual block -->
-            <div id="game-board">
-                <!-- The actual grid of spaces will go here -->
-                <div class="grid-container"></div>
-            </div>
+        <!-- NEW: Wrapper for the top section (main game area + debug controls) -->
+        <div id="top-section-wrapper">
+            <!-- Main game area (board + right-side panel) -->
+            <div id="main-game-area">
+                <div id="game-board"></div>
 
-            <!-- Right-side panel for controls, player list -->
-            <div id="right-side-panel">
-                <div id="game-controls">
-                    <div id="current-player-display"></div>
-                    <div id="dice-display">Dice: -</div>
-                    <div class="button-group">
-                        <button id="roll-dice-btn">Roll Dice</button>
-                        <button id="end-turn-btn" disabled>End Turn</button>
-                    </div>
+                <!-- Right-side panel for controls, player list -->
+                <div id="right-side-panel">
+                    <div id="game-controls">
+                        <div id="current-player-display"></div>
+                        <div id="dice-display">Dice: -</div>
+                        <div class="button-group">
+                            <button id="roll-dice-btn">Roll Dice</button>
+                            <button id="end-turn-btn" disabled>End Turn</button>
+                        </div>
 
-                    <div id="property-actions" style="display: none;">
-                        <h3>Property Actions</h3>
-                        <button id="buy-property-btn" style="display: none;">Buy Property</button>
-                        <button id="build-house-btn" style="display: none;">Build House</button>
-                        <select id="mortgage-select" class="action-select" style="display: none;"></select>
-                        <button id="mortgage-property-btn" style="display: none;">Mortgage Property</button>
-                        <select id="unmortgage-select" class="action-select" style="display: none;"></select>
-                        <button id="unmortgage-property-btn" style="display: none;">Unmortgage Property</button>
-                        <select id="sell-house-select" class="action-select" style="display: none;"></select>
-                        <button id="sell-house-btn" style="display: none;">Sell House</button>
-                    </div>
+                        <div id="property-actions" style="display: none;">
+                            <h3>Property Actions</h3>
+                            <button id="buy-property-btn" style="display: none;">Buy Property</button>
+                            <button id="build-house-btn" style="display: none;">Build House</button>
+                            <select id="mortgage-select" class="action-select" style="display: none;"></select>
+                            <button id="mortgage-property-btn" style="display: none;">Mortgage Property</button>
+                            <select id="unmortgage-select" class="action-select" style="display: none;"></select>
+                            <button id="unmortgage-property-btn" style="display: none;">Unmortgage Property</button>
+                            <select id="sell-house-select" class="action-select" style="display: none;"></select>
+                            <button id="sell-house-btn" style="display: none;">Sell House</button>
+                        </div>
 
-                    <div id="jail-actions" style="display: none;">
-                        <h3>Jail Actions</h3>
-                        <button id="pay-bail-btn">Pay $50 Bail</button>
-                        <button id="use-jail-card-btn">Use Get Out of Jail Free Card</button>
+                        <div id="jail-actions" style="display: none;">
+                            <h3>Jail Actions</h3>
+                            <button id="pay-bail-btn">Pay $50 Bail</button>
+                            <button id="use-jail-card-btn">Use Get Out of Jail Free Card</button>
+                        </div>
                     </div>
+                    <div id="player-list-container"></div>
                 </div>
-                <div id="player-list-container"></div> <!-- Player List (bottom part of right-side panel) -->
             </div>
 
-            <!-- Debug Controls Section -->
+            <!-- Debug Controls Section (now a sibling to main-game-area within top-section-wrapper) -->
             <div id="debug-controls" style="display: none;">
                 <h2>Debug Controls</h2>
 
@@ -579,13 +559,12 @@
                     </div>
                 </div>
             </div>
-            <!-- Message Log Area (bottom-left grid cell) -->
-            <div id="message-log-area">
-                <div id="message-log"></div>
-                <button id="toggle-debug-btn" style="margin-top: 10px; padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">Toggle Debug Controls</button>
-            </div>
         </div>
+        <!-- Message Log (now a direct child of game-screen, below top-section-wrapper) -->
+        <div id="message-log"></div>
     </div>
+
+    <button id="toggle-debug-btn" style="margin-top: 10px; padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">Toggle Debug Controls</button>
 
     <!-- Property Info Modal -->
     <div id="property-modal-overlay">
@@ -653,37 +632,24 @@
             { id: 39, name: "Boardwalk", type: "property", colorGroup: "dark-blue", price: 400, rent: [50, 200, 600, 1400, 1700, 2000], houseCost: 200, owner: null, houses: 0, mortgaged: false }
         ];
 
-        // Updated Chance Cards (Standard Monopoly Set of 16)
         let chanceCards = [
             "Advance to Go (Collect $200)",
-            "Advance to Illinois Ave. If you pass Go, collect $200.",
-            "Advance to St. Charles Place. If you pass Go, collect $200.",
-            "Advance to nearest Utility. If unowned, you may buy it from the Bank. If owned, pay owner 10 times amount shown on dice.",
-            "Advance to nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which he/she is otherwise entitled.",
+            "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200",
             "Bank pays you dividend of $50",
             "Get Out of Jail Free Card",
             "Go back 3 spaces",
-            "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200",
-            "Make general repairs on all your property. For each house pay $25. For each hotel pay $100.",
             "Pay poor tax of $15",
-            "Take a trip to Reading Railroad. If you pass Go, collect $200.",
-            "Advance to Boardwalk.",
-            "You have been elected Chairman of the Board – Pay each player $50.",
             "Your building loan matures. Collect $150",
             "You have won a crossword competition. Collect $100"
         ];
 
-        // Updated Community Chest Cards (Standard Monopoly Set of 16)
         let communityChestCards = [
             "Advance to Go (Collect $200)",
+            "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200",
             "Bank error in your favor – Collect $200",
             "Doctor's fee – Pay $50",
-            "From sale of stock you get $45.",
             "Get Out of Jail Free Card",
-            "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200",
-            "Holiday Fund matures. Receive $100.",
             "Income Tax refund – Collect $20",
-            "It is your birthday. Collect $10 from each player.",
             "Life insurance matures – Collect $100",
             "Pay hospital $100",
             "Pay school fees of $50",
@@ -824,7 +790,7 @@
 
             // Add tokens
             players.forEach(player => {
-                const spaceDiv = gameBoardDiv.querySelector(`#space-${player.position}`); // Select from within gameBoardDiv
+                const spaceDiv = document.getElementById(`space-${player.position}`);
                 if (spaceDiv) {
                     const token = document.createElement('div');
                     token.className = `token p${player.id}`;
@@ -839,7 +805,7 @@
             // Update owner and houses on properties
             board.forEach(space => {
                 if (['property', 'railroad', 'utility'].includes(space.type)) {
-                    const spaceDiv = gameBoardDiv.querySelector(`#space-${space.id}`); // Select from within gameBoardDiv
+                    const spaceDiv = document.getElementById(`space-${space.id}`);
                     if (spaceDiv) {
                         let ownerSpan = spaceDiv.querySelector('.space-owner');
                         if (!ownerSpan) {
@@ -889,38 +855,6 @@
             return board.filter(space => space.owner === player.id && (type ? space.type === type : true));
         }
 
-        // Helper function to find the next space of a given type, wrapping around the board
-        function findNextSpaceType(startPosition, type) {
-            for (let i = 1; i <= board.length; i++) { // Iterate up to board.length to ensure wrapping
-                const targetIndex = (startPosition + i) % board.length;
-                const space = board[targetIndex];
-                if (space.type === type) {
-                    return space; // Return the first space of the specified type found after startPosition
-                }
-            }
-            return null; // Should not happen for Utilities/Railroads as they always exist
-        }
-
-        // Helper function to calculate utility rent based on dice roll and owner's utility count
-        function calculateUtilityRent(owner, diceSum) {
-            const ownedUtilities = getPlayerOwnedProperties(owner, 'utility').filter(u => !u.mortgaged).length;
-            if (ownedUtilities === 1) {
-                return diceSum * 4;
-            } else if (ownedUtilities === 2) {
-                return diceSum * 10;
-            }
-            return 0;
-        }
-
-        // Helper function to calculate railroad rent based on owner's railroad count
-        function calculateRailroadRent(owner, railroadSpace) {
-            const ownedRailroads = getPlayerOwnedProperties(owner, 'railroad').filter(r => !r.mortgaged).length;
-            if (ownedRailroads > 0 && ownedRailroads <= railroadSpace.rent.length) {
-                return railroadSpace.rent[ownedRailroads - 1];
-            }
-            return 0;
-        }
-
         // --- Game Logic ---
 
         function startGame() {
@@ -936,8 +870,7 @@
                     properties: [],
                     inJail: false,
                     jailTurns: 0,
-                    doublesRolledThisTurn: 0, 
-                    getOutOfJailFreeCards: 0,
+                    doublesRolledThisTurn: 0,
                     hasRolled: false // To enforce only one roll per turn unless doubles
                 });
             }
@@ -960,11 +893,7 @@
 
         function createBoardUI() {
             gameBoardDiv.innerHTML = ''; // Clear existing board
-            
-            // Create the inner grid container for the board spaces
-            const innerGridContainer = document.createElement('div');
-            innerGridContainer.className = 'grid-container';
-
+            // The CSS grid-area properties are manually defined and assume the `board` array order.
             // This loop just creates the divs for each board space
             board.forEach((space, index) => {
                 const spaceDiv = document.createElement('div');
@@ -997,15 +926,14 @@
                 nameDiv.textContent = space.name;
                 spaceDiv.appendChild(nameDiv);
 
-                if (space.price !== undefined) {
+                if (space.price) {
                     const priceDiv = document.createElement('div');
                     priceDiv.className = 'space-price';
                     priceDiv.textContent = `$${space.price}`;
                     spaceDiv.appendChild(priceDiv);
                 }
-                innerGridContainer.appendChild(spaceDiv);
+                gameBoardDiv.appendChild(spaceDiv);
             });
-            gameBoardDiv.appendChild(innerGridContainer); // Add the inner grid to the main gameBoardDiv
         }
 
 
@@ -1294,266 +1222,83 @@
             const card = deck.shift(); // Take top card
             deck.push(card); // Put card at bottom of deck
 
-            logMessage(`${player.name} drew a ${deck === chanceCardsShuffled ? 'Chance' : 'Community Chest'} card: "${card}"`);
+            logMessage(`${player.name} drew a ${card.includes('Community Chest') ? 'Community Chest' : 'Chance'} card: "${card}"`);
 
             let movedByCard = false; // Flag to indicate if the player was moved by this card
-            let oldPosition = player.position; // Store current position for 'pass Go' check
 
             switch (card) {
                 case "Advance to Go (Collect $200)":
-                    player.position = 0;
                     player.money += 200;
+                    player.position = 0;
                     logMessage(`${player.name} advanced to Go and collected $200.`);
-                    movedByCard = true;
-                    break;
-                case "Advance to Illinois Ave. If you pass Go, collect $200.":
-                    player.position = 24; // Illinois Avenue ID
-                    // Check if passed Go
-                    if (player.position < oldPosition) { player.money += 200; logMessage(`${player.name} passed GO and collected $200!`); }
-                    logMessage(`${player.name} advanced to Illinois Avenue.`);
-                    movedByCard = true;
-                    break;
-                case "Advance to St. Charles Place. If you pass Go, collect $200.":
-                    player.position = 11; // St. Charles Place ID
-                    // Check if passed Go
-                    if (player.position < oldPosition) { player.money += 200; logMessage(`${player.name} passed GO and collected $200!`); }
-                    logMessage(`${player.name} advanced to St. Charles Place.`);
-                    movedByCard = true;
-                    break;
-                case "Advance to nearest Utility. If unowned, you may buy it from the Bank. If owned, pay owner 10 times amount shown on dice.":
-                    const nearestUtility = findNextSpaceType(oldPosition, 'utility');
-                    player.position = nearestUtility.id;
-                    // Check if passed Go
-                    if (player.position < oldPosition) { player.money += 200; logMessage(`${player.name} passed GO and collected $200!`); }
-                    logMessage(`${player.name} advanced to nearest Utility: ${nearestUtility.name}.`);
-
-                    // Check if owned by another player and apply rent
-                    if (nearestUtility.owner !== null && nearestUtility.owner !== player.id) {
-                        const owner = players[nearestUtility.owner];
-                        if (!nearestUtility.mortgaged) {
-                            const rent = calculateUtilityRent(owner, diceRoll[0] + diceRoll[1]); // Use current dice roll for rent calculation
-                            logMessage(`${player.name} pays ${owner.name} $${rent} rent for ${nearestUtility.name}.`);
-                            payMoney(player, owner, rent);
-                            currentActionPending = 'none'; // Rent paid, no further action needed from landOnSpace for this space
-                        } else {
-                            logMessage(`${nearestUtility.name} is mortgaged. No rent due.`);
-                            currentActionPending = 'none';
-                        }
-                    }
-                    movedByCard = true;
-                    break;
-                case "Advance to nearest Railroad. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which he/she is otherwise entitled.":
-                    const nearestRailroad = findNextSpaceType(oldPosition, 'railroad');
-                    player.position = nearestRailroad.id;
-                    // Check if passed Go
-                    if (player.position < oldPosition) { player.money += 200; logMessage(`${player.name} passed GO and collected $200!`); }
-                    logMessage(`${player.name} advanced to nearest Railroad: ${nearestRailroad.name}.`);
-
-                    // Check if owned by another player and apply rent (doubled)
-                    if (nearestRailroad.owner !== null && nearestRailroad.owner !== player.id) {
-                        const owner = players[nearestRailroad.owner];
-                        if (!nearestRailroad.mortgaged) {
-                            const rent = calculateRailroadRent(owner, nearestRailroad) * 2; // Double rent for card
-                            logMessage(`${player.name} pays ${owner.name} $${rent} rent for ${nearestRailroad.name}.`);
-                            payMoney(player, owner, rent);
-                            currentActionPending = 'none'; // Rent paid, no further action needed from landOnSpace for this space
-                        } else {
-                            logMessage(`${nearestRailroad.name} is mortgaged. No rent due.`);
-                            currentActionPending = 'none';
-                        }
-                    }
-                    movedByCard = true;
-                    break;
-                case "Take a trip to Reading Railroad. If you pass Go, collect $200.":
-                    player.position = 5; // Reading Railroad ID
-                    // Check if passed Go
-                    if (player.position < oldPosition) { player.money += 200; logMessage(`${player.name} passed GO and collected $200!`); }
-                    logMessage(`${player.name} advanced to Reading Railroad.`);
-                    movedByCard = true;
-                    break;
-                case "Advance to Boardwalk.":
-                    player.position = 39; // Boardwalk ID
-                    // Check if passed Go
-                    if (player.position < oldPosition) { player.money += 200; logMessage(`${player.name} passed GO and collected $200!`); }
-                    logMessage(`${player.name} advanced to Boardwalk.`);
-                    movedByCard = true;
+                    movedByCard = true; // Player moved
                     break;
                 case "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200":
-                    sendToJail(player); // sendToJail already sets controls, so movedByCard stays false
+                    sendToJail(player);
+                    // sendToJail already handles setting controls and logging, no need for landOnSpace here
                     break;
-                case "Go back 3 spaces":
-                    player.position = (player.position - 3 + board.length) % board.length; // Ensure positive position
-                    logMessage(`${player.name} moved back 3 spaces to ${board[player.position].name}.`);
-                    movedByCard = true;
+                case "Bank pays you dividend of $50": // Chance
+                case "Bank error in your favor – Collect $200": // Community Chest
+                case "Income Tax refund – Collect $20": // Community Chest
+                case "Life insurance matures – Collect $100": // Community Chest
+                case "Receive $25 consultancy fee": // Community Chest
+                case "You have won second prize in a beauty contest – Collect $10": // Community Chest
+                case "Inherit $100": // Community Chest
+                case "Your building loan matures. Collect $150": // Chance
+                case "You have won a crossword competition. Collect $100": // Chance
+                    const amount = parseInt(card.match(/\$([\d]+)/)[1]);
+                    player.money += amount;
+                    logMessage(`${player.name} collected $${amount}.`);
+                    break;
+                case "Doctor's fee – Pay $50": // Community Chest
+                case "Pay hospital $100": // Community Chest
+                case "Pay school fees of $50": // Community Chest
+                case "Pay poor tax of $15": // Chance
+                    const payAmount = parseInt(card.match(/\$([\d]+)/)[1]);
+                    payMoney(player, 'bank', payAmount);
                     break;
                 case "Get Out of Jail Free Card":
                     player.getOutOfJailFreeCards++;
                     logMessage(`${player.name} received a Get Out of Jail Free card.`);
-                    currentActionPending = 'none'; // No movement, turn ends
                     break;
-                case "Bank pays you dividend of $50":
-                    player.money += 50;
-                    logMessage(`${player.name} collected $50 dividend from the Bank.`);
-                    currentActionPending = 'none';
+                case "Go back 3 spaces":
+                    player.position = (player.position - 3 + board.length) % board.length;
+                    logMessage(`${player.name} moved back 3 spaces to ${board[player.position].name}.`);
+                    movedByCard = true; // Player moved
                     break;
-                case "Your building loan matures. Collect $150":
-                    player.money += 150;
-                    logMessage(`${player.name} collected $150 from building loan maturity.`);
-                    currentActionPending = 'none';
-                    break;
-                case "You have won a crossword competition. Collect $100":
-                    player.money += 100;
-                    logMessage(`${player.name} collected $100 from winning a crossword competition.`);
-                    currentActionPending = 'none';
-                    break;
-                case "Pay poor tax of $15":
-                    payMoney(player, 'bank', 15);
-                    currentActionPending = 'none';
-                    break;
-                case "Make general repairs on all your property. For each house pay $25. For each hotel pay $100.":
-                    let repairCostChance = 0;
+                case "You are assessed for street repairs – Pay $40 per house, $115 per hotel": // Community Chest
+                    let repairCost = 0;
                     player.properties.forEach(propId => {
-                        const prop = board[propId]; // Make sure it's current player's property
-                        if (prop.type === 'property') { // Check type explicitly
+                        const prop = board[propId];
+                        if (prop.type === 'property') {
                             if (prop.houses < 5) {
-                                repairCostChance += prop.houses * 25;
+                                repairCost += prop.houses * 40;
                             } else if (prop.houses === 5) { // Hotel
-                                repairCostChance += 100;
+                                repairCost += 115;
                             }
                         }
                     });
-                    if (repairCostChance > 0) {
-                        logMessage(`${player.name} must pay $${repairCostChance} for general repairs.`);
-                        payMoney(player, 'bank', repairCostChance);
+                    if (repairCost > 0) {
+                        logMessage(`${player.name} must pay $${repairCost} for street repairs.`);
+                        payMoney(player, 'bank', repairCost);
                     } else {
                         logMessage(`${player.name} has no buildings, no repair cost.`);
                     }
-                    currentActionPending = 'none';
-                    break;
-                case "You have been elected Chairman of the Board – Pay each player $50.":
-                    let totalPaid = 0;
-                    // Filter out players who might be bankrupt before iterating.
-                    // This is handled by payMoney's bankruptcy check.
-                    players.forEach(p => {
-                        if (p.id !== player.id) {
-                            // Pay 50 to each other player. payMoney handles bankruptcy.
-                            payMoney(player, p, 50); 
-                            totalPaid += 50;
-                        }
-                    });
-                    logMessage(`${player.name} paid $50 to each other player (total $${totalPaid}).`);
-                    currentActionPending = 'none';
-                    break;
-                // Community Chest Cards
-                case "Bank error in your favor – Collect $200":
-                    player.money += 200;
-                    logMessage(`${player.name} collected $200 due to a bank error.`);
-                    currentActionPending = 'none';
-                    break;
-                case "Doctor's fee – Pay $50":
-                    payMoney(player, 'bank', 50);
-                    currentActionPending = 'none';
-                    break;
-                case "From sale of stock you get $45.":
-                    player.money += 45;
-                    logMessage(`${player.name} collected $45 from stock sale.`);
-                    currentActionPending = 'none';
-                    break;
-                case "Holiday Fund matures. Receive $100.":
-                    player.money += 100;
-                    logMessage(`${player.name} received $100 from Holiday Fund.`);
-                    currentActionPending = 'none';
-                    break;
-                case "Income Tax refund – Collect $20":
-                    player.money += 20;
-                    logMessage(`${player.name} collected $20 income tax refund.`);
-                    currentActionPending = 'none';
-                    break;
-                case "It is your birthday. Collect $10 from each player.":
-                    let totalCollected = 0;
-                    players.forEach(p => {
-                        if (p.id !== player.id && p.money >= 10) { // Only pay if player can afford
-                            payMoney(p, player, 10); // Each other player pays 10 to current player
-                            totalCollected += 10;
-                        } else if (p.id !== player.id && p.money < 10) {
-                            logMessage(`${p.name} cannot afford to pay ${player.name} $10 for birthday.`, 'warning');
-                            payMoney(p, player, 10); // Still attempt to pay, will trigger bankruptcy if needed
-                        }
-                    });
-                    logMessage(`${player.name} collected $10 from each other player (total $${totalCollected}).`);
-                    currentActionPending = 'none';
-                    break;
-                case "Life insurance matures – Collect $100":
-                    player.money += 100;
-                    logMessage(`${player.name} collected $100 from life insurance maturity.`);
-                    currentActionPending = 'none';
-                    break;
-                case "Pay hospital $100":
-                    payMoney(player, 'bank', 100);
-                    currentActionPending = 'none';
-                    break;
-                case "Pay school fees of $50":
-                    payMoney(player, 'bank', 50);
-                    currentActionPending = 'none';
-                    break;
-                case "Receive $25 consultancy fee":
-                    player.money += 25;
-                    logMessage(`${player.name} collected $25 consultancy fee.`);
-                    currentActionPending = 'none';
-                    break;
-                case "You are assessed for street repairs – Pay $40 per house, $115 per hotel":
-                    let repairCostCC = 0;
-                    player.properties.forEach(propId => {
-                        const prop = board[propId]; // Already confirmed as player's property by iteration
-                        if (prop.type === 'property' && prop.owner === player.id) {
-                            if (prop.houses < 5) {
-                                repairCostCC += prop.houses * 40;
-                            } else if (prop.houses === 5) { // Hotel
-                                repairCostCC += 115;
-                            }
-                        }
-                    });
-                    if (repairCostCC > 0) {
-                        logMessage(`${player.name} must pay $${repairCostCC} for street repairs.`);
-                        payMoney(player, 'bank', repairCostCC);
-                    } else {
-                        logMessage(`${player.name} has no buildings, no repair cost.`);
-                    }
-                    currentActionPending = 'none';
-                    break;
-                case "You have won second prize in a beauty contest – Collect $10":
-                    player.money += 10;
-                    logMessage(`${player.name} collected $10 from beauty contest prize.`);
-                    currentActionPending = 'none';
-                    break;
-                case "Inherit $100":
-                    player.money += 100;
-                    logMessage(`${player.name} inherited $100.`);
-                    currentActionPending = 'none';
                     break;
                 default:
                     logMessage(`Unhandled card: "${card}".`, 'warning');
             }
+            updatePlayerInfo();
+            updateBoardUI();
 
-            // --- IMPORTANT Unified Card Action Flow ---
-            updatePlayerInfo(); // Always update UI after card action
-            updateBoardUI();    // Always update UI after card action
-
-            // Check if player is now in jail (either from card or bankruptcy from payment)
-            if (player.inJail) {
-                // sendToJail already called setControls and currentActionPending = 'none'
-                return; // Exit as turn state is handled
-            }
-
-            // If moved by card (and not sent to jail), then land on the new space.
+            // IMPORTANT FIX: If the player was moved by the card, land on the new space
             if (movedByCard) {
-                landOnSpace(player); // This will then set currentActionPending based on the new space
+                landOnSpace(player);
             } else {
-                // If no movement, the turn typically ends after a a money/GOJF card action
+                // If no movement, the turn typically ends after a card action
                 currentActionPending = 'none';
-                setControls(); // Update controls for turn end
+                setControls();
             }
-            // --- End Unified Card Action Flow ---
         }
 
         // --- Property Management Actions ---
@@ -1586,17 +1331,13 @@
             const availableToBuild = [];
             // First, find properties that are at the minimum house count within their monopoly group
             if (buildableProperties.length > 0) {
+                const minHousesInAnyGroup = Math.min(...buildableProperties.map(p => p.houses));
                 for (const prop of buildableProperties) {
-                    // Check for even building rules for the specific group
-                    const group = getPropertiesByColor(prop.colorGroup); // Get all properties in *this* group
-                    const playersGroupProps = group.filter(p => p.owner === player.id); // Filter to only current player's properties in this group
-                    const minHousesInThisGroup = Math.min(...playersGroupProps.map(p => p.houses)); // Find min houses *among player's properties in this group*
-                    if (prop.houses === minHousesInThisGroup) { // Can only build on properties that are at the minimum house count for their group
-                         availableToBuild.push(prop);
+                    if (prop.houses === minHousesInAnyGroup) {
+                        availableToBuild.push(prop);
                     }
                 }
             }
-
 
             buildHouseBtn.style.display = availableToBuild.length > 0 ? 'inline-block' : 'none';
             if (availableToBuild.length > 0) {
@@ -1642,11 +1383,7 @@
             properties.forEach(prop => {
                 const option = document.createElement('option');
                 option.value = prop.id;
-                option.textContent = `${prop.name} ${prop.mortgaged ? '(Mortgaged)' : ''} ${prop.houses > 0 ? `(H: ${prop.houses})` : ''} - Cost: $${prop.type === 'property' && prop.houses < 5 ? prop.houseCost : (prop.type === 'railroad' || prop.type === 'utility' ? prop.price/2 : '')}`;
-                // For unmortgage cost:
-                if (selectElement === unmortgageSelect && prop.mortgaged) {
-                    option.textContent = `${prop.name} (M) - Cost: $${Math.ceil(prop.price / 2 * 1.1)}`;
-                }
+                option.textContent = `${prop.name} ${prop.mortgaged ? '(Mortgaged)' : ''} ${prop.houses > 0 ? `(H: ${prop.houses})` : ''} - Cost: $${prop.type === 'property' && prop.houses < 5 ? (prop.houses < 4 ? prop.houseCost : (prop.houses === 4 ? prop.houseCost : '')) : (prop.type === 'railroad' || prop.type === 'utility' ? prop.price/2 : '')}`;
                 selectElement.appendChild(option);
             });
             selectElement.onchange = () => {
@@ -1682,7 +1419,7 @@
             availableProperties.forEach(prop => {
                 const option = document.createElement('option');
                 option.value = prop.id;
-                option.textContent = `${prop.name} (H: ${prop.houses}) - Cost: $${prop.houses === 4 ? 'Hotel' : prop.houseCost}`;
+                option.textContent = `${prop.name} (H: ${prop.houses}) - Cost: $${prop.houseCost}`;
                 buildSelect.appendChild(option);
             });
             confirmBtn.disabled = true; // Initially disabled
@@ -1698,8 +1435,8 @@
                 const propId = parseInt(buildSelect.value);
                 const prop = board[propId];
                 if (prop && prop.owner === player.id && player.money >= prop.houseCost && prop.houses < 5) {
-                    const group = getPropertiesByColor(prop.colorGroup); // All properties in this color group
-                    const playersGroupProps = group.filter(p => p.owner === player.id); // Current player's properties in this group
+                    const group = getPropertiesByColor(prop.colorGroup);
+                    const maxHousesInGroup = Math.max(...group.filter(p => p.owner === player.id).map(p => p.houses));
                     // Enforce building evenly within a group: can only build if this property has the minimum houses in the group
                     const minHousesInGroup = Math.min(...group.filter(p => p.owner === player.id).map(p => p.houses));
                     if (prop.houses > minHousesInGroup) {
@@ -1708,8 +1445,8 @@
                     }
 
                     player.money -= prop.houseCost;
-                    prop.houses++; // Increment houses
-                    logMessage(`${player.name} built a ${prop.houses === 5 ? 'hotel' : 'house'} on ${prop.name}. Houses: ${prop.houses}.`);
+                    prop.houses++;
+                    logMessage(`${player.name} built a house on ${prop.name}. Houses: ${prop.houses}.`);
                     updatePlayerInfo();
                     updateBoardUI();
                     propertyActionsDiv.removeChild(selectDiv);
@@ -1760,16 +1497,15 @@
             const prop = board[propId];
             if (prop && prop.owner === player.id && prop.houses > 0) {
                 const group = getPropertiesByColor(prop.colorGroup);
-                const playersGroupProps = group.filter(p => p.owner === player.id); // Current player's properties in this group
-                const maxHousesInGroup = Math.max(...playersGroupProps.map(p => p.houses)); // Find max houses *among player's properties in this group*
-                if (prop.houses < maxHousesInGroup) {
+                const minHousesInGroup = Math.min(...group.filter(p => p.owner === player.id).map(p => p.houses));
+                if (prop.houses > minHousesInGroup) {
                     logMessage("Must sell houses evenly across the monopoly group. Sell from properties with more houses first.", "error");
                     return;
                 }
                 
                 prop.houses--;
                 player.money += prop.houseCost / 2;
-                logMessage(`${player.name} sold a ${prop.houses === 4 ? 'hotel (now 4 houses)' : 'house'} on ${prop.name} for $${prop.houseCost / 2}. Houses: ${prop.houses}.`, 'info');
+                logMessage(`${player.name} sold a house on ${prop.name} for $${prop.houseCost / 2}. Houses: ${prop.houses}.`, 'info');
                 updatePlayerInfo();
                 updateBoardUI();
                 showPropertyManagementActions(player); // Refresh actions
@@ -1795,8 +1531,7 @@
             jailActionsDiv.style.display = 'none';
             buyPropertyBtn.style.display = 'none';
             buildHouseBtn.style.display = 'none';
-            // showPropertyManagementActions(player); // This will manage its own internal elements
-                                                // Call this below, after determining primary action.
+            showPropertyManagementActions(player); // This will manage its own internal elements
 
             if (gameOver) {
                 console.log("setControls: Game Over.");
@@ -1869,7 +1604,7 @@
                 console.log("setControls: Turn over, no special actions pending.");
                 // This is the default state after a non-doubles roll, or after an action is completed.
                 rollDiceBtn.disabled = true; // Player has rolled and no further action needed
-                endTurnBtn.disabled = false; // Player can end turn
+                endTurnBtn.disabled = false; // Can end turn
             }
             console.log(`setControls: Final button states: Roll Dice Disabled: ${rollDiceBtn.disabled}, End Turn Disabled: ${endTurnBtn.disabled}`);
         }
@@ -2133,14 +1868,15 @@
         // --- Debug Control Logic ---
 
         // Toggle Debug Controls Visibility
-        document.getElementById('toggle-debug-btn').addEventListener('click', () => {
-             if (debugControlsDiv.style.display === 'none') {
-                 debugControlsDiv.style.display = 'flex'; // Use flex to apply inner styling
-                 refreshDebugControls(); // Populate dropdowns when shown
-             } else {
-                 debugControlsDiv.style.display = 'none';
-             }
-         });
+        toggleDebugBtn.addEventListener('click', () => {
+            if (debugControlsDiv.style.display === 'none') {
+                debugControlsDiv.style.display = 'flex'; // Use flex to apply inner styling
+                refreshDebugControls(); // Populate dropdowns when shown
+            } else {
+                debugControlsDiv.style.display = 'none';
+            }
+        });
+
         // Debug Move Player
         debugMoveBtn.addEventListener('click', () => {
             const playerId = parseInt(debugMovePlayerSelect.value);
