@@ -66,7 +66,9 @@
         .board-space.top, .board-space.bottom { width: 100%; height: 100%; }
         .board-space.left, .board-space.right { width: 100%; height: 100%; }
 
-        /* Specific board layout using grid-area */
+        /* Specific board layout using grid-area (as before, but less reliant on it now) */
+        /* The CSS grid-area properties are manually defined and assume the `board` array order.
+           This loop just creates the divs for each board space */
         #go { grid-area: 11 / 11; }
         #mediterranean-avenue { grid-area: 11 / 10; }
         #community-chest1 { grid-area: 11 / 9; }
@@ -329,7 +331,7 @@
             { id: 2, name: "Community Chest", type: "community_chest" },
             { id: 3, name: "Baltic Avenue", type: "property", colorGroup: "brown", price: 60, rent: [4, 20, 60, 180, 320, 450], houseCost: 50, owner: null, houses: 0, mortgaged: false },
             { id: 4, name: "Income Tax", type: "tax", amount: 200 },
-            { id: 5, name: "Reading Railroad", type: "railroad", price: 200, owner: null, mortgaged: false },
+            { id: 5, name: "Reading Railroad", type: "railroad", price: 200, rent: [25,50,100,200], owner: null, mortgaged: false },
             { id: 6, name: "Oriental Avenue", type: "property", colorGroup: "light-blue", price: 100, rent: [6, 30, 90, 270, 400, 550], houseCost: 50, owner: null, houses: 0, mortgaged: false },
             { id: 7, name: "Chance", type: "chance" },
             { id: 8, name: "Vermont Avenue", type: "property", colorGroup: "light-blue", price: 100, rent: [6, 30, 90, 270, 400, 550], houseCost: 50, owner: null, houses: 0, mortgaged: false },
@@ -339,7 +341,7 @@
             { id: 12, name: "Electric Company", type: "utility", price: 150, owner: null, mortgaged: false },
             { id: 13, name: "States Avenue", type: "property", colorGroup: "pink", price: 140, rent: [10, 50, 150, 450, 625, 750], houseCost: 100, owner: null, houses: 0, mortgaged: false },
             { id: 14, name: "Virginia Avenue", type: "property", colorGroup: "pink", price: 160, rent: [12, 60, 180, 500, 700, 800], houseCost: 100, owner: null, houses: 0, mortgaged: false },
-            { id: 15, name: "Pennsylvania Railroad", type: "railroad", price: 200, owner: null, mortgaged: false },
+            { id: 15, name: "Pennsylvania Railroad", type: "railroad", price: 200, rent: [25,50,100,200], owner: null, mortgaged: false },
             { id: 16, name: "St. James Place", type: "property", colorGroup: "orange", price: 180, rent: [14, 70, 200, 550, 750, 950], houseCost: 100, owner: null, houses: 0, mortgaged: false },
             { id: 17, name: "Community Chest", type: "community_chest" },
             { id: 18, name: "Tennessee Avenue", type: "property", colorGroup: "orange", price: 180, rent: [14, 70, 200, 550, 750, 950], houseCost: 100, owner: null, houses: 0, mortgaged: false },
@@ -349,7 +351,7 @@
             { id: 22, name: "Chance", type: "chance" },
             { id: 23, name: "Indiana Avenue", type: "property", colorGroup: "red", price: 220, rent: [18, 90, 250, 700, 875, 1050], houseCost: 150, owner: null, houses: 0, mortgaged: false },
             { id: 24, name: "Illinois Avenue", type: "property", colorGroup: "red", price: 240, rent: [20, 100, 300, 750, 925, 1100], houseCost: 150, owner: null, houses: 0, mortgaged: false },
-            { id: 25, name: "B. & O. Railroad", type: "railroad", price: 200, owner: null, mortgaged: false },
+            { id: 25, name: "B. & O. Railroad", type: "railroad", price: 200, rent: [25,50,100,200], owner: null, mortgaged: false },
             { id: 26, name: "Atlantic Avenue", type: "property", colorGroup: "yellow", price: 260, rent: [22, 110, 330, 800, 975, 1150], houseCost: 150, owner: null, houses: 0, mortgaged: false },
             { id: 27, name: "Ventnor Avenue", type: "property", colorGroup: "yellow", price: 260, rent: [22, 110, 330, 800, 975, 1150], houseCost: 150, owner: null, houses: 0, mortgaged: false },
             { id: 28, name: "Water Works", type: "utility", price: 150, owner: null, mortgaged: false },
@@ -359,14 +361,14 @@
             { id: 32, name: "North Carolina Avenue", type: "property", colorGroup: "green", price: 300, rent: [26, 130, 390, 900, 1100, 1275], houseCost: 200, owner: null, houses: 0, mortgaged: false },
             { id: 33, name: "Community Chest", type: "community_chest" },
             { id: 34, name: "Pennsylvania Avenue", type: "property", colorGroup: "green", price: 320, rent: [28, 150, 450, 1000, 1200, 1400], houseCost: 200, owner: null, houses: 0, mortgaged: false },
-            { id: 35, name: "Short Line", type: "railroad", price: 200, owner: null, mortgaged: false },
+            { id: 35, name: "Short Line", type: "railroad", price: 200, rent: [25,50,100,200], owner: null, mortgaged: false },
             { id: 36, name: "Chance", type: "chance" },
             { id: 37, name: "Park Place", type: "property", colorGroup: "dark-blue", price: 350, rent: [35, 175, 500, 1100, 1300, 1500], houseCost: 200, owner: null, houses: 0, mortgaged: false },
             { id: 38, name: "Luxury Tax", type: "tax", amount: 100 },
             { id: 39, name: "Boardwalk", type: "property", colorGroup: "dark-blue", price: 400, rent: [50, 200, 600, 1400, 1700, 2000], houseCost: 200, owner: null, houses: 0, mortgaged: false }
         ];
 
-        const chanceCards = [
+        let chanceCards = [
             "Advance to Go (Collect $200)",
             "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200",
             "Bank pays you dividend of $50",
@@ -377,7 +379,7 @@
             "You have won a crossword competition. Collect $100"
         ];
 
-        const communityChestCards = [
+        let communityChestCards = [
             "Advance to Go (Collect $200)",
             "Go to Jail – Go directly to Jail – Do not pass Go, do not collect $200",
             "Bank error in your favor – Collect $200",
@@ -399,7 +401,10 @@
         let diceRoll = [0, 0];
         let doublesCount = 0;
         let gameOver = false;
-        let isTurnOver = false; // Flag to enforce turn progression
+        let currentActionPending = null; // 'buy', 'manage', 'jail', 'none' (meaning turn over)
+
+        let chanceCardsShuffled = [];
+        let communityChestCardsShuffled = [];
 
         // --- DOM Elements ---
         const setupScreen = document.getElementById('setup-screen');
@@ -463,7 +468,7 @@
                         <li>Position: ${board[player.position].name}</li>
                         ${player.inJail ? `<li><span style="color:red;">In Jail (Turn ${player.jailTurns}/3)</span></li>` : ''}
                         ${player.getOutOfJailFreeCards > 0 ? `<li>GOJF Cards: ${player.getOutOfJailFreeCards}</li>` : ''}
-                        <li>Properties: ${player.properties.map(pId => board[pId].name).join(', ') || 'None'}</li>
+                        <li>Properties: ${player.properties.map(pId => board[pId].name + (board[pId].mortgaged ? ' (M)' : '') + (board[pId].houses > 0 ? ` (H:${board[pId].houses})` : '')).join(', ') || 'None'}</li>
                     </ul>
                 `;
                 playerListContainer.appendChild(playerDiv);
@@ -576,25 +581,6 @@
 
         function createBoardUI() {
             gameBoardDiv.innerHTML = ''; // Clear existing board
-            // Define a visual layout for the board grid
-            const layout = [
-                30,31,32,33,34,35,36,37,38,39, 0, // Top Row (Indices adjusted for visual layout)
-                29, null,null,null,null,null,null,null,null,null, 1,
-                28, null,null,null,null,null,null,null,null,null, 2,
-                27, null,null,null,null,null,null,null,null,null, 3,
-                26, null,null,null,null,null,null,null,null,null, 4,
-                25, null,null,null,null,null,null,null,null,null, 5,
-                24, null,null,null,null,null,null,null,null,null, 6,
-                23, null,null,null,null,null,null,null,null,null, 7,
-                22, null,null,null,null,null,null,null,null,null, 8,
-                21, null,null,null,null,null,null,null,null,null, 9,
-                20,19,18,17,16,15,14,13,12,11,10 // Bottom Row (Indices adjusted for visual layout)
-            ].reverse(); // Reverse to match common top-left to bottom-right flow or adjust grid-area logic.
-
-            // Simpler grid layout for visual representation matching actual board IDs
-            // Corner spaces will occupy 1/1, 1/11, 11/1, 11/11
-            // Side spaces will be 1/2-10, 2-10/1, 2-10/11, 11/2-10
-
             // The CSS grid-area properties are manually defined and assume the `board` array order.
             // This loop just creates the divs for each board space
             board.forEach((space, index) => {
@@ -605,6 +591,7 @@
                     spaceDiv.classList.add('corner');
                 }
                 // Assign grid positions based on typical Monopoly board layout
+                // (This CSS is hardcoded for specific IDs and their board positions for visual layout)
                 if (space.id >= 0 && space.id <= 10) { // Bottom row (Go to Jail)
                     spaceDiv.style.gridArea = `11 / ${11 - space.id}`;
                 } else if (space.id >= 11 && space.id <= 19) { // Left column (Jail to NY Ave)
@@ -645,8 +632,10 @@
             logMessage(`${players[currentPlayerIndex].name} rolled a ${die1} and a ${die2} (total ${die1 + die2}).`);
 
             rollDiceBtn.disabled = true; // Disable roll button after rolling
+            endTurnBtn.disabled = true; // Disable end turn while action is pending
 
             const player = players[currentPlayerIndex];
+            player.hasRolled = true; // Mark that player has rolled this turn
 
             // Check for doubles
             if (die1 === die2) {
@@ -656,8 +645,8 @@
                     logMessage(`${player.name} rolled 3 consecutive doubles! Go directly to Jail!`, 'error');
                     sendToJail(player);
                     doublesCount = 0; // Reset doubles count
-                    isTurnOver = true; // Turn ends after going to jail
-                    setControlsForTurnEnd();
+                    currentActionPending = 'none'; // Turn ends
+                    setControls();
                     return;
                 }
             } else {
@@ -701,18 +690,13 @@
                 logMessage(`${player.name} rolled doubles (${die1}, ${die2}) and got out of Jail!`, 'success');
                 player.inJail = false;
                 player.jailTurns = 0;
+                // Since they rolled doubles to get out, they move and then get another roll (if not 3rd double)
                 movePlayer(player, die1 + die2); // Move out of jail
             } else {
                 player.jailTurns++;
                 logMessage(`${player.name} rolled ${die1}, ${die2}. Still in jail. Turns left: ${3 - player.jailTurns}.`);
-                if (player.jailTurns >= 3) {
-                    logMessage(`${player.name} failed to roll doubles for 3 turns. Must pay $50 bail to get out.`, 'warning');
-                    isTurnOver = true; // Must pay or use card next turn
-                    setControlsForTurnEnd();
-                } else {
-                    isTurnOver = true; // Normal turn end if still in jail and no doubles
-                    setControlsForTurnEnd();
-                }
+                currentActionPending = 'none'; // If they stay in jail, their turn ends.
+                setControls(); // Update controls to allow ending turn or paying bail
             }
         }
 
@@ -721,112 +705,83 @@
             const space = board[player.position];
             logMessage(`${player.name} landed on ${space.name}.`);
 
-            // --- IMPORTANT CHANGE: Reset isTurnOver to false initially ---
-            isTurnOver = false;
-
-            // Hide all property actions by default, will be shown if needed
-            propertyActionsDiv.style.display = 'none';
-            buyPropertyBtn.style.display = 'none';
-            buildHouseBtn.style.display = 'none';
-            mortgageSelect.style.display = 'none';
-            mortgagePropertyBtn.style.display = 'none';
-            unmortgageSelect.style.display = 'none';
-            unmortgagePropertyBtn.style.display = 'none';
-            sellHouseSelect.style.display = 'none';
-            sellHouseBtn.style.display = 'none';
-
-            // Hide jail actions unless needed
-            jailActionsDiv.style.display = 'none';
+            currentActionPending = 'none'; // Default to turn ending, will be overridden if action is needed
 
             switch (space.type) {
                 case 'property':
                 case 'railroad':
                 case 'utility':
-                    handleProperty(player, space); // This function will determine if further action is needed
+                    if (space.owner === null) {
+                        // Property is unowned
+                        logMessage(`${space.name} is unowned. Price: $${space.price}.`);
+                        if (player.money >= space.price) {
+                            currentActionPending = 'buy';
+                        } else {
+                            logMessage(`${player.name} cannot afford ${space.name}.`, 'warning');
+                            currentActionPending = 'none'; // Turn ends if unaffordable
+                        }
+                    } else if (space.owner !== player.id) {
+                        // Property is owned by another player
+                        const owner = players[space.owner];
+                        if (space.mortgaged) {
+                            logMessage(`${space.name} is mortgaged by ${owner.name}. No rent.`, 'info');
+                        } else {
+                            let rent = 0;
+                            if (space.type === 'property') {
+                                rent = space.rent[space.houses];
+                                if (space.houses === 0 && checkMonopoly(owner, space.colorGroup)) {
+                                    rent *= 2; // Double rent if monopoly owned and no houses
+                                    logMessage(`Rent is doubled as ${owner.name} owns the full ${space.colorGroup} monopoly.`);
+                                }
+                            } else if (space.type === 'railroad') {
+                                const ownedRailroads = getPlayerOwnedProperties(owner, 'railroad').filter(r => !r.mortgaged).length;
+                                rent = space.rent[ownedRailroads - 1]; // Use predefined rent array for railroads
+                            } else if (space.type === 'utility') {
+                                const ownedUtilities = getPlayerOwnedProperties(owner, 'utility').filter(u => !u.mortgaged).length;
+                                if (ownedUtilities === 1) {
+                                    rent = (diceRoll[0] + diceRoll[1]) * 4;
+                                } else if (ownedUtilities === 2) {
+                                    rent = (diceRoll[0] + diceRoll[1]) * 10;
+                                }
+                            }
+                            logMessage(`${space.name} is owned by ${owner.name}. Rent: $${rent}.`);
+                            payMoney(player, owner, rent);
+                        }
+                        currentActionPending = 'none'; // After paying rent, turn ends
+                    } else {
+                        // Property is owned by current player
+                        logMessage(`${player.name} owns ${space.name}.`);
+                        currentActionPending = 'manage'; // Player can choose to build/mortgage
+                    }
                     break;
                 case 'tax':
-                    handleTax(player, space);
-                    isTurnOver = true; // Tax always ends turn
+                    logMessage(`${player.name} landed on ${space.name} and must pay $${space.amount}.`);
+                    payMoney(player, 'bank', space.amount);
+                    currentActionPending = 'none';
                     break;
                 case 'chance':
                     drawCard(player, chanceCardsShuffled);
-                    isTurnOver = true; // Card actions typically end turn (or move player, then new space is handled)
+                    currentActionPending = 'none'; // Card actions usually end turn, or move player to a new space (which will trigger new landOnSpace)
                     break;
                 case 'community_chest':
                     drawCard(player, communityChestCardsShuffled);
-                    isTurnOver = true; // Card actions typically end turn
+                    currentActionPending = 'none'; // Card actions usually end turn
                     break;
                 case 'gotojail':
                     sendToJail(player);
-                    isTurnOver = true; // Turn ends after going to jail
+                    currentActionPending = 'none'; // Turn ends after going to jail
                     break;
                 case 'jail': // Just Visiting
                     logMessage(`${player.name} is just visiting Jail.`, 'info');
-                    isTurnOver = true; // No action for just visiting, turn ends
+                    currentActionPending = 'none'; // No action for just visiting, turn ends
                     break;
                 case 'go':
                 case 'freeparking':
                     logMessage(`${player.name} is on ${space.name}. Nothing to do.`, 'info');
-                    isTurnOver = true; // No action, turn ends
+                    currentActionPending = 'none'; // No action, turn ends
                     break;
             }
-
-            // --- IMPORTANT CHANGE: Revised logic for setting controls ---
-            // If the player is in jail, prioritize jail controls.
-            // If they rolled doubles (and not 3rd double), they can roll again, so allow property actions.
-            // Otherwise, if no specific action was presented (i.e., isTurnOver is true from a space handler)
-            // or if they didn't roll doubles, the turn is over.
-            if (player.inJail) {
-                setControlsForJail();
-            } else if (diceRoll[0] === diceRoll[1] && player.doublesRolledThisTurn > 0 && player.doublesRolledThisTurn < 3) {
-                // Rolled doubles, can roll again. Allow property actions *before* re-rolling.
-                logMessage(`${player.name} rolled doubles, can roll again!`, 'info');
-                setControlsForPropertyAction(player); // This will show build/mortgage/sell options
-                rollDiceBtn.disabled = false; // Keep roll button enabled
-                endTurnBtn.disabled = true; // Can't end turn if they can roll again
-            } else if (!isTurnOver) {
-                // This means a property was unowned and affordable, or player owns it, so property actions are needed
-                setControlsForPropertyAction(player);
-                rollDiceBtn.disabled = true; // Can't roll again
-                endTurnBtn.disabled = false; // Can end turn if they choose not to buy/manage
-            }
-            else { // Turn is over due to tax, owned property rent, or card action
-                setControlsForTurnEnd();
-            }
-        }
-
-        // --- Minor adjustment to handleProperty to ensure `isTurnOver` is set if no action is truly needed ---
-        function handleProperty(player, space) {
-            if (space.owner === null) {
-                // Property is unowned
-                logMessage(`${space.name} is unowned. Price: $${space.price}.`);
-                if (player.money >= space.price) {
-                    buyPropertyBtn.style.display = 'inline-block';
-                    propertyActionsDiv.style.display = 'flex'; // Show property actions
-                    buyPropertyBtn.onclick = () => buyProperty(player, space);
-                    // isTurnOver is NOT set to true here, as player has a choice.
-                } else {
-                    logMessage(`${player.name} cannot afford ${space.name}.`, 'warning');
-                    isTurnOver = true; // Turn is over if unaffordable
-                }
-            } else if (space.owner !== player.id) {
-                // Property is owned by another player
-                const owner = players[space.owner];
-                if (space.mortgaged) {
-                    logMessage(`${space.name} is mortgaged by ${owner.name}. No rent.`, 'info');
-                    isTurnOver = true; // Turn ends
-                } else {
-                    let rent = 0;
-                    // ... (rent calculation logic remains the same)
-                    logMessage(`${space.name} is owned by ${owner.name}. Rent: $${rent}.`);
-                    payMoney(player, owner, rent);
-                    isTurnOver = true; // Turn ends after paying rent
-                }
-            } else {
-                // Property is owned by current player
-                logMessage(`${player.name} owns ${space.name}.`);
-                // isTurnOver is NOT set to true here, as player can choose to build/mortgage.
-            }
+            setControls(); // Update controls based on currentActionPending
         }
 
         function buyProperty(player, space) {
@@ -840,16 +795,9 @@
             } else {
                 logMessage(`Could not buy ${space.name}. Either not enough money or already owned.`, 'error');
             }
-            buyPropertyBtn.style.display = 'none'; // Hide button after action
-            propertyActionsDiv.style.display = 'none';
-            isTurnOver = true;
-            setControlsForTurnEnd();
-        }
-
-        function handleTax(player, space) {
-            logMessage(`${player.name} landed on ${space.name} and must pay $${space.amount}.`);
-            payMoney(player, 'bank', space.amount);
-            isTurnOver = true;
+            // After buying (or attempting to buy), turn ends
+            currentActionPending = 'none';
+            setControls();
         }
 
         function payMoney(fromPlayer, toRecipient, amount) {
@@ -883,6 +831,8 @@
                     prop.houses--;
                     bankruptPlayer.money += prop.houseCost / 2;
                     logMessage(`${bankruptPlayer.name} sold a house on ${prop.name} for $${prop.houseCost / 2}.`);
+                    updatePlayerInfo();
+                    updateBoardUI();
                 }
 
                 // Mortgage property if still in debt
@@ -890,12 +840,12 @@
                     prop.mortgaged = true;
                     bankruptPlayer.money += prop.price / 2;
                     logMessage(`${bankruptPlayer.name} mortgaged ${prop.name} for $${prop.price / 2}.`);
+                    updatePlayerInfo();
+                    updateBoardUI();
                 } else {
-                    // If mortgaged and still can't pay, transfer to recipient
-                    break; // Break if we can't sell/mortgage more
+                    // If mortgaged and still can't pay, can't sell more from this property
+                    break;
                 }
-                updatePlayerInfo();
-                updateBoardUI();
             }
 
             if (bankruptPlayer.money < debtAmount) {
@@ -907,6 +857,7 @@
                         prop.owner = recipient.id;
                         recipient.properties.push(propId);
                         prop.mortgaged = true; // Properties are transferred mortgaged
+                        prop.houses = 0; // Houses are removed upon transfer
                         logMessage(`${prop.name} transferred to ${recipient.name} (mortgaged).`);
                     });
                 } else {
@@ -941,6 +892,8 @@
                 logMessage(`${players[0].name} is the last player standing! ${players[0].name} wins!`, 'success');
                 rollDiceBtn.disabled = true;
                 endTurnBtn.disabled = true;
+                propertyActionsDiv.style.display = 'none';
+                jailActionsDiv.style.display = 'none';
             }
         }
 
@@ -984,7 +937,6 @@
                     logMessage(`${player.name} received a Get Out of Jail Free card.`);
                     break;
                 case "Go back 3 spaces":
-                    // This one is tricky as it can pass Go backward. Simplified:
                     player.position = (player.position - 3 + board.length) % board.length;
                     logMessage(`${player.name} moved back 3 spaces to ${board[player.position].name}.`);
                     break;
@@ -1012,31 +964,58 @@
             }
             updatePlayerInfo();
             updateBoardUI();
-            isTurnOver = true; // Card actions typically end turn
         }
 
         // --- Property Management Actions ---
 
-        function updatePropertyActionDropdowns(player) {
+        function showBuyPropertyAction(player, space) {
+            propertyActionsDiv.style.display = 'flex';
+            buyPropertyBtn.style.display = 'inline-block';
+            buyPropertyBtn.onclick = () => buyProperty(player, space);
+
+            // Hide other management options
+            buildHouseBtn.style.display = 'none';
+            mortgageSelect.style.display = 'none';
+            mortgagePropertyBtn.style.display = 'none';
+            unmortgageSelect.style.display = 'none';
+            unmortgagePropertyBtn.style.display = 'none';
+            sellHouseSelect.style.display = 'none';
+            sellHouseBtn.style.display = 'none';
+        }
+
+        function showPropertyManagementActions(player) {
+            // Hide "Buy Property" button
+            buyPropertyBtn.style.display = 'none';
+
             // Build House
             let buildableProperties = getPlayerOwnedProperties(player, 'property').filter(prop =>
                 !prop.mortgaged && prop.houses < 5 && checkMonopoly(player, prop.colorGroup) &&
                 player.money >= prop.houseCost
             ).sort((a,b) => a.houses - b.houses); // Sort by fewest houses for even building enforcement
 
-            // Ensure even building (simplified check: cannot build on one if another in group has significantly fewer)
             const availableToBuild = [];
             for (const prop of buildableProperties) {
                 const group = getPropertiesByColor(prop.colorGroup);
-                const minHousesInGroup = Math.min(...group.filter(p => p.owner === player.id).map(p => p.houses));
-                if (prop.houses <= minHousesInGroup) { // Allow building if houses are equal or just one more
+                const maxHousesInGroup = Math.max(...group.filter(p => p.owner === player.id).map(p => p.houses));
+                // Only allow building if the property's houses are equal to the max in group
+                // This is a strict interpretation of even building.
+                if (prop.houses < 5 && prop.houses === maxHousesInGroup) {
                      availableToBuild.push(prop);
                 }
             }
+            // If nothing can be built on yet, check if other properties are available to build on
+            // that might be behind in houses within the monopoly group
+            if(availableToBuild.length === 0) {
+                 const minHousesInGroup = Math.min(...buildableProperties.map(p => p.houses));
+                 buildableProperties.forEach(prop => {
+                     if (prop.houses === minHousesInGroup) {
+                         availableToBuild.push(prop);
+                     }
+                 });
+            }
+
             buildHouseBtn.style.display = availableToBuild.length > 0 ? 'inline-block' : 'none';
             if (availableToBuild.length > 0) {
-                // Simplification: just make the button clickable if there's *any* buildable property
-                // A full UI would have a dropdown to select which one.
                 buildHouseBtn.onclick = () => showBuildHouseDialog(player, availableToBuild);
             }
 
@@ -1053,7 +1032,7 @@
 
 
             // Unmortgage
-            let unmortgagableProperties = getPlayerOwnedProperties(player).filter(prop => prop.mortgaged && player.money >= prop.price * 0.55);
+            let unmortgagableProperties = getPlayerOwnedProperties(player).filter(prop => prop.mortgaged && player.money >= Math.ceil(prop.price * 0.55));
             populateSelect(unmortgageSelect, unmortgagableProperties, 'Unmortgage');
             unmortgageSelect.style.display = unmortgagableProperties.length > 0 ? 'block' : 'none';
             unmortgagePropertyBtn.style.display = unmortgagableProperties.length > 0 ? 'inline-block' : 'none';
@@ -1075,11 +1054,11 @@
         }
 
         function populateSelect(selectElement, properties, defaultOptionText) {
-            selectElement.innerHTML = `<option value="">-- Select ${defaultOptionText} Property --</option>`;
+            selectElement.innerHTML = `<option value="">-- ${defaultOptionText} --</option>`;
             properties.forEach(prop => {
                 const option = document.createElement('option');
                 option.value = prop.id;
-                option.textContent = `${prop.name} ${prop.mortgaged ? '(Mortgaged)' : ''} ${prop.houses > 0 ? `(H: ${prop.houses})` : ''}`;
+                option.textContent = `${prop.name} ${prop.mortgaged ? '(Mortgaged)' : ''} ${prop.houses > 0 ? `(H: ${prop.houses})` : ''} - Cost: $${prop.type === 'property' && prop.houses < 5 ? (prop.houses < 4 ? prop.houseCost : (prop.houses === 4 ? prop.houseCost : '')) : (prop.type === 'railroad' || prop.type === 'utility' ? prop.price/2 : '')}`;
                 selectElement.appendChild(option);
             });
             selectElement.onchange = () => {
@@ -1100,40 +1079,60 @@
 
         function showBuildHouseDialog(player, availableProperties) {
             const selectDiv = document.createElement('div');
+            selectDiv.className = 'build-house-dialog';
             selectDiv.innerHTML = `
-                <p>Build a house for $${availableProperties[0].houseCost}:</p>
+                <p>Build on:</p>
                 <select id="build-house-prop-select" class="action-select"></select>
-                <button id="confirm-build-btn">Confirm Build</button>
+                <button id="confirm-build-btn">Build</button>
                 <button id="cancel-build-btn">Cancel</button>
             `;
             const buildSelect = selectDiv.querySelector('#build-house-prop-select');
             const confirmBtn = selectDiv.querySelector('#confirm-build-btn');
             const cancelBtn = selectDiv.querySelector('#cancel-build-btn');
 
-            populateSelect(buildSelect, availableProperties, 'Select Property to Build On');
+            buildSelect.innerHTML = `<option value="">-- Select Property to Build On --</option>`;
+            availableProperties.forEach(prop => {
+                const option = document.createElement('option');
+                option.value = prop.id;
+                option.textContent = `${prop.name} (H: ${prop.houses}) - Cost: $${prop.houseCost}`;
+                buildSelect.appendChild(option);
+            });
+            confirmBtn.disabled = true; // Initially disabled
+
+            buildSelect.onchange = () => {
+                confirmBtn.disabled = !buildSelect.value;
+            };
+
             propertyActionsDiv.appendChild(selectDiv);
             buildHouseBtn.style.display = 'none'; // Hide main build button while dialog is open
 
             confirmBtn.onclick = () => {
                 const propId = parseInt(buildSelect.value);
                 const prop = board[propId];
-                if (prop && player.money >= prop.houseCost && prop.houses < 5) {
+                if (prop && prop.owner === player.id && player.money >= prop.houseCost && prop.houses < 5) {
+                    const group = getPropertiesByColor(prop.colorGroup);
+                    const maxHousesInGroup = Math.max(...group.filter(p => p.owner === player.id).map(p => p.houses));
+                    if (prop.houses < maxHousesInGroup && prop.houses < 4) { // Enforce building evenly within a group
+                        logMessage("Must build houses evenly across the monopoly group.", "error");
+                        return;
+                    }
+
                     player.money -= prop.houseCost;
                     prop.houses++;
                     logMessage(`${player.name} built a house on ${prop.name}. Houses: ${prop.houses}.`);
                     updatePlayerInfo();
                     updateBoardUI();
                     propertyActionsDiv.removeChild(selectDiv);
-                    updatePropertyActionDropdowns(player); // Re-evaluate and show/hide options
-                    setControlsForPropertyAction(player);
+                    showPropertyManagementActions(player); // Re-evaluate and show/hide options
+                    setControls(); // Re-evaluate main controls
                 } else {
                     logMessage("Cannot build house here.", "error");
                 }
             };
             cancelBtn.onclick = () => {
                 propertyActionsDiv.removeChild(selectDiv);
-                updatePropertyActionDropdowns(player); // Re-evaluate and show/hide options
-                setControlsForPropertyAction(player);
+                showPropertyManagementActions(player); // Re-evaluate and show/hide options
+                setControls(); // Re-evaluate main controls
             };
         }
 
@@ -1146,7 +1145,7 @@
                 logMessage(`${player.name} mortgaged ${prop.name} for $${prop.price / 2}.`, 'info');
                 updatePlayerInfo();
                 updateBoardUI();
-                updatePropertyActionDropdowns(player);
+                showPropertyManagementActions(player); // Refresh actions
             } else {
                 logMessage(`Cannot mortgage ${prop.name}. Must have no houses and own it.`, 'error');
             }
@@ -1161,7 +1160,7 @@
                 logMessage(`${player.name} unmortgaged ${prop.name} for $${unmortgageCost}.`, 'info');
                 updatePlayerInfo();
                 updateBoardUI();
-                updatePropertyActionDropdowns(player);
+                showPropertyManagementActions(player); // Refresh actions
             } else {
                 logMessage(`Cannot unmortgage ${prop.name}. Not enough money or not mortgaged.`, 'error');
             }
@@ -1170,14 +1169,19 @@
         function sellHouse(player, propId) {
             const prop = board[propId];
             if (prop && prop.owner === player.id && prop.houses > 0) {
-                // Simplified: assuming can sell one house at a time.
-                // In actual Monopoly, must sell evenly and can't sell if that makes group uneven.
+                const group = getPropertiesByColor(prop.colorGroup);
+                const minHousesInGroup = Math.min(...group.filter(p => p.owner === player.id).map(p => p.houses));
+                if (prop.houses > minHousesInGroup) {
+                    logMessage("Must sell houses evenly across the monopoly group.", "error");
+                    return;
+                }
+                
                 prop.houses--;
                 player.money += prop.houseCost / 2;
                 logMessage(`${player.name} sold a house on ${prop.name} for $${prop.houseCost / 2}. Houses: ${prop.houses}.`, 'info');
                 updatePlayerInfo();
                 updateBoardUI();
-                updatePropertyActionDropdowns(player);
+                showPropertyManagementActions(player); // Refresh actions
             } else {
                 logMessage(`Cannot sell house on ${prop.name}. No houses to sell or not owned.`, 'error');
             }
@@ -1185,35 +1189,76 @@
 
 
         // --- Control Management ---
+        function setControls() {
+            const player = players[currentPlayerIndex];
+
+            // Hide all action divs first
+            propertyActionsDiv.style.display = 'none';
+            jailActionsDiv.style.display = 'none';
+            buyPropertyBtn.style.display = 'none'; // Ensure buy button is hidden
+            buildHouseBtn.style.display = 'none'; // Ensure build button is hidden
+            // ... (ensure other property action buttons are initially hidden)
+            // Call showPropertyManagementActions to hide/show its components correctly
+            showPropertyManagementActions(player); // This will manage its own internal elements
+
+            if (gameOver) {
+                rollDiceBtn.disabled = true;
+                endTurnBtn.disabled = true;
+                return;
+            }
+
+            if (player.inJail) {
+                rollDiceBtn.disabled = false; // Can still roll in jail
+                endTurnBtn.disabled = true; // Can't end turn until resolved jail
+                jailActionsDiv.style.display = 'flex';
+                payBailBtn.disabled = (player.money < 50);
+                useJailCardBtn.disabled = (player.getOutOfJailFreeCards === 0);
+            } else if (player.doublesRolledThisTurn > 0 && player.doublesRolledThisTurn < 3) {
+                // Rolled doubles, can roll again. Actions for current space *before* re-roll.
+                rollDiceBtn.disabled = false; // Can roll again
+                endTurnBtn.disabled = true; // Must roll again or perform actions
+                if (currentActionPending === 'buy') {
+                    const space = board[player.position];
+                    showBuyPropertyAction(player, space);
+                } else if (currentActionPending === 'manage') {
+                    showPropertyManagementActions(player);
+                }
+            } else if (currentActionPending === 'buy') {
+                rollDiceBtn.disabled = true;
+                endTurnBtn.disabled = false; // Can choose to end turn without buying
+                const space = board[player.position];
+                showBuyPropertyAction(player, space);
+            } else if (currentActionPending === 'manage') {
+                rollDiceBtn.disabled = true;
+                endTurnBtn.disabled = false;
+                showPropertyManagementActions(player);
+            } else { // Turn is over or no specific action required on space
+                rollDiceBtn.disabled = true; // Player has rolled or no action needed
+                endTurnBtn.disabled = false; // Can end turn
+            }
+        }
+
         function setControlsForTurnStart() {
+            const player = players[currentPlayerIndex];
+            player.hasRolled = false; // Reset for new turn
+            player.doublesRolledThisTurn = 0; // Reset for new turn
+            currentActionPending = 'none'; // Clear any pending actions
+
             rollDiceBtn.disabled = false;
             endTurnBtn.disabled = true;
             propertyActionsDiv.style.display = 'none';
             jailActionsDiv.style.display = 'none';
+            buyPropertyBtn.style.display = 'none';
+            showPropertyManagementActions(player); // This will hide/show management options based on player's properties
+                                                // but it won't affect the buy button display.
 
-            const player = players[currentPlayerIndex];
             if (player.inJail) {
                 logMessage(`${player.name} is in Jail.`, 'warning');
-                setControlsForJail();
+                setControlsForJailStartTurn(); // Specific jail controls at start of turn
             }
         }
 
-        function setControlsForTurnEnd() {
-            rollDiceBtn.disabled = true;
-            endTurnBtn.disabled = false;
-            propertyActionsDiv.style.display = 'none'; // Hide property actions
-            jailActionsDiv.style.display = 'none'; // Hide jail actions
-            // Update property action dropdowns one last time to ensure they're hidden
-            updatePropertyActionDropdowns(players[currentPlayerIndex]);
-        }
-
-        function setControlsForPropertyAction(player) {
-            rollDiceBtn.disabled = (player.doublesRolledThisTurn > 0); // Can roll again if doubles
-            endTurnBtn.disabled = !(isTurnOver || player.doublesRolledThisTurn === 0);
-            updatePropertyActionDropdowns(player); // Show relevant property actions
-        }
-
-        function setControlsForJail() {
+        function setControlsForJailStartTurn() {
             rollDiceBtn.disabled = false; // Player can still roll to try for doubles
             endTurnBtn.disabled = true; // Cannot end turn until out of jail or 3 turns pass
 
@@ -1221,36 +1266,60 @@
             const player = players[currentPlayerIndex];
             payBailBtn.disabled = (player.money < 50);
             useJailCardBtn.disabled = (player.getOutOfJailFreeCards === 0);
+
+            // If player has exhausted 3 turns in jail, they *must* pay bail
+            if (player.jailTurns >= 3 && !player.inJail) { // If they got out by rolling doubles, this won't apply
+                logMessage(`${player.name} must pay $50 bail or use a Get Out of Jail Free card.`);
+                // If they don't have enough money or cards, they can't take action
+                if (player.money < 50 && player.getOutOfJailFreeCards === 0) {
+                    logMessage(`${player.name} cannot afford bail or use a card and is stuck.`, 'error');
+                    // This situation isn't explicitly handled for ending turn, would require bankruptcy.
+                    // For now, they're just stuck.
+                    endTurnBtn.disabled = true; // They can't end turn if they can't pay/use card
+                    rollDiceBtn.disabled = true;
+                } else {
+                    endTurnBtn.disabled = false; // They can choose to pay/use card THEN end turn
+                }
+            } else if (player.jailTurns < 3) {
+                 endTurnBtn.disabled = true; // Cannot end turn until tried rolling or action
+            }
         }
+
 
         function endTurn() {
             if (gameOver) return;
 
             logMessage(`${players[currentPlayerIndex].name}'s turn ended.`);
-            players[currentPlayerIndex].doublesRolledThisTurn = 0; // Reset for next turn
-            players[currentPlayerIndex].hasRolled = false; // Reset for next turn
+            // doublesRolledThisTurn and hasRolled are reset in setControlsForTurnStart
 
             // Move to next player that is still in the game
             let nextPlayerFound = false;
-            let originalIndex = currentPlayerIndex;
+            let originalIndex = currentPlayerIndex; // Store original index in case all other players bankrupt
+            let loopCount = 0; // Prevent infinite loop if no players left (should be caught by gameOver)
+
             do {
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-                if (players.length > 0 && players[currentPlayerIndex].id === players[originalIndex].id) {
-                    // Only one player left (or none, game over)
-                    break;
+                loopCount++;
+                if (loopCount > players.length * 2) { // Safety break, should not happen with proper bankruptcy handling
+                    logMessage("Error: Could not find next player.", "error");
+                    gameOver = true;
+                    return;
                 }
-                // Check if the player at the new index is still in the players array (i.e. not bankrupt)
+                // Check if the player at the new index is still in the active players array
                 if (players.some(p => p.id === players[currentPlayerIndex].id)) {
                     nextPlayerFound = true;
                 }
-            } while (!nextPlayerFound && players.length > 1);
+            } while (!nextPlayerFound);
 
-            if (players.length > 0) {
-                logMessage(`It's ${players[currentPlayerIndex].name}'s turn.`);
-                isTurnOver = false; // Reset turn over flag
-                setControlsForTurnStart();
-                updatePlayerInfo();
+            // If only one player left, game should have ended via checkWinCondition
+            if (players.length <= 1) {
+                checkWinCondition();
+                return;
             }
+
+            logMessage(`It's ${players[currentPlayerIndex].name}'s turn.`);
+            setControlsForTurnStart();
+            updatePlayerInfo();
         }
 
 
@@ -1292,7 +1361,7 @@
                 player.jailTurns = 0;
                 logMessage(`${player.name} paid $50 bail to get out of Jail.`, 'success');
                 updatePlayerInfo();
-                setControlsForTurnStart(); // Player can now roll
+                setControls(); // Player can now roll
             } else {
                 logMessage("Not enough money to pay bail.", "error");
             }
@@ -1306,7 +1375,7 @@
                 player.jailTurns = 0;
                 logMessage(`${player.name} used a Get Out of Jail Free card to get out of Jail!`, 'success');
                 updatePlayerInfo();
-                setControlsForTurnStart(); // Player can now roll
+                setControls(); // Player can now roll
             } else {
                 logMessage("No Get Out of Jail Free cards available.", "error");
             }
