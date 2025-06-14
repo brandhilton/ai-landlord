@@ -507,7 +507,7 @@
 
                         <div id="property-actions" style="display: none;">
                             <h3>Property Actions</h3>
-                            <button id="buy-property-btn" style="display: none;">Buy Property</button>
+                            <button id="buy-property-btn" style="display: none;">Buy Holding</button>
                             <button id="build-house-btn" style="display: none;">Build Dwelling</button>
                             <select id="mortgage-select" class="action-select" style="display: none;"></select>
                             <button id="mortgage-property-btn" style="display: none;">Mortgage Holding</button>
@@ -1278,7 +1278,7 @@
             logMessage(`${player.name} drew a ${deck === chanceCardsShuffled ? 'Force Card' : 'Supply Drop'} : "${card}"`);
 
             let movedByCard = false; // Flag to indicate if the player was moved by this card
-            let oldPosition = player.position; // Store current position for 'pass Go' check
+            let oldPosition = player.position; // Store current position for 'pass START' check
 
             switch (card) {
                 case "Advance to START (Collect $200)":
