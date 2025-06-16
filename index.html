@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landlord</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="setup-screen">
+        <h1>Landlord Setup</h1>
+        <div id="player-setup">
+            <label for="num-players">Number of Players (2-6):</label>
+            <input type="number" id="num-players" value="2" min="2" max="6">
+            <div id="player-name-inputs"></div>
+            <button id="start-game-btn">Start Game</button>
+        </div>
+    </div>
+
+    <div id="game-screen" style="display: none;">
+        <h1>Landlord</h1>
+        
+        <div id="main-game-layout">
+            <!-- Left Column: Game Board and Message Log -->
+            <div id="left-column">
+                <div id="game-board"></div> <!-- Game board content will be generated here by JS -->
+                <div id="message-log-area">
+                    <div id="message-log"></div>
+                </div>
+            </div>
+
+            <!-- Middle Column: Game Controls and Player List -->
+            <div id="middle-column">
+                <div id="game-controls-panel">
+                    <div id="game-controls">
+                        <div id="current-player-display"></div>
+                        <div id="dice-display">Dice: -</div>
+                        <div class="button-group">
+                            <button id="roll-dice-btn">Roll Dice</button>
+                            <button id="end-turn-btn" disabled>End Turn</button>
+                        </div>
+
+                        <div id="property-actions" style="display: none;">
+                            <h3>Property Actions</h3>
+                            <button id="buy-property-btn" style="display: none;">Buy Holding</button>
+                            <button id="build-house-btn" style="display: none;">Build Dwelling</button>
+                            <select id="mortgage-select" class="action-select" style="display: none;"></select>
+                            <button id="mortgage-property-btn" style="display: none;">Mortgage Holding</button>
+                            <select id="unmortgage-select" class="action-select" style="display: none;"></select>
+                            <button id="unmortgage-property-btn" style="display: none;">Unmortgage Holding</button>
+                            <select id="sell-house-select" class="action-select" style="display: none;"></select>
+                            <button id="sell-house-btn" style="display: none;">Sell Dwelling</button>
+                        </div>
+
+                        <div id="jail-actions" style="display: none;">
+                            <h3>Detention Block Actions</h3>
+                            <button id="pay-bail-btn">Pay $50 Bail</button>
+                            <button id="use-jail-card-btn">Use Get Out of Detention Free Card</button>
+                        </div>
+                    </div>
+                    <div id="player-list-container"></div>
+                </div>
+            </div>
+
+            <!-- Right Column: Debug Controls -->
+            <div id="right-column">
+                <div id="debug-controls" style="display: none;">
+                    <h2>Debug Controls</h2>
+                    <div>
+                        <!-- Move Player -->
+                        <div class="debug-group">
+                            <h4>Move Player</h4>
+                            <select id="debug-move-player-select" class="action-select"></select>
+                            <select id="debug-move-space-select" class="action-select"></select>
+                            <button id="debug-move-btn" class="button-group button">Move</button>
+                        </div>
+
+                        <!-- Simulate Dice Roll -->
+                        <div class="debug-group">
+                            <h4>Simulate Dice Roll</h4>
+                            <label for="debug-die1">Die 1:</label>
+                            <input type="number" id="debug-die1" min="1" max="6" value="1">
+                            <label for="debug-die2">Die 2:</label>
+                            <input type="number" id="debug-die2" min="1" max="6" value="1">
+                            <button id="debug-roll-btn" class="button-group button">Simulate Roll</button>
+                        </div>
+
+                        <!-- Change Ownership -->
+                        <div class="debug-group">
+                            <h4>Change Holding Ownership</h4>
+                            <select id="debug-property-select" class="action-select"></select>
+                            <select id="debug-owner-select" class="action-select"></select>
+                            <button id="debug-change-owner-btn" class="button-group button">Change Owner</button>
+                        </div>
+
+                        <!-- Manage Houses/Hotels -->
+                        <div class="debug-group">
+                            <h4>Manage Dwellings/Fortresses</h4>
+                            <select id="debug-house-property-select" class="action-select"></select>
+                            <label for="debug-house-count">Dwellings (0-5):</label>
+                            <input type="number" id="debug-house-count" min="0" max="5" value="0">
+                            <button id="debug-set-houses-btn" class="button-group button">Set Dwellings</button>
+                        </div>
+
+                        <!-- Put Player in Jail -->
+                        <div class="debug-group">
+                            <h4>Send to Detention Block</h4>
+                            <select id="debug-jail-player-select" class="action-select"></select>
+                            <button id="debug-send-to-jail-btn" class="button-group button">Send to Detention</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button id="toggle-debug-btn" style="margin-top: 10px; padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">Toggle Debug Controls</button>
+
+    <!-- Property Info Modal -->
+    <div id="property-modal-overlay">
+        <div id="property-modal-content">
+            <button id="property-modal-close">&times;</button>
+            <h3 id="modal-property-name"></h3>
+            <div id="modal-property-color-bar" class="color-bar"></div>
+            <p><strong>Type:</strong> <span id="modal-property-type"></span></p>
+            <p><strong>Price:</strong> $<span id="modal-property-price"></span></p>
+            <p><strong>Owner:</strong> <span id="modal-property-owner"></span></p>
+            <p><strong>Mortgaged:</strong> <span id="modal-property-mortgaged"></span></p>
+            <p id="modal-property-houses-row"><strong>Dwellings:</strong> <span id="modal-property-houses"></span></p>
+            <p id="modal-property-house-cost-row"><strong>Dwelling Cost:</strong> $<span id="modal-property-house-cost"></span></p>
+            <p><strong>Mortgage Value:</strong> $<span id="modal-property-mortgage-value"></span></p>
+
+            <h4>Rent:</h4>
+            <ul id="modal-property-rent-list">
+                <!-- Rent details will be inserted here -->
+            </ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -111,3 +111,5 @@ It then produced the full html, which had two lines changed from the last time. 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 
 
 you introduced a bug. when a player has to pay tax, the amount is no longer deducted from their account.
+
+Split this file up.
