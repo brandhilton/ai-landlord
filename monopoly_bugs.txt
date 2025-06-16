@@ -1,0 +1,113 @@
+"Buy Property" button didn't work (2 attempts to fix)
+
+Yes, one player hit "Chance" and drew the card that sent him 3 spaces back. He landed on an unowned property, but was not given the option to buy the property.
+
+one of my players landed on "go to jail". they went to jail, but their turn didn't end.
+
+I just had a player in jail. they paid bail, but were not allowed to roll and move on the same turn. please correct this.
+
+I have a player in jail. On their 3rd turn in jail, they didn't roll a double. After rolling, they bought several houses. On their next turn, they were allowed to continue rolling rather than being forced to pay bail.
+
+I need additional controls for debugging. I need to be able to move pieces on the board without rolling dice. I need to be able to simulate a dice roll while specifying what the dice will land on. I need to be able to change ownership of a property and place houses and hotels on properties. I need to be able to put players in jail.
+
+When I simulate a dice roll, the "Roll Dice" and "End Turn" buttons are disabled. I need them to behave normally.
+
+The "Roll Dice" button is always enabled after a simulated dice roll. I need the simulated dice roll to behave exactly like a regular dice roll. 
+
+No. When I do a simulated roll of 1,2, the "Roll Dice" button is enabled and the "End Turn button is disabled. That is not correct. "Roll Dice" should be disabled and "End Turn" should be enabled. A simulated roll should behave exactly like clicking the "Roll Dice" button, except I get to choose the numbers.
+
+>>>>>>> it added logging and asked me to open the dev console and copy/paste the logs collected.
+
+Error: ⛔ Core error code: InvalidTabOrUrl injected.js:5:20830
+Uncaught ReferenceError: unmortmortgagableProperties is not defined
+    showPropertyManagementActions file:///Users/brandh/Downloads/code10.html:1181
+    setControlsForTurnStart file:///Users/brandh/Downloads/code10.html:1443
+    startGame file:///Users/brandh/Downloads/code10.html:710
+code10.html:1181:46
+--- setControls called --- code10.html:1343:21
+Player: Player 1 (ID: 0) code10.html:1344:21
+inJail: false, hasRolled: true, doublesRolledThisTurn: 0, jailTurns: 0 code10.html:1345:21
+currentActionPending: buy code10.html:1346:21
+Uncaught ReferenceError: unmortmortgagableProperties is not defined
+    showPropertyManagementActions file:///Users/brandh/Downloads/code10.html:1181
+    setControls file:///Users/brandh/Downloads/code10.html:1354
+    landOnSpace file:///Users/brandh/Downloads/code10.html:925
+    movePlayer file:///Users/brandh/Downloads/code10.html:806
+    rollDice file:///Users/brandh/Downloads/code10.html:790
+    <anonymous> file:///Users/brandh/Downloads/code10.html:1664
+
+>>>>>>>>> It said it had a typo!
+
+Can you make a visual distinction between players in jail and players visiting jail?
+>>>>>>>>>>>>> It gave prisoners a dashed border instead of solid.
+
+prisoners in jail should be placed in the upper right corner of the space
+
+when I click on a property, I would like to see a modal with all the property information on it, including the current owner.
+
+remove the visual distinction between players in jail and players visiting jail.
+>>>>>>>>>>>> It removed the dotted border, but also reverted the placement
+
+prisoners in jail should be placed in the upper right corner of the space
+>>>>>>>>>>> It un-reverted the placement, but also un-reverted the dotted border
+
+jail prisoners should not have a dotted border, but they should remain in the upper right corner of the space.
+>>>>>>>>>> It fixed the dotted border, but for some reason changed the spelling of a variable in an if statement, introducing a bug.
+
+you introduced a bug. rolling doubles 3 times in a row no longer sends the player to jail.
+>>>>>>>>>>>>>> It fixed the bug, but made other, unrelated changes - changing a font size and a box-sizing attribute.
+
+put the debug controls to the right instead of underneath
+
+no, that just changed the arrangement of the debug panel and placed it between the game board and the log. I want the debug panel to be to the right of everything.
+
+Now the player info panels are below the game board. Put them back where they were. 
+
+No. player-list-container should be to the right of game-board and below game-controls.
+
+move message-log below main-game-area.
+
+message-log should be below main-game-area and to the left of debug-controls.
+
+>>>>>>>>>>>> I started a new chat and loaded the html file in, telling Gemini this was my monopoly program and I wanted to make some enhancements. It suggested several possible enhancements. One was "Implement full card logic" which it apparently hadn't done for Chance and Community Chest. So I took that option.
+
+I don't like the layout. I want the message log to be directly below the game board and to the left of the debug controls, and I want the "Toggle Debug Controls" button to be directly below the message log.
+
+>>>>>>>>>>>>>>> lots of changes that totally screwed up the layout and also some totally un-asked-for logic changes.
+
+revert all the changes you just made.
+>>>>>>>>>>>>>>> it reverted the layout changes AND the card logic changes
+
+no, I want to keep the card logic changes. put those back in.
+>>>>>>>>>>>>> It added the card logic back in, but also changed the property handling logic
+
+I want the layout to look like this: (and I uploaded a png)
+
+to avoid intellectual property problems, let's rename the application "Landlord" and rename all the properties using a star wars theme.
+>>>>>>>>>>>>> It reverted the layout changes.
+
+I want the layout to look like this: (and I uploaded a png)
+
+look at the image I uploaded and fix the layout properly. You have the debug controls below the game controls. That's incorrect. Provide the changes as a patch file. 
+
+>>>>>>>>>>>>> the patch was mal-formed so I had to ask it to provide the full html file.
+>>>>>>>>>>>>> It said it had adjusted the layout, but all it did was change the labels on two of the buttons.
+
+the image I uploaded has a three-column layout. The left column should contain the game board and log area. the middle column should contain the game controls. the right column should contain the debug controls when they're visible.
+
+the debug panel used to be a single column. change it back to that.
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 
+
+I tried multiple times to get it to give me patch files. The line numbers were always wrong. It finally said:
+
+You are absolutely right, and I sincerely apologize. My attempts to generate a valid patch file have repeatedly failed, and the malformed line numbers are a clear sign that my internal diffing process is not correctly matching the state of your file. This is my error, and it has caused you unnecessary frustration.
+
+I will stop providing patch files. From now on, I will provide the full, complete HTML file for any changes. This is the most reliable way to ensure you get the correct code without any further issues.
+
+Which I interpreted as, "Fine. You don't like my patch files. I won't bother you with patch files anymore."
+
+It then produced the full html, which had two lines changed from the last time. One moved the "Toggle Debug" button, and the other introduced a bug.
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 
+
+you introduced a bug. when a player has to pay tax, the amount is no longer deducted from their account.
