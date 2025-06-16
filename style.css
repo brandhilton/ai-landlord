@@ -44,6 +44,7 @@ body {
     flex-direction: column;
     gap: 20px; /* Space between board and message log */
     flex-shrink: 0; /* Prevent it from shrinking */
+    position: relative; /* Make this a positioning context for the logo */
 }
 
 /* Middle Column (Game Controls) */
@@ -73,6 +74,21 @@ body {
     grid-template-rows: repeat(11, 1fr);
     position: relative;
     background-color: #e0e0e0; /* Background for board grid area */
+}
+
+/* NEW: Snarky Logo in the center of the board */
+#board-logo {
+    position: absolute;
+    top: 400px; /* Half of board height */
+    left: 400px; /* Half of board width */
+    transform: translate(-50%, -50%) rotate(-10deg);
+    font-size: 4.5em;
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.15);
+    text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.7);
+    pointer-events: none; /* Allows clicking through the logo */
+    z-index: 1; /* Sits above the board background */
+    white-space: nowrap;
 }
 
 .board-space {
