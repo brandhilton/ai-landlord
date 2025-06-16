@@ -1,0 +1,463 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 20px;
+}
+#setup-screen, #game-screen {
+    text-align: center;
+}
+#player-setup {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.player-input-group {
+    margin-bottom: 10px;
+}
+
+/* Main Game Screen Container */
+#game-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers H1 and main-game-layout */
+    gap: 20px; /* Space between H1 and main-game-layout */
+    width: 100%; /* Take full width available */
+}
+
+/* Container for the three main columns */
+#main-game-layout {
+    display: flex;
+    gap: 20px; /* Space between the columns */
+    justify-content: center; /* Center the entire layout horizontally */
+    align-items: flex-start; /* Align columns to the top */
+    flex-wrap: wrap; /* Allow columns to wrap on smaller screens */
+}
+
+/* Left Column (Board + Message Log) */
+#left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Space between board and message log */
+    flex-shrink: 0; /* Prevent it from shrinking */
+}
+
+/* Middle Column (Game Controls) */
+#middle-column {
+    width: 350px;
+    flex-shrink: 0;
+}
+
+/* Right Column (Debug Controls) */
+#right-column {
+    width: 350px;
+    flex-shrink: 0;
+}
+
+/* Game Board Styling (now a distinct block) */
+#game-board {
+    width: 800px; /* Fixed width for the entire board container */
+    height: 800px; /* Fixed height for the entire board container */
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    border-radius: 8px;
+    box-sizing: border-box; /* Include padding and border in the width/height */
+    display: grid; /* Use grid for the board layout itself */
+    grid-template-columns: repeat(11, 1fr);
+    grid-template-rows: repeat(11, 1fr);
+    position: relative;
+    background-color: #e0e0e0; /* Background for board grid area */
+}
+
+.board-space {
+    border: 1px solid #aaa;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.7em;
+    text-align: center;
+    padding: 2px;
+    box-sizing: border-box;
+    position: relative;
+    cursor: pointer; /* Indicate clickable */
+}
+.board-space.corner { background-color: #d0d0d0; }
+/* These grid-area rules place the spaces in the correct Monopoly board layout */
+#go { grid-area: 11 / 11; }
+#mediterranean-avenue { grid-area: 11 / 10; }
+#community-chest1 { grid-area: 11 / 9; }
+#baltic-avenue { grid-area: 11 / 8; }
+#income-tax { grid-area: 11 / 7; }
+#reading-railroad { grid-area: 11 / 6; }
+#oriental-avenue { grid-area: 11 / 5; }
+#chance1 { grid-area: 11 / 4; }
+#vermont-avenue { grid-area: 11 / 3; }
+#connecticut-avenue { grid-area: 11 / 2; }
+#jail { grid-area: 11 / 1; }
+
+#st-charles-place { grid-area: 10 / 1; }
+#electric-company { grid-area: 9 / 1; }
+#states-avenue { grid-area: 8 / 1; }
+#virginia-avenue { grid-area: 7 / 1; }
+#pennsylvania-railroad { grid-area: 6 / 1; }
+#st-james-place { grid-area: 5 / 1; }
+#community-chest2 { grid-area: 4 / 1; }
+#tennessee-avenue { grid-area: 3 / 1; }
+#new-york-avenue { grid-area: 2 / 1; }
+
+#freeparking { grid-area: 1 / 1; }
+#kentucky-avenue { grid-area: 1 / 2; }
+#chance2 { grid-area: 1 / 3; }
+#indiana-avenue { grid-area: 1 / 4; }
+#illinois-avenue { grid-area: 1 / 5; }
+#b-o-railroad { grid-area: 1 / 6; }
+#atlantic-avenue { grid-area: 1 / 7; }
+#ventnor-avenue { grid-area: 1 / 8; }
+#water-works { grid-area: 1 / 9; }
+#marvin-gardens { grid-area: 1 / 10; }
+#gotojail { grid-area: 1 / 11; }
+
+#pacific-avenue { grid-area: 2 / 11; }
+#north-carolina-avenue { grid-area: 3 / 11; }
+#community-chest3 { grid-area: 4 / 11; }
+#pennsylvania-avenue { grid-area: 5 / 11; }
+#short-line { grid-area: 6 / 11; }
+#chance3 { grid-area: 7 / 11; }
+#park-place { grid-area: 8 / 11; }
+#luxury-tax { grid-area: 9 / 11; }
+#boardwalk { grid-area: 10 / 11; }
+
+
+.token {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 1px solid black;
+    box-sizing: border-box;
+    bottom: 5px; /* Adjust as needed */
+    right: 5px; /* Adjust as needed */
+}
+.token.p0 { background-color: red; left: 5px; bottom: 5px; }
+.token.p1 { background-color: blue; left: 25px; bottom: 5px; }
+.token.p2 { background-color: green; left: 5px; bottom: 25px; }
+.token.p3 { background-color: yellow; left: 25px; bottom: 25px; }
+.token.p4 { background-color: purple; left: 45px; bottom: 5px; } /* For more players */
+.token.p5 { background-color: orange; left: 45px; bottom: 25px; } /* For more players */
+
+/* Positioning for tokens *actually in jail* (on space 10) */
+.token.in-jail-position.p0 { top: 5px; right: 5px; left: auto; bottom: auto; }
+.token.in-jail-position.p1 { top: 5px; right: 25px; left: auto; bottom: auto; }
+.token.in-jail-position.p2 { top: 25px; right: 5px; left: auto; bottom: auto; }
+.token.in-jail-position.p3 { top: 25px; right: 25px; left: auto; bottom: auto; }
+.token.in-jail-position.p4 { top: 5px; right: 45px; left: auto; bottom: auto; }
+.token.in-jail-position.p5 { top: 25px; right: 45px; left: auto; bottom: auto; }
+
+
+.property-color-bar {
+    height: 10px;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+/* Property Colors */
+.brown { background-color: #8B4513; }
+.light-blue { background-color: #87CEEB; }
+.pink { background-color: #FF69B4; }
+.orange { background-color: #FFA500; }
+.red { background-color: #FF0000; }
+.yellow { background-color: #FFFF00; }
+.green { background-color: #008000; }
+.dark-blue { background-color: #00008B; }
+
+.space-name {
+    font-weight: bold;
+    font-size: 0.7em;
+    margin-top: 5px;
+}
+.space-price {
+    font-size: 0.7em;
+    color: #555;
+}
+.space-owner {
+    position: absolute;
+    bottom: 2px;
+    font-size: 0.6em;
+    color: #333;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.space-houses {
+    position: absolute;
+    top: 15px;
+    right: 5px;
+    font-size: 0.8em;
+    color: green;
+}
+
+/* Game Controls Panel (Middle Column) */
+#game-controls-panel {
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    gap: 20px; /* Space between game controls and player list */
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    border-radius: 8px;
+    box-sizing: border-box; /* Include padding/border in its fixed width */
+}
+
+#game-controls {
+    padding: 20px;
+    border: 1px solid #eee; /* Added border for visual separation */
+    border-radius: 8px;
+    background-color: #f9f9f9; /* Added background for visual separation */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-sizing: border-box;
+}
+#current-player-display {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+#dice-display {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+.button-group button {
+    padding: 10px 15px;
+    font-size: 1em;
+    cursor: pointer;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    transition: background-color 0.2s;
+}
+.button-group button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+.button-group button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+#player-list-container {
+    padding: 10px;
+    border: 1px solid #eee; /* Added border for visual separation */
+    border-radius: 8px;
+    background-color: #f9f9f9; /* Added background for visual separation */
+}
+.player-status {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    text-align: left;
+    font-size: 0.9em;
+}
+.player-status.current {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+.player-status h4 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: #333;
+}
+.player-status ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.player-status ul li {
+    margin-bottom: 3px;
+}
+
+/* Message Log Area (bottom-left) */
+#message-log-area {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between message log and toggle button */
+    align-items: center; /* Center log and button horizontally */
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    border-radius: 8px;
+    box-sizing: border-box; /* Include padding/border in width */
+    width: 800px; /* Match the width of the game board block */
+    min-height: 200px; /* Give it some minimum height */
+}
+
+#message-log {
+    height: 150px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    overflow-y: scroll;
+    background-color: #e9e9e9;
+    font-size: 0.9em;
+    border-radius: 5px;
+    width: 100%; /* Take full width of its parent container */
+}
+#message-log div {
+    margin-bottom: 5px;
+}
+#property-actions, #jail-actions {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+#property-actions button, #jail-actions button {
+    width: 100%;
+}
+.action-select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+/* Debug Controls Styling */
+#debug-controls {
+    padding: 20px;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    border-radius: 8px;
+    box-sizing: border-box; /* Include padding/border in its fixed width */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#debug-controls h2 {
+    margin-top: 0;
+    color: #333;
+}
+#debug-controls > div { /* Inner debug control groups wrapper */
+    display: flex;
+    flex-direction: column; /* Stack groups vertically */
+    gap: 20px;
+    justify-content: center;
+    width: 100%;
+}
+#debug-controls .debug-group {
+    border: 1px solid #eee;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 100%; /* Each group takes full width of the column */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#debug-controls .debug-group h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #555;
+}
+#debug-controls .debug-group select,
+#debug-controls .debug-group input[type="number"] {
+    margin-bottom: 10px;
+    width: calc(100% - 16px); /* Adjust for padding */
+}
+#debug-controls .debug-group button {
+    width: 100%;
+    margin-top: 5px;
+}
+
+/* Property Info Modal Styles */
+#property-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    display: none; /* Hidden by default */
+}
+
+#property-modal-content {
+    background-color: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+    text-align: left;
+    font-size: 0.95em;
+}
+
+#property-modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 1.5em;
+    color: #333;
+}
+
+#property-modal-content .color-bar {
+    height: 15px;
+    width: 100%;
+    margin-bottom: 15px;
+    border-radius: 3px;
+}
+
+#property-modal-content p {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+#property-modal-content strong {
+    color: #000;
+}
+
+#property-modal-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+    border-top: 1px dashed #eee;
+    padding-top: 10px;
+}
+
+#property-modal-content ul li {
+    margin-bottom: 5px;
+}
+
+#property-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 1.8em;
+    cursor: pointer;
+    color: #888;
+    border: none;
+    background: none;
+    padding: 0;
+}
+#property-modal-close:hover {
+    color: #333;
+}
