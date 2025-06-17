@@ -1430,6 +1430,110 @@ function hidePropertyModal() {
     propertyModalOverlay.style.display = 'none';
 }
 
+// --- NEW: Auction Logic ---
+function startAuction(propId) {
+    isAuctionActive = true;
+    auctionPropertyId = propId;
+    currentBid = 0;
+    highestBidderId = null;
+    auctionBidders = [...players]; // All players can bid initially
+    auctionCurrentBidderIndex = currentPlayerIndex; // Start bidding with the player who landed on the space
+
+    // Disable main game controls
+    rollDiceBtn.disabled = true;
+    endTurnBtn.disabled = true;
+    propertyActionsDiv.style.display = 'none';
+    jailActionsDiv.style.display = 'none';
+
+    document.body.classList.add('auction-active');
+    auctionModalOverlay.style.display = 'flex';
+    updateAuctionUI();
+}
+
+function updateAuctionUI() {
+    const property = board[auctionPropertyId];
+    auctionPropertyName.textContent = property.name;
+    auctionCurrentBid.textContent = `$${currentBid}`;
+    auctionHighestBidder.textContent = highestBidderId !== null ? players.find(p => p.id === highestBidderId).name : 'None';
+    
+    const currentBidder = auctionBidders[auctionCurrentBidderIndex];
+    auctionCurrentBidder.textContent = currentBidder.name;
+    auctionBidAmountInput.value = currentBid + 1;
+    auctionBidAmountInput.min = currentBid + 1;
+}
+
+function handlePlaceBid() {
+    const bidAmount = parseInt(auctionBidAmountInput.value);
+    const bidder = auctionBidders[auctionCurrentBidderIndex];
+
+    if (isNaN(bidAmount) || bidAmount <= currentBid) {
+        logMessage(`Invalid bid. Must be higher than $${currentBid}.`, 'error');
+        return;
+    }
+    if (bidAmount > bidder.money) {
+        logMessage(`${bidder.name} cannot afford to bid $${bidAmount}.`, 'error');
+        return;
+    }
+
+    currentBid = bidAmount;
+    highestBidderId = bidder.id;
+    logMessage(`${bidder.name} bids $${currentBid}.`, 'info');
+    nextBidder();
+}
+
+function handleWithdraw() {
+    const withdrawnPlayer = auctionBidders.splice(auctionCurrentBidderIndex, 1)[0];
+    logMessage(`${withdrawnPlayer.name} has withdrawn from the auction.`, 'info');
+
+    // If the current bidder was the last one in the list, reset index to 0
+    if (auctionCurrentBidderIndex >= auctionBidders.length) {
+        auctionCurrentBidderIndex = 0;
+    }
+
+    // Check win condition for auction
+    if (auctionBidders.length === 1) {
+        // If there's only one bidder left, they win automatically
+        highestBidderId = auctionBidders[0].id;
+        endAuction();
+    } else if (auctionBidders.length === 0) {
+        // If everyone withdraws and there was no initial bid
+        endAuction();
+    } else {
+        updateAuctionUI();
+    }
+}
+
+function nextBidder() {
+    auctionCurrentBidderIndex = (auctionCurrentBidderIndex + 1) % auctionBidders.length;
+    updateAuctionUI();
+}
+
+function endAuction() {
+    const property = board[auctionPropertyId];
+    if (highestBidderId !== null) {
+        const winner = players.find(p => p.id === highestBidderId);
+        logMessage(`${winner.name} wins the auction for ${property.name} with a bid of $${currentBid}!`, 'success');
+        
+        winner.money -= currentBid;
+        property.owner = winner.id;
+        winner.properties.push(property.id);
+    } else {
+        logMessage(`No bids were placed for ${property.name}. It remains unowned.`, 'info');
+    }
+
+    // Reset auction state
+    isAuctionActive = false;
+    auctionPropertyId = null;
+    document.body.classList.remove('auction-active');
+    auctionModalOverlay.style.display = 'none';
+
+    // Restore game flow
+    currentActionPending = 'none';
+    setControls();
+    updatePlayerInfo();
+    updateBoardUI();
+}
+
 
 // --- Event Listeners ---
 numPlayersInput.addEventListener('change', () => {
@@ -1506,6 +1610,10 @@ propertyModalOverlay.addEventListener('click', (event) => {
         hidePropertyModal();
     }
 });
+
+// NEW: Auction Event Listeners
+auctionPlaceBidBtn.addEventListener('click', handlePlaceBid);
+auctionWithdrawBtn.addEventListener('click', handleWithdraw);
 
 
 // Initial setup for player name inputs
