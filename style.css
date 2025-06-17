@@ -6,6 +6,10 @@ body {
     background-color: #f0f0f0;
     margin: 0;
     padding: 20px;
+    transition: filter 0.3s;
+}
+body.auction-active > *:not(#auction-modal-overlay) {
+    filter: blur(5px);
 }
 #setup-screen, #game-screen {
     text-align: center;
@@ -76,7 +80,7 @@ body {
     background-color: #e0e0e0; /* Background for board grid area */
 }
 
-/* NEW: Snarky Logo in the center of the board */
+/* Snarky Logo in the center of the board */
 #board-logo {
     position: absolute;
     top: 400px; /* Half of board height */
@@ -401,7 +405,7 @@ body {
 }
 
 /* Property Info Modal Styles */
-#property-modal-overlay {
+#property-modal-overlay, #auction-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -415,7 +419,7 @@ body {
     display: none; /* Hidden by default */
 }
 
-#property-modal-content {
+#property-modal-content, #auction-modal-content {
     background-color: white;
     padding: 25px;
     border-radius: 8px;
@@ -427,7 +431,7 @@ body {
     font-size: 0.95em;
 }
 
-#property-modal-content h3 {
+#property-modal-content h3, #auction-modal-content h2 {
     margin-top: 0;
     margin-bottom: 15px;
     text-align: center;
@@ -442,12 +446,12 @@ body {
     border-radius: 3px;
 }
 
-#property-modal-content p {
+#property-modal-content p, #auction-modal-content p {
     margin-bottom: 8px;
     line-height: 1.4;
 }
 
-#property-modal-content strong {
+#property-modal-content strong, #auction-modal-content strong {
     color: #000;
 }
 
@@ -476,4 +480,13 @@ body {
 }
 #property-modal-close:hover {
     color: #333;
+}
+
+#auction-modal-content .auction-input-group {
+    margin: 15px 0;
+}
+#auction-modal-content input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
 }
