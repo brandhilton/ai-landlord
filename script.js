@@ -1655,12 +1655,16 @@ function refreshDebugControls() {
 // --- Debug Control Logic ---
 
 // Toggle Debug Controls Visibility
-toggleDebugBtn.addEventListener('click', () => {
-    if (debugControlsDiv.style.display === 'none') {
-        debugControlsDiv.style.display = 'flex'; // Use flex to apply inner styling
-        refreshDebugControls(); // Populate dropdowns when shown
-    } else {
-        debugControlsDiv.style.display = 'none';
+document.addEventListener('keydown', (event) => {
+    // Check for Ctrl+D or Command+D on Mac
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'd') {
+        event.preventDefault(); // Prevent browser's default bookmark action
+        if (debugControlsDiv.style.display === 'none') {
+            debugControlsDiv.style.display = 'flex';
+            refreshDebugControls();
+        } else {
+            debugControlsDiv.style.display = 'none';
+        }
     }
 });
 
