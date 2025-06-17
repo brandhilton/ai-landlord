@@ -91,6 +91,15 @@ let currentActionPending = null; // 'buy', 'manage', 'jail', 'none' (meaning tur
 let chanceCardsShuffled = [];
 let communityChestCardsShuffled = [];
 
+// --- NEW: Auction State Variables ---
+let isAuctionActive = false;
+let auctionPropertyId = null;
+let auctionBidders = [];
+let currentBid = 0;
+let highestBidderId = null;
+let auctionCurrentBidderIndex = 0;
+
+
 // --- DOM Elements ---
 const setupScreen = document.getElementById('setup-screen');
 const gameScreen = document.getElementById('game-screen');
@@ -164,6 +173,16 @@ const modalPropertyHouseCostRow = document.getElementById('modal-property-house-
 const modalPropertyHouseCost = document.getElementById('modal-property-house-cost');
 const modalPropertyMortgageValue = document.getElementById('modal-property-mortgage-value');
 const modalPropertyRentList = document.getElementById('modal-property-rent-list');
+
+// --- NEW: Auction Modal Elements ---
+const auctionModalOverlay = document.getElementById('auction-modal-overlay');
+const auctionPropertyName = document.getElementById('auction-property-name');
+const auctionCurrentBid = document.getElementById('auction-current-bid');
+const auctionHighestBidder = document.getElementById('auction-highest-bidder');
+const auctionCurrentBidder = document.getElementById('auction-current-bidder');
+const auctionBidAmountInput = document.getElementById('auction-bid-amount');
+const auctionPlaceBidBtn = document.getElementById('auction-place-bid-btn');
+const auctionWithdrawBtn = document.getElementById('auction-withdraw-btn');
 
 
 // --- Utility Functions ---
@@ -396,6 +415,7 @@ function createBoardUI() {
 
 
 function rollDice(simulatedDie1 = null, simulatedDie2 = null) {
+    if (isAuctionActive) return; // Do not allow rolling during an auction
     const die1 = simulatedDie1 !== null ? simulatedDie1 : Math.floor(Math.random() * 6) + 1;
     const die2 = simulatedDie2 !== null ? simulatedDie2 : Math.floor(Math.random() * 6) + 1;
     
@@ -491,8 +511,9 @@ function landOnSpace(player) {
                 if (player.money >= space.price) {
                     currentActionPending = 'buy';
                 } else {
-                    logMessage(`${player.name} cannot afford ${space.name}.`, 'warning');
-                    currentActionPending = 'none'; // Turn ends if unaffordable
+                    logMessage(`${player.name} cannot afford ${space.name}. Auctioning...`, 'warning');
+                    startAuction(space.id);
+                    return; // Exit landOnSpace early as auction handles the flow now
                 }
             } else if (space.owner !== player.id) {
                 // Holding is owned by another player
@@ -1306,7 +1327,15 @@ function setControlsForJailStartTurn() {
 
 
 function endTurn() {
-    if (gameOver) return;
+    if (isAuctionActive) return; // Do not allow ending turn during an auction
+
+    // If player has the option to buy but declines, start an auction
+    if (currentActionPending === 'buy') {
+        const space = board[players[currentPlayerIndex].position];
+        logMessage(`${players[currentPlayerIndex].name} declined to buy ${space.name}. It will be auctioned.`);
+        startAuction(space.id);
+        return; // Auction will handle the rest of the turn flow
+    }
 
     logMessage(`${players[currentPlayerIndex].name}'s turn ended.`);
     // doublesRolledThisTurn and hasRolled are reset in setControlsForTurnStart
