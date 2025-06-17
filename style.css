@@ -82,7 +82,7 @@ body {
     top: 400px; /* Half of board height */
     left: 400px; /* Half of board width */
     transform: translate(-50%, -50%) rotate(-10deg);
-    font-size: 4.5em;
+    font-size: 3.5em;
     font-weight: bold;
     color: rgba(0, 0, 0, 0.15);
     text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.7);
