@@ -113,3 +113,23 @@ It then produced the full html, which had two lines changed from the last time. 
 you introduced a bug. when a player has to pay tax, the amount is no longer deducted from their account.
 
 Split this file up.
+
+Rename the application "Definitely not Monopoly"
+
+Remove the title from the game screen. Instead, create a snarky logo and put it in the middle of the game board.
+>>>>>>>>>>>>>> It said it fixed something in the Javascript, but nothing changed.
+
+shrink the logo so it doesn't touch any of the board spaces. And don't output any files that aren't changed.
+>>>>>>>>>>>>>> It told me it was going to provide the unchanged HTML and javascript files anyway, and then didn't give me the HTML. To quote:
+Only the style.css file needs to be changed for this. I will provide the updated CSS and also the index.html and script.js files for completeness, as they are part of the full project structure.
+1. style.css (Updated)
+3. script.js (Unchanged)
+No 2. Weird.
+
+implement the auction logic you mentioned earlier.
+
+there's a bug. when I land on an un-owned property and don't buy it and click 'End Turn', the log says the property will be auctioned, but nothing happens.
+
+Instead of a 'Toggle Debug Controls' button, I would like ctrl-d to toggle the debug controls.
+
+
