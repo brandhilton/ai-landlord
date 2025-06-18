@@ -91,13 +91,19 @@ let currentActionPending = null; // 'buy', 'manage', 'jail', 'none' (meaning tur
 let chanceCardsShuffled = [];
 let communityChestCardsShuffled = [];
 
-// --- NEW: Auction State Variables ---
+// --- Auction State Variables ---
 let isAuctionActive = false;
 let auctionPropertyId = null;
 let auctionBidders = [];
 let currentBid = 0;
 let highestBidderId = null;
 let auctionCurrentBidderIndex = 0;
+
+// --- Trade State Variables ---
+let isTradeActive = false;
+let tradePartnerId = null;
+let tradeOffer = {};
+let tradeRequest = {};
 
 
 // --- DOM Elements ---
@@ -174,7 +180,7 @@ const modalPropertyHouseCost = document.getElementById('modal-property-house-cos
 const modalPropertyMortgageValue = document.getElementById('modal-property-mortgage-value');
 const modalPropertyRentList = document.getElementById('modal-property-rent-list');
 
-// --- NEW: Auction Modal Elements ---
+// --- Auction Modal Elements ---
 const auctionModalOverlay = document.getElementById('auction-modal-overlay');
 const auctionPropertyName = document.getElementById('auction-property-name');
 const auctionCurrentBid = document.getElementById('auction-current-bid');
@@ -183,6 +189,32 @@ const auctionCurrentBidder = document.getElementById('auction-current-bidder');
 const auctionBidAmountInput = document.getElementById('auction-bid-amount');
 const auctionPlaceBidBtn = document.getElementById('auction-place-bid-btn');
 const auctionWithdrawBtn = document.getElementById('auction-withdraw-btn');
+
+// --- Trade Modal Elements ---
+const proposeTradeBtn = document.getElementById('propose-trade-btn');
+const tradeModalOverlay = document.getElementById('trade-modal-overlay');
+const tradePartnerSelect = document.getElementById('trade-partner-select');
+const tradeOfferMoney = document.getElementById('trade-offer-money');
+const tradeOfferProperties = document.getElementById('trade-offer-properties');
+const tradeOfferCards = document.getElementById('trade-offer-cards');
+const tradeRequestMoney = document.getElementById('trade-request-money');
+const tradeRequestProperties = document.getElementById('trade-request-properties');
+const tradeRequestCards = document.getElementById('trade-request-cards');
+const sendProposalBtn = document.getElementById('send-proposal-btn');
+const cancelTradeBtn = document.getElementById('cancel-trade-btn');
+
+// --- Trade Review Modal Elements ---
+const tradeReviewModalOverlay = document.getElementById('trade-review-modal-overlay');
+const reviewProposerName = document.getElementById('review-proposer-name');
+const reviewPartnerName = document.getElementById('review-partner-name');
+const reviewOfferMoney = document.getElementById('review-offer-money');
+const reviewOfferCards = document.getElementById('review-offer-cards');
+const reviewOfferProperties = document.getElementById('review-offer-properties');
+const reviewRequestMoney = document.getElementById('review-request-money');
+const reviewRequestCards = document.getElementById('review-request-cards');
+const reviewRequestProperties = document.getElementById('review-request-properties');
+const acceptTradeBtn = document.getElementById('accept-trade-btn');
+const rejectTradeBtn = document.getElementById('reject-trade-btn');
 
 
 // --- Utility Functions ---
@@ -296,7 +328,7 @@ function checkMonopoly(player, colorGroup) {
 }
 
 function getPlayerOwnedProperties(player, type = null) {
-    return board.filter(space => space.owner === player.id && (type ? space.type === type : true));
+    return board.filter(space => space.owner === player.id && (type ? ['location', 'hyperspace_lane', 'facility'].includes(space.type) : true));
 }
 
 // Helper function to find the next space of a given type, wrapping around the board
@@ -415,7 +447,7 @@ function createBoardUI() {
 
 
 function rollDice(simulatedDie1 = null, simulatedDie2 = null) {
-    if (isAuctionActive) return; // Do not allow rolling during an auction
+    if (isAuctionActive || isTradeActive) return; // Do not allow rolling during an auction or trade
     const die1 = simulatedDie1 !== null ? simulatedDie1 : Math.floor(Math.random() * 6) + 1;
     const die2 = simulatedDie2 !== null ? simulatedDie2 : Math.floor(Math.random() * 6) + 1;
     
@@ -1327,7 +1359,7 @@ function setControlsForJailStartTurn() {
 
 
 function endTurn() {
-    if (isAuctionActive) return; // Do not allow ending turn during an auction
+    if (isAuctionActive || isTradeActive) return; // Do not allow ending turn during an auction or trade
 
     // If player has the option to buy but declines, start an auction
     if (currentActionPending === 'buy') {
@@ -1430,7 +1462,7 @@ function hidePropertyModal() {
     propertyModalOverlay.style.display = 'none';
 }
 
-// --- NEW: Auction Logic ---
+// --- Auction Logic ---
 function startAuction(propId) {
     isAuctionActive = true;
     auctionPropertyId = propId;
@@ -1611,7 +1643,7 @@ propertyModalOverlay.addEventListener('click', (event) => {
     }
 });
 
-// NEW: Auction Event Listeners
+// Auction Event Listeners
 auctionPlaceBidBtn.addEventListener('click', handlePlaceBid);
 auctionWithdrawBtn.addEventListener('click', handleWithdraw);
 
