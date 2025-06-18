@@ -1566,6 +1566,179 @@ function endAuction() {
     updateBoardUI();
 }
 
+// --- Trade Logic ---
+function showTradeModal() {
+    if (isAuctionActive) return;
+    isTradeActive = true;
+
+    // Disable main game controls
+    rollDiceBtn.disabled = true;
+    endTurnBtn.disabled = true;
+
+    // Populate trade partner dropdown
+    tradePartnerSelect.innerHTML = '<option value="">-- Select Player --</option>';
+    players.forEach((player, index) => {
+        if (index !== currentPlayerIndex) {
+            const option = document.createElement('option');
+            option.value = player.id;
+            option.textContent = player.name;
+            tradePartnerSelect.appendChild(option);
+        }
+    });
+
+    // Reset and show modal
+    updateTradeModalAssets();
+    document.body.classList.add('trade-active');
+    tradeModalOverlay.style.display = 'flex';
+}
+
+function updateTradeModalAssets() {
+    const proposer = players[currentPlayerIndex];
+    const partnerId = parseInt(tradePartnerSelect.value);
+    const partner = players.find(p => p.id === partnerId);
+
+    // Populate proposer's assets
+    tradeOfferProperties.innerHTML = '';
+    proposer.properties.forEach(propId => {
+        const prop = board[propId];
+        const option = document.createElement('option');
+        option.value = prop.id;
+        option.textContent = prop.name;
+        tradeOfferProperties.appendChild(option);
+    });
+    tradeOfferCards.max = proposer.getOutOfJailFreeCards;
+    tradeOfferMoney.max = proposer.money;
+
+    // Populate partner's assets
+    tradeRequestProperties.innerHTML = '';
+    if (partner) {
+        partner.properties.forEach(propId => {
+            const prop = board[propId];
+            const option = document.createElement('option');
+            option.value = prop.id;
+            option.textContent = prop.name;
+            tradeRequestProperties.appendChild(option);
+        });
+        tradeRequestCards.max = partner.getOutOfJailFreeCards;
+        tradeRequestMoney.max = partner.money;
+    } else {
+        tradeRequestCards.max = 0;
+        tradeRequestMoney.max = 0;
+    }
+}
+
+function handleSendProposal() {
+    const proposer = players[currentPlayerIndex];
+    tradePartnerId = parseInt(tradePartnerSelect.value);
+    if (isNaN(tradePartnerId)) {
+        logMessage("Please select a player to trade with.", "error");
+        return;
+    }
+    const partner = players.find(p => p.id === tradePartnerId);
+
+    // Gather selected items
+    tradeOffer = {
+        money: parseInt(tradeOfferMoney.value) || 0,
+        properties: Array.from(tradeOfferProperties.selectedOptions).map(opt => parseInt(opt.value)),
+        cards: parseInt(tradeOfferCards.value) || 0
+    };
+    tradeRequest = {
+        money: parseInt(tradeRequestMoney.value) || 0,
+        properties: Array.from(tradeRequestProperties.selectedOptions).map(opt => parseInt(opt.value)),
+        cards: parseInt(tradeRequestCards.value) || 0
+    };
+
+    // --- Validation ---
+    if (tradeOffer.money > proposer.money || tradeOffer.cards > proposer.getOutOfJailFreeCards) {
+        logMessage("You cannot offer more credits or cards than you have.", "error");
+        return;
+    }
+    if (tradeRequest.money > partner.money || tradeRequest.cards > partner.getOutOfJailFreeCards) {
+        logMessage(`${partner.name} does not have enough credits or cards for this trade.`, "error");
+        return;
+    }
+    // Check if properties have houses
+    const allTradeProps = [...tradeOffer.properties, ...tradeRequest.properties];
+    for (const propId of allTradeProps) {
+        if (board[propId].houses > 0) {
+            logMessage("Cannot trade holdings with Dwellings/Fortresses. They must be sold first.", "error");
+            return;
+        }
+    }
+
+    // Show review modal
+    showTradeReviewModal();
+}
+
+function showTradeReviewModal() {
+    const proposer = players[currentPlayerIndex];
+    const partner = players.find(p => p.id === tradePartnerId);
+
+    reviewProposerName.textContent = proposer.name;
+    reviewPartnerName.textContent = partner.name;
+
+    reviewOfferMoney.textContent = `$${tradeOffer.money}`;
+    reviewOfferCards.textContent = tradeOffer.cards;
+    reviewOfferProperties.innerHTML = tradeOffer.properties.map(id => `<li>${board[id].name}</li>`).join('') || '<li>None</li>';
+
+    reviewRequestMoney.textContent = `$${tradeRequest.money}`;
+    reviewRequestCards.textContent = tradeRequest.cards;
+    reviewRequestProperties.innerHTML = tradeRequest.properties.map(id => `<li>${board[id].name}</li>`).join('') || '<li>None</li>';
+
+    tradeModalOverlay.style.display = 'none';
+    tradeReviewModalOverlay.style.display = 'flex';
+}
+
+function handleAcceptTrade() {
+    const proposer = players[currentPlayerIndex];
+    const partner = players.find(p => p.id === tradePartnerId);
+
+    logMessage(`${partner.name} accepted the trade with ${proposer.name}.`, 'success');
+
+    // Exchange money
+    proposer.money += tradeRequest.money - tradeOffer.money;
+    partner.money += tradeOffer.money - tradeRequest.money;
+
+    // Exchange cards
+    proposer.getOutOfJailFreeCards += tradeRequest.cards - tradeOffer.cards;
+    partner.getOutOfJailFreeCards += tradeOffer.cards - tradeRequest.cards;
+
+    // Exchange properties
+    tradeOffer.properties.forEach(propId => {
+        proposer.properties = proposer.properties.filter(id => id !== propId);
+        partner.properties.push(propId);
+        board[propId].owner = partner.id;
+    });
+    tradeRequest.properties.forEach(propId => {
+        partner.properties = partner.properties.filter(id => id !== propId);
+        proposer.properties.push(propId);
+        board[propId].owner = proposer.id;
+    });
+
+    endTrade();
+}
+
+function handleRejectTrade() {
+    const partner = players.find(p => p.id === tradePartnerId);
+    logMessage(`${partner.name} rejected the trade.`, 'warning');
+    endTrade();
+}
+
+function endTrade() {
+    isTradeActive = false;
+    tradePartnerId = null;
+    tradeOffer = {};
+    tradeRequest = {};
+
+    document.body.classList.remove('trade-active');
+    tradeModalOverlay.style.display = 'none';
+    tradeReviewModalOverlay.style.display = 'none';
+
+    updatePlayerInfo();
+    updateBoardUI();
+    setControls();
+}
+
 
 // --- Event Listeners ---
 numPlayersInput.addEventListener('change', () => {
