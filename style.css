@@ -525,3 +525,9 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     padding-left: 20px;
     list-style: disc;
 }
+#trade-message-area {
+    color: red;
+    font-weight: bold;
+    min-height: 1.2em;
+    margin-top: 10px;
+}

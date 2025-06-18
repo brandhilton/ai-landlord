@@ -202,6 +202,7 @@ const tradeRequestProperties = document.getElementById('trade-request-properties
 const tradeRequestCards = document.getElementById('trade-request-cards');
 const sendProposalBtn = document.getElementById('send-proposal-btn');
 const cancelTradeBtn = document.getElementById('cancel-trade-btn');
+const tradeMessageArea = document.getElementById('trade-message-area');
 
 // --- Trade Review Modal Elements ---
 const tradeReviewModalOverlay = document.getElementById('trade-review-modal-overlay');
@@ -1567,13 +1568,24 @@ function endAuction() {
 }
 
 // --- Trade Logic ---
+function showTradeMessage(message) {
+    tradeMessageArea.textContent = message;
+}
+
 function showTradeModal() {
     if (isAuctionActive) return;
     isTradeActive = true;
+    showTradeMessage(''); // Clear previous messages
 
     // Disable main game controls
     rollDiceBtn.disabled = true;
     endTurnBtn.disabled = true;
+
+    // Reset inputs
+    tradeOfferMoney.value = 0;
+    tradeRequestMoney.value = 0;
+    tradeOfferCards.value = 0;
+    tradeRequestCards.value = 0;
 
     // Populate trade partner dropdown
     tradePartnerSelect.innerHTML = '<option value="">-- Select Player --</option>';
@@ -1628,10 +1640,11 @@ function updateTradeModalAssets() {
 }
 
 function handleSendProposal() {
+    showTradeMessage(''); // Clear previous messages
     const proposer = players[currentPlayerIndex];
     tradePartnerId = parseInt(tradePartnerSelect.value);
     if (isNaN(tradePartnerId)) {
-        logMessage("Please select a player to trade with.", "error");
+        showTradeMessage("Please select a player to trade with.");
         return;
     }
     const partner = players.find(p => p.id === tradePartnerId);
@@ -1650,18 +1663,18 @@ function handleSendProposal() {
 
     // --- Validation ---
     if (tradeOffer.money > proposer.money || tradeOffer.cards > proposer.getOutOfJailFreeCards) {
-        logMessage("You cannot offer more credits or cards than you have.", "error");
+        showTradeMessage("You cannot offer more credits or cards than you have.");
         return;
     }
     if (tradeRequest.money > partner.money || tradeRequest.cards > partner.getOutOfJailFreeCards) {
-        logMessage(`${partner.name} does not have enough credits or cards for this trade.`, "error");
+        showTradeMessage(`${partner.name} does not have enough credits or cards for this trade.`);
         return;
     }
     // Check if properties have houses
     const allTradeProps = [...tradeOffer.properties, ...tradeRequest.properties];
     for (const propId of allTradeProps) {
         if (board[propId].houses > 0) {
-            logMessage("Cannot trade holdings with Dwellings/Fortresses. They must be sold first.", "error");
+            showTradeMessage("Cannot trade holdings with Dwellings/Fortresses. They must be sold first.");
             return;
         }
     }
