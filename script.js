@@ -1647,6 +1647,14 @@ propertyModalOverlay.addEventListener('click', (event) => {
 auctionPlaceBidBtn.addEventListener('click', handlePlaceBid);
 auctionWithdrawBtn.addEventListener('click', handleWithdraw);
 
+// Trade Event Listeners
+proposeTradeBtn.addEventListener('click', showTradeModal);
+cancelTradeBtn.addEventListener('click', endTrade);
+sendProposalBtn.addEventListener('click', handleSendProposal);
+tradePartnerSelect.addEventListener('change', updateTradeModalAssets);
+acceptTradeBtn.addEventListener('click', handleAcceptTrade);
+rejectTradeBtn.addEventListener('click', handleRejectTrade);
+
 
 // Initial setup for player name inputs
 numPlayersInput.dispatchEvent(new Event('change'));
