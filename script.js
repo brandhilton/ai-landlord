@@ -194,6 +194,7 @@ const auctionCurrentBidder = document.getElementById('auction-current-bidder');
 const auctionBidAmountInput = document.getElementById('auction-bid-amount');
 const auctionPlaceBidBtn = document.getElementById('auction-place-bid-btn');
 const auctionWithdrawBtn = document.getElementById('auction-withdraw-btn');
+const auctionMessageArea = document.getElementById('auction-message-area');
 
 // --- Trade Modal Elements ---
 const proposeTradeBtn = document.getElementById('propose-trade-btn');
@@ -1469,11 +1470,15 @@ function hidePropertyModal() {
 }
 
 // --- Auction Logic ---
+function showAuctionMessage(message) {
+    auctionMessageArea.textContent = message;
+}
+
 function startAuction(propId) {
     isAuctionActive = true;
     auctionPropertyId = propId;
-    currentBid = 1; // Start bid at 1
-    highestBidderId = null; // No bidder yet
+    currentBid = 0;
+    highestBidderId = null;
     auctionBidders = [...players]; // All players can bid initially
     auctionCurrentBidderIndex = currentPlayerIndex; // Start bidding with the player who landed on the space
 
@@ -1489,6 +1494,7 @@ function startAuction(propId) {
 }
 
 function updateAuctionUI() {
+    showAuctionMessage(''); // Clear previous messages
     const property = board[auctionPropertyId];
     auctionPropertyName.textContent = property.name;
     auctionCurrentBid.textContent = `₡${currentBid}`;
@@ -1505,11 +1511,11 @@ function handlePlaceBid() {
     const bidder = auctionBidders[auctionCurrentBidderIndex];
 
     if (isNaN(bidAmount) || bidAmount <= currentBid) {
-        logMessage(`Invalid bid. Must be higher than ₡${currentBid}.`, 'error');
+        showAuctionMessage(`Invalid bid. Must be higher than ₡${currentBid}.`);
         return;
     }
     if (bidAmount > bidder.money) {
-        logMessage(`${bidder.name} cannot afford to bid ₡${bidAmount}.`, 'error');
+        showAuctionMessage(`${bidder.name} cannot afford to bid ₡${bidAmount}.`);
         return;
     }
 
@@ -1522,9 +1528,9 @@ function handlePlaceBid() {
 function handleWithdraw() {
     const bidder = auctionBidders[auctionCurrentBidderIndex];
     // If no bids have been placed yet, player must bid if they can afford it
-    if (currentBid === 1 && highestBidderId === null) {
+    if (currentBid === 0) {
         if (bidder.money >= 1) {
-            logMessage(`${bidder.name}, you must place an opening bid of at least ₡1.`, 'error');
+            showAuctionMessage(`${bidder.name}, you must place an opening bid of at least ₡1.`);
             return;
         }
     }
