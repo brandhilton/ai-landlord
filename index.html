@@ -58,7 +58,7 @@
 
                         <div id="jail-actions" style="display: none;">
                             <h3>Detention Block Actions</h3>
-                            <button id="pay-bail-btn">Pay $50 Bail</button>
+                            <button id="pay-bail-btn">Pay ₡50 Bail</button>
                             <button id="use-jail-card-btn">Use Get Out of Detention Free Card</button>
                         </div>
                     </div>
@@ -97,7 +97,7 @@
                             <button id="debug-change-owner-btn" class="button-group button">Change Owner</button>
                         </div>
 
-                        <!-- Manage Houses/Hotels -->
+                        <!-- Manage Dwellings -->
                         <div class="debug-group">
                             <h4>Manage Dwellings/Fortresses</h4>
                             <select id="debug-house-property-select" class="action-select"></select>
@@ -106,7 +106,16 @@
                             <button id="debug-set-houses-btn" class="button-group button">Set Dwellings</button>
                         </div>
 
-                        <!-- Put Player in Jail -->
+                        <!-- NEW: Manage Player Money -->
+                        <div class="debug-group">
+                            <h4>Manage Player Credits</h4>
+                            <select id="debug-money-player-select" class="action-select"></select>
+                            <label for="debug-money-amount">Set Credits To:</label>
+                            <input type="number" id="debug-money-amount" value="1500" min="0">
+                            <button id="debug-set-money-btn" class="button-group button">Set Credits</button>
+                        </div>
+
+                        <!-- Send to Detention -->
                         <div class="debug-group">
                             <h4>Send to Detention Block</h4>
                             <select id="debug-jail-player-select" class="action-select"></select>
@@ -118,6 +127,8 @@
         </div>
     </div>
 
+    <button id="toggle-debug-btn" style="margin-top: 10px; padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">Toggle Debug Controls</button>
+
     <!-- Property Info Modal -->
     <div id="property-modal-overlay">
         <div id="property-modal-content">
@@ -125,12 +136,12 @@
             <h3 id="modal-property-name"></h3>
             <div id="modal-property-color-bar" class="color-bar"></div>
             <p><strong>Type:</strong> <span id="modal-property-type"></span></p>
-            <p><strong>Price:</strong> $<span id="modal-property-price"></span></p>
+            <p><strong>Price:</strong> ₡<span id="modal-property-price"></span></p>
             <p><strong>Owner:</strong> <span id="modal-property-owner"></span></p>
             <p><strong>Mortgaged:</strong> <span id="modal-property-mortgaged"></span></p>
             <p id="modal-property-houses-row"><strong>Dwellings:</strong> <span id="modal-property-houses"></span></p>
-            <p id="modal-property-house-cost-row"><strong>Dwelling Cost:</strong> $<span id="modal-property-house-cost"></span></p>
-            <p><strong>Mortgage Value:</strong> $<span id="modal-property-mortgage-value"></span></p>
+            <p id="modal-property-house-cost-row"><strong>Dwelling Cost:</strong> ₡<span id="modal-property-house-cost"></span></p>
+            <p><strong>Mortgage Value:</strong> ₡<span id="modal-property-mortgage-value"></span></p>
 
             <h4>Rent:</h4>
             <ul id="modal-property-rent-list">
@@ -144,7 +155,7 @@
         <div id="auction-modal-content">
             <h2>Auction!</h2>
             <p>For Holding: <strong id="auction-property-name"></strong></p>
-            <p>Current Bid: <strong id="auction-current-bid">$0</strong></p>
+            <p>Current Bid: <strong id="auction-current-bid">₡0</strong></p>
             <p>Highest Bidder: <strong id="auction-highest-bidder">None</strong></p>
             <hr>
             <p>Bidding Turn: <strong id="auction-current-bidder"></strong></p>
