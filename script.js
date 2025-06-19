@@ -1472,8 +1472,8 @@ function hidePropertyModal() {
 function startAuction(propId) {
     isAuctionActive = true;
     auctionPropertyId = propId;
-    currentBid = 0;
-    highestBidderId = null;
+    currentBid = 1; // Start bid at 1
+    highestBidderId = null; // No bidder yet
     auctionBidders = [...players]; // All players can bid initially
     auctionCurrentBidderIndex = currentPlayerIndex; // Start bidding with the player who landed on the space
 
@@ -1520,6 +1520,15 @@ function handlePlaceBid() {
 }
 
 function handleWithdraw() {
+    const bidder = auctionBidders[auctionCurrentBidderIndex];
+    // If no bids have been placed yet, player must bid if they can afford it
+    if (currentBid === 1 && highestBidderId === null) {
+        if (bidder.money >= 1) {
+            logMessage(`${bidder.name}, you must place an opening bid of at least ₡1.`, 'error');
+            return;
+        }
+    }
+
     const withdrawnPlayer = auctionBidders.splice(auctionCurrentBidderIndex, 1)[0];
     logMessage(`${withdrawnPlayer.name} has withdrawn from the auction.`, 'info');
 
