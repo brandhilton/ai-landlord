@@ -1087,7 +1087,7 @@ function populateSelect(selectElement, properties, defaultOptionText) {
     properties.forEach(prop => {
         const option = document.createElement('option');
         option.value = prop.id;
-        option.textContent = `${prop.name} ${prop.mortgaged ? '(Mortgaged)' : ''} ${prop.houses > 0 ? `(D: ${prop.houses})` : ''} - Cost: ₡${prop.type === 'location' && prop.houses < 5 ? (prop.houses < 4 ? prop.houseCost : (prop.houses === 4 ? prop.houseCost : '')) : (prop.type === 'hyperspace_lane' || prop.type === 'facility' ? prop.price/2 : '')}`;
+        option.textContent = `${prop.name} ${prop.mortgaged ? '(Mortgaged)' : ''} ${prop.houses > 0 ? `(D: ${prop.houses})` : ''}`;
         // For unmortgage cost:
         if (selectElement === unmortgageSelect && prop.mortgaged) {
             option.textContent = `${prop.name} (M) - Cost: ₡${Math.ceil(prop.price / 2 * 1.1)}`;
@@ -1127,7 +1127,7 @@ function showBuildHouseDialog(player, availableProperties) {
     availableProperties.forEach(prop => {
         const option = document.createElement('option');
         option.value = prop.id;
-        option.textContent = `${prop.name} (D: ${prop.houses}) - Cost: ₡${prop.houses === 4 ? 'Fortress' : prop.houseCost}`;
+        option.textContent = `${prop.name} (D: ${prop.houses}) - Cost: ₡${prop.houseCost}`;
         buildSelect.appendChild(option);
     });
     confirmBtn.disabled = true; // Initially disabled
