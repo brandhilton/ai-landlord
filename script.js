@@ -1490,6 +1490,7 @@ function startAuction(propId) {
 
     document.body.classList.add('auction-active');
     auctionModalOverlay.style.display = 'flex';
+    auctionWithdrawBtn.textContent = "Pass"; // Change button text
     updateAuctionUI();
 }
 
@@ -1525,40 +1526,29 @@ function handlePlaceBid() {
     nextBidder();
 }
 
-function handleWithdraw() {
+function handlePass() {
     const bidder = auctionBidders[auctionCurrentBidderIndex];
     // If no bids have been placed yet, player must bid if they can afford it
-    if (currentBid === 0) {
+    if (highestBidderId === null) {
         if (bidder.money >= 1) {
             showAuctionMessage(`${bidder.name}, you must place an opening bid of at least ₡1.`);
             return;
         }
     }
 
-    const withdrawnPlayer = auctionBidders.splice(auctionCurrentBidderIndex, 1)[0];
-    logMessage(`${withdrawnPlayer.name} has withdrawn from the auction.`, 'info');
-
-    // If the current bidder was the last one in the list, reset index to 0
-    if (auctionCurrentBidderIndex >= auctionBidders.length) {
-        auctionCurrentBidderIndex = 0;
-    }
-
-    // Check win condition for auction
-    if (auctionBidders.length === 1) {
-        // If there's only one bidder left, they win automatically
-        highestBidderId = auctionBidders[0].id;
-        endAuction();
-    } else if (auctionBidders.length === 0) {
-        // If everyone withdraws and there was no initial bid
-        endAuction();
-    } else {
-        updateAuctionUI();
-    }
+    logMessage(`${bidder.name} passed their turn to bid.`, 'info');
+    nextBidder();
 }
 
 function nextBidder() {
     auctionCurrentBidderIndex = (auctionCurrentBidderIndex + 1) % auctionBidders.length;
-    updateAuctionUI();
+    
+    // If the turn has come back to the highest bidder, they win.
+    if (auctionBidders[auctionCurrentBidderIndex].id === highestBidderId) {
+        endAuction();
+    } else {
+        updateAuctionUI();
+    }
 }
 
 function endAuction() {
@@ -1579,6 +1569,7 @@ function endAuction() {
     auctionPropertyId = null;
     document.body.classList.remove('auction-active');
     auctionModalOverlay.style.display = 'none';
+    auctionWithdrawBtn.textContent = "Withdraw"; // Reset button text
 
     // Restore game flow
     currentActionPending = 'none';
@@ -1851,7 +1842,7 @@ propertyModalOverlay.addEventListener('click', (event) => {
 
 // Auction Event Listeners
 auctionPlaceBidBtn.addEventListener('click', handlePlaceBid);
-auctionWithdrawBtn.addEventListener('click', handleWithdraw);
+auctionWithdrawBtn.addEventListener('click', handlePass);
 
 // Trade Event Listeners
 proposeTradeBtn.addEventListener('click', showTradeModal);
