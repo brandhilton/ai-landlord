@@ -160,6 +160,11 @@ const debugHousePropertySelect = document.getElementById('debug-house-property-s
 const debugHouseCountInput = document.getElementById('debug-house-count');
 const debugSetHousesBtn = document.getElementById('debug-set-houses-btn');
 
+// Manage Player Money
+const debugMoneyPlayerSelect = document.getElementById('debug-money-player-select');
+const debugMoneyAmountInput = document.getElementById('debug-money-amount');
+const debugSetMoneyBtn = document.getElementById('debug-set-money-btn');
+
 // Put Player in Jail
 const debugJailPlayerSelect = document.getElementById('debug-jail-player-select');
 const debugSendToJailBtn = document.getElementById('debug-send-to-jail-btn');
@@ -1853,6 +1858,7 @@ function populateDebugPlayerSelects() {
     debugMovePlayerSelect.innerHTML = `<option value="">-- Select Player --</option>` + playerOptions;
     debugJailPlayerSelect.innerHTML = `<option value="">-- Select Player --</option>` + playerOptions;
     debugOwnerSelect.innerHTML = `<option value="">-- Select Owner --</option><option value="bank">Bank</option>` + playerOptions;
+    debugMoneyPlayerSelect.innerHTML = `<option value="">-- Select Player --</option>` + playerOptions;
 }
 
 function populateDebugSpaceSelect() {
@@ -2018,6 +2024,27 @@ debugSetHousesBtn.addEventListener('click', () => {
     logMessage(`DEBUG: Set ${property.name} to ${houseCount} Dwellings/Fortress.`, 'debug');
     updatePlayerInfo();
     updateBoardUI();
+});
+
+// Set Player Money
+debugSetMoneyBtn.addEventListener('click', () => {
+    const playerId = parseInt(debugMoneyPlayerSelect.value);
+    const moneyAmount = parseInt(debugMoneyAmountInput.value);
+
+    if (isNaN(playerId) || isNaN(moneyAmount) || moneyAmount < 0) {
+        logMessage("Please select a player and enter a valid credit amount.", "error");
+        return;
+    }
+
+    const player = players.find(p => p.id === playerId);
+    if (!player) {
+        logMessage("Player not found.", "error");
+        return;
+    }
+
+    player.money = moneyAmount;
+    logMessage(`DEBUG: Set ${player.name}'s credits to ₡${moneyAmount}.`, 'debug');
+    updatePlayerInfo();
 });
 
 // Send Player to Detention Block (Jail)
