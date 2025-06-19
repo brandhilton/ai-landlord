@@ -43,41 +43,41 @@ const board = [
 ];
 
 let chanceCards = [
-    "Advance to START (Collect $200)",
-    "Advance to Starkiller Base. If you pass START, collect $200.",
-    "Advance to Cloud City. If you pass START, collect $200.",
+    "Advance to START (Collect ₡200)",
+    "Advance to Starkiller Base. If you pass START, collect ₡200.",
+    "Advance to Cloud City. If you pass START, collect ₡200.",
     "Advance to nearest Facility. If unowned, you may buy it from the Bank. If owned, pay owner 10 times amount shown on dice.",
     "Advance to nearest Hyperspace Lane. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which he/she is otherwise entitled.",
-    "Bank pays you dividend of $50",
+    "Bank pays you dividend of ₡50",
     "Get Out of Detention Free Card",
     "Go back 3 spaces",
-    "Go to Detention Block – Go directly to Detention Block – Do not pass START, do not collect $200",
-    "Make general repairs on all your holdings. For each Dwelling pay $25. For each Fortress pay $100.",
-    "Pay poor tax of $15",
-    "Take a trip to Hyperspace Lane 1. If you pass START, collect $200.",
+    "Go to Detention Block – Go directly to Detention Block – Do not pass START, do not collect ₡200",
+    "Make general repairs on all your holdings. For each Dwelling pay ₡25. For each Fortress pay ₡100.",
+    "Pay poor tax of ₡15",
+    "Take a trip to Hyperspace Lane 1. If you pass START, collect ₡200.",
     "Advance to Death Star Throne Room.",
-    "You have been elected Chairman of the Galactic Senate – Pay each player $50.",
-    "Your loan matures. Collect $150",
-    "You have won a droid race competition. Collect $100"
+    "You have been elected Chairman of the Galactic Senate – Pay each player ₡50.",
+    "Your loan matures. Collect ₡150",
+    "You have won a droid race competition. Collect ₡100"
 ];
 
 let communityChestCards = [
-    "Advance to START (Collect $200)",
-    "Bank error in your favor – Collect $200",
-    "Healer's fee – Pay $50",
-    "From sale of stolen goods you get $45.",
+    "Advance to START (Collect ₡200)",
+    "Bank error in your favor – Collect ₡200",
+    "Healer's fee – Pay ₡50",
+    "From sale of stolen goods you get ₡45.",
     "Get Out of Detention Free Card",
-    "Go to Detention Block – Go directly to Detention Block – Do not pass START, do not collect $200",
-    "Rebel Fund matures. Receive $100.",
-    "Tax refund – Collect $20",
-    "It is your birth-cycle. Collect $10 from each player.",
-    "Life insurance matures – Collect $100",
-    "Pay medical bay $100",
-    "Pay training fees of $50",
-    "Receive $25 bounty fee",
-    "You are assessed for orbital repairs – Pay $40 per Dwelling, $115 per Fortress",
-    "You have won second prize in a beauty contest – Collect $10",
-    "Inherit $100"
+    "Go to Detention Block – Go directly to Detention Block – Do not pass START, do not collect ₡200",
+    "Rebel Fund matures. Receive ₡100.",
+    "Tax refund – Collect ₡20",
+    "It is your birth-cycle. Collect ₡10 from each player.",
+    "Life insurance matures – Collect ₡100",
+    "Pay medical bay ₡100",
+    "Pay training fees of ₡50",
+    "Receive ₡25 bounty fee",
+    "You are assessed for orbital repairs – Pay ₡40 per Dwelling, ₡115 per Fortress",
+    "You have won second prize in a beauty contest – Collect ₡10",
+    "Inherit ₡100"
 ];
 
 // --- Game State Variables ---
@@ -245,7 +245,7 @@ function updatePlayerInfo() {
         playerDiv.innerHTML = `
             <h4>${player.name} (P${player.id + 1})</h4>
             <ul>
-                <li>Credits: $${player.money}</li>
+                <li>Credits: ₡${player.money}</li>
                 <li>Location: ${board[player.position].name}</li>
                 ${player.inJail ? `<li><span style="color:red;">In Detention Block (Turn ${player.jailTurns}/3)</span></li>` : ''}
                 ${player.getOutOfJailFreeCards > 0 ? `<li>Get Out of Detention Free Cards: ${player.getOutOfJailFreeCards}</li>` : ''}
@@ -439,7 +439,7 @@ function createBoardUI() {
         if (space.price) { // Only show price for buyable spaces
             const priceDiv = document.createElement('div');
             priceDiv.className = 'space-price';
-            priceDiv.textContent = `$${space.price}`;
+            priceDiv.textContent = `₡${space.price}`;
             spaceDiv.appendChild(priceDiv);
         }
         gameBoardDiv.appendChild(spaceDiv);
@@ -488,7 +488,7 @@ function movePlayer(player, steps) {
     // Check for passing START (Go)
     if (player.position < oldPosition && !player.inJail) { // If went past index 0
         player.money += 200;
-        logMessage(`${player.name} passed START and collected $200!`);
+        logMessage(`${player.name} passed START and collected ₡200!`);
     }
     updatePlayerInfo();
     updateBoardUI();
@@ -540,7 +540,7 @@ function landOnSpace(player) {
         case 'facility': // Renamed from 'utility'
             if (space.owner === null) {
                 // Holding is unowned
-                logMessage(`${space.name} is unowned. Price: $${space.price}.`);
+                logMessage(`${space.name} is unowned. Price: ₡${space.price}.`);
                 if (player.money >= space.price) {
                     currentActionPending = 'buy';
                 } else {
@@ -572,7 +572,7 @@ function landOnSpace(player) {
                             rent = (diceRoll[0] + diceRoll[1]) * 10;
                         }
                     }
-                    logMessage(`${space.name} is owned by ${owner.name}. Rent: $${rent}.`);
+                    logMessage(`${space.name} is owned by ${owner.name}. Rent: ₡${rent}.`);
                     payMoney(player, owner, rent);
                 }
                 currentActionPending = 'none'; // After paying rent, turn ends
@@ -583,7 +583,7 @@ function landOnSpace(player) {
             }
             break;
         case 'tax':
-            logMessage(`${player.name} landed on ${space.name} and must pay $${space.amount}.`);
+            logMessage(`${player.name} landed on ${space.name} and must pay ₡${space.amount}.`);
             payMoney(player, 'bank', space.amount);
             currentActionPending = 'none';
             break;
@@ -616,7 +616,7 @@ function buyProperty(player, space) {
         player.money -= space.price;
         space.owner = player.id;
         player.properties.push(space.id);
-        logMessage(`${player.name} bought ${space.name} for $${space.price}.`, 'success');
+        logMessage(`${player.name} bought ${space.name} for ₡${space.price}.`, 'success');
         updatePlayerInfo();
         updateBoardUI();
     } else {
@@ -632,13 +632,13 @@ function payMoney(fromPlayer, toRecipient, amount) {
         fromPlayer.money -= amount;
         if (toRecipient !== 'bank') {
             toRecipient.money += amount;
-            logMessage(`${fromPlayer.name} paid $${amount} to ${toRecipient.name}.`);
+            logMessage(`${fromPlayer.name} paid ₡${amount} to ${toRecipient.name}.`);
         } else {
-            logMessage(`${fromPlayer.name} paid $${amount} to the Bank.`);
+            logMessage(`${fromPlayer.name} paid ₡${amount} to the Bank.`);
         }
     } else {
         // Player cannot afford, handle bankruptcy
-        logMessage(`${fromPlayer.name} cannot pay $${amount}! Declaring bankruptcy...`, 'error');
+        logMessage(`${fromPlayer.name} cannot pay ₡${amount}! Declaring bankruptcy...`, 'error');
         handleBankruptcy(fromPlayer, toRecipient, amount);
     }
     updatePlayerInfo();
@@ -657,7 +657,7 @@ function handleBankruptcy(bankruptPlayer, recipient, debtAmount) {
         while(prop.houses > 0) {
             prop.houses--;
             bankruptPlayer.money += prop.houseCost / 2;
-            logMessage(`${bankruptPlayer.name} sold a Dwelling on ${prop.name} for $${prop.houseCost / 2}.`);
+            logMessage(`${bankruptPlayer.name} sold a Dwelling on ${prop.name} for ₡${prop.houseCost / 2}.`);
             updatePlayerInfo();
             updateBoardUI();
         }
@@ -666,7 +666,7 @@ function handleBankruptcy(bankruptPlayer, recipient, debtAmount) {
         if (!prop.mortgaged) {
             prop.mortgaged = true;
             bankruptPlayer.money += prop.price / 2;
-            logMessage(`${bankruptPlayer.name} mortgaged ${prop.name} for $${prop.price / 2}.`);
+            logMessage(`${bankruptPlayer.name} mortgaged ${prop.name} for ₡${prop.price / 2}.`);
             updatePlayerInfo();
             updateBoardUI();
         } else {
@@ -734,26 +734,26 @@ function drawCard(player, deck) {
     let oldPosition = player.position; // Store current position for 'pass START' check
 
     switch (card) {
-        case "Advance to START (Collect $200)":
+        case "Advance to START (Collect ₡200)":
             player.position = 0;
             player.money += 200;
-            logMessage(`${player.name} advanced to START and collected $200.`);
+            logMessage(`${player.name} advanced to START and collected ₡200.`);
             movedByCard = true;
             break;
-        case "Advance to Starkiller Base. If you pass START, collect $200.":
+        case "Advance to Starkiller Base. If you pass START, collect ₡200.":
             player.position = 24; // Starkiller Base ID
             if (player.position < oldPosition) { // Passed START
                 player.money += 200;
-                logMessage(`${player.name} passed START and collected $200!`);
+                logMessage(`${player.name} passed START and collected ₡200!`);
             }
             logMessage(`${player.name} advanced to Starkiller Base.`);
             movedByCard = true;
             break;
-        case "Advance to Cloud City. If you pass START, collect $200.":
+        case "Advance to Cloud City. If you pass START, collect ₡200.":
             player.position = 11; // Cloud City ID
             if (player.position < oldPosition) { // Passed START
                 player.money += 200;
-                logMessage(`${player.name} passed START and collected $200!`);
+                logMessage(`${player.name} passed START and collected ₡200!`);
             }
             logMessage(`${player.name} advanced to Cloud City.`);
             movedByCard = true;
@@ -763,7 +763,7 @@ function drawCard(player, deck) {
             player.position = nearestFacility.id;
             if (player.position < oldPosition) { // Passed START
                 player.money += 200;
-                logMessage(`${player.name} passed START and collected $200!`);
+                logMessage(`${player.name} passed START and collected ₡200!`);
             }
             logMessage(`${player.name} advanced to nearest Facility: ${nearestFacility.name}.`);
 
@@ -771,7 +771,7 @@ function drawCard(player, deck) {
                 const owner = players[nearestFacility.owner];
                 if (!nearestFacility.mortgaged) {
                     const rent = calculateFacilityRent(owner, diceRoll[0] + diceRoll[1]); // Use current dice roll for rent calculation
-                    logMessage(`${player.name} pays ${owner.name} $${rent} rent for ${nearestFacility.name}.`);
+                    logMessage(`${player.name} pays ${owner.name} ₡${rent} rent for ${nearestFacility.name}.`);
                     payMoney(player, owner, rent);
                     currentActionPending = 'none'; // Rent paid, no further action needed from landOnSpace for this space
                 } else {
@@ -786,7 +786,7 @@ function drawCard(player, deck) {
             player.position = nearestHyperspaceLane.id;
             if (player.position < oldPosition) { // Passed START
                 player.money += 200;
-                logMessage(`${player.name} passed START and collected $200!`);
+                logMessage(`${player.name} passed START and collected ₡200!`);
             }
             logMessage(`${player.name} advanced to nearest Hyperspace Lane: ${nearestHyperspaceLane.name}.`);
 
@@ -794,7 +794,7 @@ function drawCard(player, deck) {
                 const owner = players[nearestHyperspaceLane.owner];
                 if (!nearestHyperspaceLane.mortgaged) {
                     const rent = calculateHyperspaceLaneRent(owner, nearestHyperspaceLane) * 2; // Double rent for card
-                    logMessage(`${player.name} pays ${owner.name} $${rent} rent for ${nearestHyperspaceLane.name}.`);
+                    logMessage(`${player.name} pays ${owner.name} ₡${rent} rent for ${nearestHyperspaceLane.name}.`);
                     payMoney(player, owner, rent);
                     currentActionPending = 'none'; // Rent paid, no further action needed from landOnSpace for this space
                 } else {
@@ -804,11 +804,11 @@ function drawCard(player, deck) {
             }
             movedByCard = true;
             break;
-        case "Take a trip to Hyperspace Lane 1. If you pass START, collect $200.":
+        case "Take a trip to Hyperspace Lane 1. If you pass START, collect ₡200.":
             player.position = 5; // Hyperspace Lane 1 ID
             if (player.position < oldPosition) { // Passed START
                 player.money += 200;
-                logMessage(`${player.name} passed START and collected $200!`);
+                logMessage(`${player.name} passed START and collected ₡200!`);
             }
             logMessage(`${player.name} advanced to Hyperspace Lane 1.`);
             movedByCard = true;
@@ -817,12 +817,12 @@ function drawCard(player, deck) {
             player.position = 39; // Death Star Throne Room ID
             if (player.position < oldPosition) { // Passed START
                 player.money += 200;
-                logMessage(`${player.name} passed START and collected $200!`);
+                logMessage(`${player.name} passed START and collected ₡200!`);
             }
             logMessage(`${player.name} advanced to Death Star Throne Room.`);
             movedByCard = true;
             break;
-        case "Go to Detention Block – Go directly to Detention Block – Do not pass START, do not collect $200":
+        case "Go to Detention Block – Go directly to Detention Block – Do not pass START, do not collect ₡200":
             sendToJail(player); // sendToJail already sets controls, so movedByCard stays false
             break;
         case "Go back 3 spaces":
@@ -835,26 +835,26 @@ function drawCard(player, deck) {
             logMessage(`${player.name} received a Get Out of Detention Free Card.`);
             currentActionPending = 'none'; // No movement, turn ends
             break;
-        case "Bank pays you dividend of $50":
+        case "Bank pays you dividend of ₡50":
             player.money += 50;
-            logMessage(`${player.name} collected $50 dividend from the Bank.`);
+            logMessage(`${player.name} collected ₡50 dividend from the Bank.`);
             currentActionPending = 'none';
             break;
-        case "Your loan matures. Collect $150":
+        case "Your loan matures. Collect ₡150":
             player.money += 150;
-            logMessage(`${player.name} collected $150 from loan maturity.`);
+            logMessage(`${player.name} collected ₡150 from loan maturity.`);
             currentActionPending = 'none';
             break;
-        case "You have won a droid race competition. Collect $100":
+        case "You have won a droid race competition. Collect ₡100":
             player.money += 100;
-            logMessage(`${player.name} collected $100 from winning a droid race competition.`);
+            logMessage(`${player.name} collected ₡100 from winning a droid race competition.`);
             currentActionPending = 'none';
             break;
-        case "Pay poor tax of $15":
+        case "Pay poor tax of ₡15":
             payMoney(player, 'bank', 15);
             currentActionPending = 'none';
             break;
-        case "Make general repairs on all your holdings. For each Dwelling pay $25. For each Fortress pay $100.":
+        case "Make general repairs on all your holdings. For each Dwelling pay ₡25. For each Fortress pay ₡100.":
             let repairCostChance = 0;
             player.properties.forEach(propId => {
                 const prop = board[propId]; // Make sure it's current player's property
@@ -867,14 +867,14 @@ function drawCard(player, deck) {
                 }
             });
             if (repairCostChance > 0) {
-                logMessage(`${player.name} must pay $${repairCostChance} for general repairs.`);
+                logMessage(`${player.name} must pay ₡${repairCostChance} for general repairs.`);
                 payMoney(player, 'bank', repairCostChance);
             } else {
                 logMessage(`${player.name} has no buildings, no repair cost.`);
             }
             currentActionPending = 'none';
             break;
-        case "You have been elected Chairman of the Galactic Senate – Pay each player $50.":
+        case "You have been elected Chairman of the Galactic Senate – Pay each player ₡50.":
             let totalPaid = 0;
             // Filter out players who might be bankrupt before iterating.
             // This is handled by payMoney's bankruptcy check.
@@ -885,67 +885,67 @@ function drawCard(player, deck) {
                     totalPaid += 50;
                 }
             });
-            logMessage(`${player.name} paid $50 to each other player (total $${totalPaid}).`);
+            logMessage(`${player.name} paid ₡50 to each other player (total ₡${totalPaid}).`);
             currentActionPending = 'none';
             break;
         // Community Chest Cards
-        case "Bank error in your favor – Collect $200":
+        case "Bank error in your favor – Collect ₡200":
             player.money += 200;
-            logMessage(`${player.name} collected $200 due to a bank error.`);
+            logMessage(`${player.name} collected ₡200 due to a bank error.`);
             currentActionPending = 'none';
             break;
-        case "Healer's fee – Pay $50":
+        case "Healer's fee – Pay ₡50":
             payMoney(player, 'bank', 50);
             currentActionPending = 'none';
             break;
-        case "From sale of stolen goods you get $45.":
+        case "From sale of stolen goods you get ₡45.":
             player.money += 45;
-            logMessage(`${player.name} collected $45 from stolen goods sale.`);
+            logMessage(`${player.name} collected ₡45 from stolen goods sale.`);
             currentActionPending = 'none';
             break;
-        case "Rebel Fund matures. Receive $100.":
+        case "Rebel Fund matures. Receive ₡100.":
             player.money += 100;
-            logMessage(`${player.name} received $100 from Rebel Fund.`);
+            logMessage(`${player.name} received ₡100 from Rebel Fund.`);
             currentActionPending = 'none';
             break;
-        case "Tax refund – Collect $20":
+        case "Tax refund – Collect ₡20":
             player.money += 20;
-            logMessage(`${player.name} collected $20 tax refund.`);
+            logMessage(`${player.name} collected ₡20 tax refund.`);
             currentActionPending = 'none';
             break;
-        case "It is your birth-cycle. Collect $10 from each player.":
+        case "It is your birth-cycle. Collect ₡10 from each player.":
             let totalCollected = 0;
             players.forEach(p => {
                 if (p.id !== player.id && p.money >= 10) { // Only pay if player can afford
                     payMoney(p, player, 10); // Each other player pays 10 to current player
                     totalCollected += 10;
                 } else if (p.id !== player.id && p.money < 10) {
-                    logMessage(`${p.name} cannot afford to pay ${player.name} $10 for birth-cycle.`, 'warning');
+                    logMessage(`${p.name} cannot afford to pay ${player.name} ₡10 for birth-cycle.`, 'warning');
                     payMoney(p, player, 10); // Still attempt to pay, will trigger bankruptcy if needed
                 }
             });
-            logMessage(`${player.name} collected $10 from each other player (total $${totalCollected}).`);
+            logMessage(`${player.name} collected ₡10 from each other player (total ₡${totalCollected}).`);
             currentActionPending = 'none';
             break;
-        case "Life insurance matures – Collect $100":
+        case "Life insurance matures – Collect ₡100":
             player.money += 100;
-            logMessage(`${player.name} collected $100 from life insurance maturity.`);
+            logMessage(`${player.name} collected ₡100 from life insurance maturity.`);
             currentActionPending = 'none';
             break;
-        case "Pay medical bay $100":
+        case "Pay medical bay ₡100":
             payMoney(player, 'bank', 100);
             currentActionPending = 'none';
             break;
-        case "Pay training fees of $50":
+        case "Pay training fees of ₡50":
             payMoney(player, 'bank', 50);
             currentActionPending = 'none';
             break;
-        case "Receive $25 bounty fee":
+        case "Receive ₡25 bounty fee":
             player.money += 25;
-            logMessage(`${player.name} collected $25 bounty fee.`);
+            logMessage(`${player.name} collected ₡25 bounty fee.`);
             currentActionPending = 'none';
             break;
-        case "You are assessed for orbital repairs – Pay $40 per Dwelling, $115 per Fortress":
+        case "You are assessed for orbital repairs – Pay ₡40 per Dwelling, ₡115 per Fortress":
             let repairCostCC = 0;
             player.properties.forEach(propId => {
                 const prop = board[propId]; // Already confirmed as player's property by iteration
@@ -958,21 +958,21 @@ function drawCard(player, deck) {
                 }
             });
             if (repairCostCC > 0) {
-                logMessage(`${player.name} must pay $${repairCostCC} for orbital repairs.`);
+                logMessage(`${player.name} must pay ₡${repairCostCC} for orbital repairs.`);
                 payMoney(player, 'bank', repairCostCC);
             } else {
                 logMessage(`${player.name} has no buildings, no repair cost.`);
             }
             currentActionPending = 'none';
             break;
-        case "You have won second prize in a beauty contest – Collect $10":
+        case "You have won second prize in a beauty contest – Collect ₡10":
             player.money += 10;
-            logMessage(`${player.name} collected $10 from beauty contest prize.`);
+            logMessage(`${player.name} collected ₡10 from beauty contest prize.`);
             currentActionPending = 'none';
             break;
-        case "Inherit $100":
+        case "Inherit ₡100":
             player.money += 100;
-            logMessage(`${player.name} inherited $100.`);
+            logMessage(`${player.name} inherited ₡100.`);
             currentActionPending = 'none';
             break;
         default:
@@ -1082,10 +1082,10 @@ function populateSelect(selectElement, properties, defaultOptionText) {
     properties.forEach(prop => {
         const option = document.createElement('option');
         option.value = prop.id;
-        option.textContent = `${prop.name} ${prop.mortgaged ? '(Mortgaged)' : ''} ${prop.houses > 0 ? `(D: ${prop.houses})` : ''} - Cost: $${prop.type === 'location' && prop.houses < 5 ? (prop.houses < 4 ? prop.houseCost : (prop.houses === 4 ? prop.houseCost : '')) : (prop.type === 'hyperspace_lane' || prop.type === 'facility' ? prop.price/2 : '')}`;
+        option.textContent = `${prop.name} ${prop.mortgaged ? '(Mortgaged)' : ''} ${prop.houses > 0 ? `(D: ${prop.houses})` : ''} - Cost: ₡${prop.type === 'location' && prop.houses < 5 ? (prop.houses < 4 ? prop.houseCost : (prop.houses === 4 ? prop.houseCost : '')) : (prop.type === 'hyperspace_lane' || prop.type === 'facility' ? prop.price/2 : '')}`;
         // For unmortgage cost:
         if (selectElement === unmortgageSelect && prop.mortgaged) {
-            option.textContent = `${prop.name} (M) - Cost: $${Math.ceil(prop.price / 2 * 1.1)}`;
+            option.textContent = `${prop.name} (M) - Cost: ₡${Math.ceil(prop.price / 2 * 1.1)}`;
         }
         selectElement.appendChild(option);
     });
@@ -1122,7 +1122,7 @@ function showBuildHouseDialog(player, availableProperties) {
     availableProperties.forEach(prop => {
         const option = document.createElement('option');
         option.value = prop.id;
-        option.textContent = `${prop.name} (D: ${prop.houses}) - Cost: $${prop.houses === 4 ? 'Fortress' : prop.houseCost}`;
+        option.textContent = `${prop.name} (D: ${prop.houses}) - Cost: ₡${prop.houses === 4 ? 'Fortress' : prop.houseCost}`;
         buildSelect.appendChild(option);
     });
     confirmBtn.disabled = true; // Initially disabled
@@ -1171,7 +1171,7 @@ function mortgageProperty(player, propId) {
     if (prop && prop.owner === player.id && !prop.mortgaged && prop.houses === 0) {
         prop.mortgaged = true;
         player.money += prop.price / 2;
-        logMessage(`${player.name} mortgaged ${prop.name} for $${prop.price / 2}.`, 'info');
+        logMessage(`${player.name} mortgaged ${prop.name} for ₡${prop.price / 2}.`, 'info');
         updatePlayerInfo();
         updateBoardUI();
         showPropertyManagementActions(player); // Refresh actions
@@ -1186,7 +1186,7 @@ function unmortgageProperty(player, propId) {
     if (prop && prop.owner === player.id && prop.mortgaged && player.money >= unmortgageCost) {
         prop.mortgaged = false;
         player.money -= unmortgageCost;
-        logMessage(`${player.name} unmortgaged ${prop.name} for $${unmortgageCost}.`, 'info');
+        logMessage(`${player.name} unmortgaged ${prop.name} for ₡${unmortgageCost}.`, 'info');
         updatePlayerInfo();
         updateBoardUI();
         showPropertyManagementActions(player); // Refresh actions
@@ -1207,7 +1207,7 @@ function sellHouse(player, propId) {
         
         prop.houses--;
         player.money += prop.houseCost / 2;
-        logMessage(`${player.name} sold a ${prop.houses === 4 ? 'Fortress (now 4 Dwellings)' : 'Dwelling'} on ${prop.name} for $${prop.houseCost / 2}. Dwellings: ${prop.houses}.`, 'info');
+        logMessage(`${player.name} sold a ${prop.houses === 4 ? 'Fortress (now 4 Dwellings)' : 'Dwelling'} on ${prop.name} for ₡${prop.houseCost / 2}. Dwellings: ${prop.houses}.`, 'info');
         updatePlayerInfo();
         updateBoardUI();
         showPropertyManagementActions(player); // Refresh actions
@@ -1260,7 +1260,7 @@ function setControls() {
 
         if (player.jailTurns === 3) { // On 3rd turn, must pay/use card
             console.log("setControls: Player on 3rd Detention Block turn, must pay/use card.");
-            logMessage(`${player.name} is on their 3rd turn in the Detention Block. Must pay $50 bail or use a Get Out of Detention Free Card.`, 'warning');
+            logMessage(`${player.name} is on their 3rd turn in the Detention Block. Must pay ₡50 bail or use a Get Out of Detention Free Card.`, 'warning');
             rollDiceBtn.disabled = true; // Cannot roll
             endTurnBtn.disabled = true; // Cannot end turn until bail is paid/card used
             propertyActionsDiv.style.display = 'none'; // No property actions while forced to pay bail
@@ -1338,7 +1338,7 @@ function setControlsForJailStartTurn() {
     useJailCardBtn.disabled = (player.getOutOfJailFreeCards === 0);
 
     if (player.jailTurns === 3) {
-        logMessage(`${player.name} is on their 3rd turn in the Detention Block. Must pay $50 bail or use a Get Out of Detention Free Card.`, 'warning');
+        logMessage(`${player.name} is on their 3rd turn in the Detention Block. Must pay ₡50 bail or use a Get Out of Detention Free Card.`, 'warning');
         rollDiceBtn.disabled = true; // Cannot roll
         endTurnBtn.disabled = true; // Cannot end turn until bail is paid/card used
         // Hide property actions if they are forced to pay bail
@@ -1436,19 +1436,19 @@ function showPropertyModal(spaceId) {
         modalPropertyHouses.textContent = space.houses === 5 ? 'Fortress' : space.houses;
         modalPropertyHouseCost.textContent = space.houseCost;
 
-        modalPropertyRentList.innerHTML += `<li><strong>Rent:</strong> $${space.rent[0]}</li>`;
-        modalPropertyRentList.innerHTML += `<li>With 1 Dwelling: $${space.rent[1]}</li>`;
-        modalPropertyRentList.innerHTML += `<li>With 2 Dwellings: $${space.rent[2]}</li>`;
-        modalPropertyRentList.innerHTML += `<li>With 3 Dwellings: $${space.rent[3]}</li>`;
-        modalPropertyRentList.innerHTML += `<li>With 4 Dwellings: $${space.rent[4]}</li>`;
-        modalPropertyRentList.innerHTML += `<li>With FORTRESS: $${space.rent[5]}</li>`;
+        modalPropertyRentList.innerHTML += `<li><strong>Rent:</strong> ₡${space.rent[0]}</li>`;
+        modalPropertyRentList.innerHTML += `<li>With 1 Dwelling: ₡${space.rent[1]}</li>`;
+        modalPropertyRentList.innerHTML += `<li>With 2 Dwellings: ₡${space.rent[2]}</li>`;
+        modalPropertyRentList.innerHTML += `<li>With 3 Dwellings: ₡${space.rent[3]}</li>`;
+        modalPropertyRentList.innerHTML += `<li>With 4 Dwellings: ₡${space.rent[4]}</li>`;
+        modalPropertyRentList.innerHTML += `<li>With FORTRESS: ₡${space.rent[5]}</li>`;
     } else if (space.type === 'hyperspace_lane') {
         modalPropertyHousesRow.style.display = 'none';
         modalPropertyHouseCostRow.style.display = 'none';
-        modalPropertyRentList.innerHTML += `<li><strong>Rent (1 Lane):</strong> $${space.rent[0]}</li>`;
-        modalPropertyRentList.innerHTML += `<li><strong>Rent (2 Lanes):</strong> $${space.rent[1]}</li>`;
-        modalPropertyRentList.innerHTML += `<li><strong>Rent (3 Lanes):</strong> $${space.rent[2]}</li>`;
-        modalPropertyRentList.innerHTML += `<li><strong>Rent (4 Lanes):</strong> $${space.rent[3]}</li>`;
+        modalPropertyRentList.innerHTML += `<li><strong>Rent (1 Lane):</strong> ₡${space.rent[0]}</li>`;
+        modalPropertyRentList.innerHTML += `<li><strong>Rent (2 Lanes):</strong> ₡${space.rent[1]}</li>`;
+        modalPropertyRentList.innerHTML += `<li><strong>Rent (3 Lanes):</strong> ₡${space.rent[2]}</li>`;
+        modalPropertyRentList.innerHTML += `<li><strong>Rent (4 Lanes):</strong> ₡${space.rent[3]}</li>`;
     } else if (space.type === 'facility') {
         modalPropertyHousesRow.style.display = 'none';
         modalPropertyHouseCostRow.style.display = 'none';
@@ -1486,7 +1486,7 @@ function startAuction(propId) {
 function updateAuctionUI() {
     const property = board[auctionPropertyId];
     auctionPropertyName.textContent = property.name;
-    auctionCurrentBid.textContent = `$${currentBid}`;
+    auctionCurrentBid.textContent = `₡${currentBid}`;
     auctionHighestBidder.textContent = highestBidderId !== null ? players.find(p => p.id === highestBidderId).name : 'None';
     
     const currentBidder = auctionBidders[auctionCurrentBidderIndex];
@@ -1500,17 +1500,17 @@ function handlePlaceBid() {
     const bidder = auctionBidders[auctionCurrentBidderIndex];
 
     if (isNaN(bidAmount) || bidAmount <= currentBid) {
-        logMessage(`Invalid bid. Must be higher than $${currentBid}.`, 'error');
+        logMessage(`Invalid bid. Must be higher than ₡${currentBid}.`, 'error');
         return;
     }
     if (bidAmount > bidder.money) {
-        logMessage(`${bidder.name} cannot afford to bid $${bidAmount}.`, 'error');
+        logMessage(`${bidder.name} cannot afford to bid ₡${bidAmount}.`, 'error');
         return;
     }
 
     currentBid = bidAmount;
     highestBidderId = bidder.id;
-    logMessage(`${bidder.name} bids $${currentBid}.`, 'info');
+    logMessage(`${bidder.name} bids ₡${currentBid}.`, 'info');
     nextBidder();
 }
 
@@ -1545,7 +1545,7 @@ function endAuction() {
     const property = board[auctionPropertyId];
     if (highestBidderId !== null) {
         const winner = players.find(p => p.id === highestBidderId);
-        logMessage(`${winner.name} wins the auction for ${property.name} with a bid of $${currentBid}!`, 'success');
+        logMessage(`${winner.name} wins the auction for ${property.name} with a bid of ₡${currentBid}!`, 'success');
         
         winner.money -= currentBid;
         property.owner = winner.id;
@@ -1690,11 +1690,11 @@ function showTradeReviewModal() {
     reviewProposerName.textContent = proposer.name;
     reviewPartnerName.textContent = partner.name;
 
-    reviewOfferMoney.textContent = `$${tradeOffer.money}`;
+    reviewOfferMoney.textContent = `₡${tradeOffer.money}`;
     reviewOfferCards.textContent = tradeOffer.cards;
     reviewOfferProperties.innerHTML = tradeOffer.properties.map(id => `<li>${board[id].name}</li>`).join('') || '<li>None</li>';
 
-    reviewRequestMoney.textContent = `$${tradeRequest.money}`;
+    reviewRequestMoney.textContent = `₡${tradeRequest.money}`;
     reviewRequestCards.textContent = tradeRequest.cards;
     reviewRequestProperties.innerHTML = tradeRequest.properties.map(id => `<li>${board[id].name}</li>`).join('') || '<li>None</li>';
 
@@ -1789,7 +1789,7 @@ payBailBtn.addEventListener('click', () => {
         player.money -= 50;
         player.inJail = false;
         player.jailTurns = 0;
-        logMessage(`${player.name} paid $50 bail to get out of Detention Block.`, 'success');
+        logMessage(`${player.name} paid ₡50 bail to get out of Detention Block.`, 'success');
         updatePlayerInfo();
         setControlsForTurnStart(); 
     } else {
@@ -1964,7 +1964,7 @@ debugChangeOwnerBtn.addEventListener('click', () => {
             // If property had dwellings, they are removed when ownership changes
             if (property.type === 'location') {
                 oldOwner.money += property.houses * (property.houseCost / 2); // Refund half cost
-                logMessage(`DEBUG: ${oldOwner.name} refunded $${property.houses * (property.houseCost / 2)} for Dwellings on ${property.name}.`, 'debug');
+                logMessage(`DEBUG: ${oldOwner.name} refunded ₡${property.houses * (property.houseCost / 2)} for Dwellings on ${property.name}.`, 'debug');
                 property.houses = 0;
             }
             property.mortgaged = false; // Unmortgage when ownership changes
