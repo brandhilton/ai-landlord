@@ -276,3 +276,26 @@ Uncaught ReferenceError: showTradeModal is not defined
 <anonymous> file:///Users/brandh/Documents/projects/mine/monopoly/gemini_new/script.js:1651
 
 The 'Toggle Debug' button is back. Remove it. Also, when the trading dialog is up, all the error messages are going to the log and I can't see them because it's blurred. Those messages need to be in the trading dialog where I can see them. Also, the 'credits' blanks need to be cleared out for each new trade.
+
+use the costa rican colon currency symbol instead of the dollar sign
+
+add a debug option where I can set how much money a player has
+>>>>>>>>>>>>>>>>>> Note the changes in the html file. Currency symbol changes, jail/detention, houses/dwellings.
+
+when I have 4 dwellings on a property and I go to build a fortress, instead of the cost saying, '₡50' it says '₡Fortress'. 
+
+in property auctions, each player must bid something over 0 unless they have no money.
+
+no, that's incorrect. The current bid should start at 0. Also, error messages are showing up in the logs area, where they're obscured by the auction modal. error messages should be displayed in the auction modal.
+
+players cannot withdraw from the auction. someone has to bid at least 1. players can skip their turn to bid. if a player bids and his turn comes to bid again and nobody else has bid, he wins the auction.
+
+please split the javascript file up in some logical manner.
+>>>>>>>>>>>>>>>>>> I had to ask it again because it forgot to split up the file.
+
+I'm getting CORS errors.
+>>>>>>>>>>>>>>>>>>>> It gave me instructions on how to run a server locally. I chose python3 -m http.server.
+
+
+
+
