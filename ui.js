@@ -164,13 +164,25 @@ export function updateBoardUI() {
 
                 // Only 'location' type properties can have houses (dwellings/fortresses)
                 if (space.type === 'location') {
-                    let housesSpan = spaceDiv.querySelector('.space-houses');
-                    if (!housesSpan) {
-                        housesSpan = document.createElement('div');
-                        housesSpan.className = 'space-houses';
-                        spaceDiv.appendChild(housesSpan);
+                    let dwellingContainer = spaceDiv.querySelector('.dwelling-container');
+                    if (!dwellingContainer) {
+                        dwellingContainer = document.createElement('div');
+                        dwellingContainer.className = 'dwelling-container';
+                        spaceDiv.appendChild(dwellingContainer);
                     }
-                    housesSpan.textContent = space.houses > 0 ? 'D: ' + space.houses : '';
+                    dwellingContainer.innerHTML = ''; // Clear existing icons
+
+                    if (space.houses === 5) {
+                        const fortress = document.createElement('div');
+                        fortress.className = 'fortress';
+                        dwellingContainer.appendChild(fortress);
+                    } else if (space.houses > 0) {
+                        for (let i = 0; i < space.houses; i++) {
+                            const dwelling = document.createElement('div');
+                            dwelling.className = 'dwelling';
+                            dwellingContainer.appendChild(dwelling);
+                        }
+                    }
                 }
             }
         }
