@@ -219,13 +219,31 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     white-space: nowrap;
     text-overflow: ellipsis;
 }
-.space-houses {
+
+/* NEW: Dwelling/Fortress Styles */
+.dwelling-container {
     position: absolute;
-    top: 15px;
-    right: 5px;
-    font-size: 0.8em;
-    color: green;
+    top: 12px; /* Position below the color bar */
+    left: 2px;
+    right: 2px;
+    display: flex;
+    gap: 2px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
+.dwelling {
+    width: 8px;
+    height: 8px;
+    background-color: #28a745; /* Green */
+    border: 1px solid #1e7e34;
+}
+.fortress {
+    width: 20px;
+    height: 10px;
+    background-color: #dc3545; /* Red */
+    border: 1px solid #bd2130;
+}
+
 
 /* Game Controls Panel (Middle Column) */
 #game-controls-panel {
