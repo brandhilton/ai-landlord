@@ -491,6 +491,12 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     padding: 8px;
     box-sizing: border-box;
 }
+#auction-message-area {
+    color: red;
+    font-weight: bold;
+    min-height: 1.2em;
+    margin-top: 10px;
+}
 
 /* Trade Modal Styles */
 .trade-interface {
