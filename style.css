@@ -220,10 +220,10 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     text-overflow: ellipsis;
 }
 
-/* NEW: Dwelling/Fortress Styles */
+/* Dwelling/Fortress Styles */
 .dwelling-container {
     position: absolute;
-    top: 12px; /* Position below the color bar */
+    top: 15px; /* Position below the color bar */
     left: 2px;
     right: 2px;
     display: flex;
