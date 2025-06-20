@@ -296,6 +296,10 @@ please split the javascript file up in some logical manner.
 I'm getting CORS errors.
 >>>>>>>>>>>>>>>>>>>> It gave me instructions on how to run a server locally. I chose python3 -m http.server.
 
+Instead of "D-n", represent regular dwellings as green squares and fortresses as red rectangles.
+
+the dwellings are too close to the property names. 
+
 
 
 
