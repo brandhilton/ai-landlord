@@ -93,35 +93,29 @@ export const DOMElements = {
     acceptTradeBtn: document.getElementById('accept-trade-btn'),
     rejectTradeBtn: document.getElementById('reject-trade-btn'),
 
-    // Functions attached to DOMElements object
     showPropertyModal: function(spaceId) {
         const space = board[spaceId];
         if (!space || !['location', 'hyperspace_lane', 'facility'].includes(space.type)) {
             return;
         }
-
         this.modalPropertyName.textContent = space.name;
         this.modalPropertyType.textContent = space.type.replace('_', ' ').toUpperCase();
         this.modalPropertyPrice.textContent = space.price;
         this.modalPropertyOwner.textContent = space.owner !== null && state.players[space.owner] ? state.players[space.owner].name : 'Unowned';
         this.modalPropertyMortgaged.textContent = space.mortgaged ? 'Yes' : 'No';
         this.modalPropertyMortgageValue.textContent = space.price / 2;
-
-        this.modalPropertyColorBar.className = 'color-bar'; // Reset classes
+        this.modalPropertyColorBar.className = 'color-bar';
         if (space.colorGroup) {
             this.modalPropertyColorBar.classList.add(space.colorGroup);
         } else {
-            this.modalPropertyColorBar.style.backgroundColor = 'transparent'; // Fallback for non-colored groups
+            this.modalPropertyColorBar.style.backgroundColor = 'transparent';
         }
-
         this.modalPropertyRentList.innerHTML = '';
-
         if (space.type === 'location') {
             this.modalPropertyHousesRow.style.display = 'block';
             this.modalPropertyHouseCostRow.style.display = 'block';
             this.modalPropertyHouses.textContent = space.houses === 5 ? 'Fortress' : space.houses;
             this.modalPropertyHouseCost.textContent = space.houseCost;
-
             this.modalPropertyRentList.innerHTML += `<li><strong>Rent:</strong> ₡${space.rent[0]}</li>`;
             for (let i = 1; i <= 4; i++) {
                 this.modalPropertyRentList.innerHTML += `<li>With ${i} Dwelling${i > 1 ? 's' : ''}: ₡${space.rent[i]}</li>`;
@@ -139,14 +133,11 @@ export const DOMElements = {
             this.modalPropertyRentList.innerHTML += `<li><strong>Rent (1 Facility):</strong> 4 times amount shown on dice</li>`;
             this.modalPropertyRentList.innerHTML += `<li><strong>Rent (2 Facilities):</strong> 10 times amount shown on dice</li>`;
         }
-
         this.propertyModalOverlay.style.display = 'flex';
     },
-
     hidePropertyModal: function() {
         this.propertyModalOverlay.style.display = 'none';
     },
-
     toggleDebugControls: function() {
         if (this.debugControlsDiv.style.display === 'none' || this.debugControlsDiv.style.display === '') {
             this.debugControlsDiv.style.display = 'flex';
@@ -159,7 +150,6 @@ export const DOMElements = {
     }
 };
 
-// --- UI Functions ---
 export function logMessage(message, type = 'info') {
     const div = document.createElement('div');
     div.textContent = message;
@@ -173,7 +163,6 @@ export function logMessage(message, type = 'info') {
 export function updatePlayerInfo() {
     DOMElements.playerListContainer.innerHTML = '';
     if (!state.players || state.players.length === 0) return;
-
     state.players.forEach((player, index) => {
         const playerDiv = document.createElement('div');
         playerDiv.className = `player-status ${index === state.currentPlayerIndex ? 'current' : ''}`;
@@ -184,7 +173,6 @@ export function updatePlayerInfo() {
                    (prop.mortgaged ? ' (M)' : '') +
                    (prop.houses > 0 ? ` (D:${prop.houses === 5 ? 'F' : prop.houses})` : '');
         }).join(', ') || 'None';
-
         playerDiv.innerHTML = `
             <h4>${player.name} (P${player.id + 1})</h4>
             <ul>
@@ -228,24 +216,24 @@ export function updateBoardUI() {
             const spaceDiv = document.getElementById(`space-${space.id}`);
             if (spaceDiv) {
                 let ownerSpan = spaceDiv.querySelector('.space-owner');
-                if (!ownerSpan) { // Should exist if createBoardUI was thorough
+                if (!ownerSpan) {
                     ownerSpan = document.createElement('div');
                     ownerSpan.className = 'space-owner';
-                    spaceDiv.appendChild(ownerSpan); // Fallback append
+                    spaceDiv.appendChild(ownerSpan);
                 }
                 if (space.owner !== null && state.players && state.players[space.owner]) {
                     ownerSpan.textContent = `Owner: ${state.players[space.owner].name}`;
-                    ownerSpan.style.color = space.mortgaged ? 'red' : 'green'; // Original colors
+                    ownerSpan.style.color = space.mortgaged ? 'red' : 'green';
                 } else {
                     ownerSpan.textContent = '';
                 }
 
                 if (space.type === 'location') {
                     let dwellingContainer = spaceDiv.querySelector('.dwelling-container');
-                    if (!dwellingContainer) { // Should exist
+                    if (!dwellingContainer) {
                         dwellingContainer = document.createElement('div');
                         dwellingContainer.className = 'dwelling-container';
-                        spaceDiv.appendChild(dwellingContainer); // Fallback append
+                        spaceDiv.appendChild(dwellingContainer);
                     }
                     dwellingContainer.innerHTML = '';
 
@@ -288,7 +276,6 @@ export function createBoardUI() {
             spaceDiv.appendChild(colorBar);
         }
 
-        // Dwelling container is created for locations (it's absolute, populated by updateBoardUI)
         if (space.type === 'location') {
             const dwellingContainer = document.createElement('div');
             dwellingContainer.className = 'dwelling-container';
@@ -307,7 +294,6 @@ export function createBoardUI() {
             spaceDiv.appendChild(priceDiv);
         }
         
-        // Owner div is created here as an empty placeholder (it's absolute, populated by updateBoardUI)
         const ownerDiv = document.createElement('div');
         ownerDiv.className = 'space-owner';
         spaceDiv.appendChild(ownerDiv);
@@ -335,7 +321,6 @@ export function populateDebugPropertySelects() {
     const propertyOptions = board.filter(s => ['location', 'hyperspace_lane', 'facility'].includes(s.type))
                                 .map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     DOMElements.debugPropertySelect.innerHTML = `<option value="">-- Select Holding --</option>` + propertyOptions;
-
     const housePropertyOptions = board.filter(s => s.type === 'location')
                                     .map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     DOMElements.debugHousePropertySelect.innerHTML = `<option value="">-- Select Location --</option>` + housePropertyOptions;
