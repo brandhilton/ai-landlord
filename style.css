@@ -101,17 +101,18 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     background-color: #f9f9f9;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-start; /* Align items to the top for flow */
+    align-items: center; /* Keep items centered horizontally */
     font-size: 0.7em;
     text-align: center;
     padding: 2px;
     box-sizing: border-box;
-    position: relative;
+    position: relative; /* For absolute children like color-bar and owner */
     cursor: pointer; /* Indicate clickable */
 }
 .board-space.corner { background-color: #d0d0d0; }
 /* These grid-area rules place the spaces in the correct Monopoly board layout */
+/* These are now primarily set by JS in createBoardUI, but can serve as fallback/reference */
 #go { grid-area: 11 / 11; }
 #mediterranean-avenue { grid-area: 11 / 10; }
 #community-chest1 { grid-area: 11 / 9; }
@@ -164,15 +165,17 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     border-radius: 50%;
     border: 1px solid black;
     box-sizing: border-box;
-    bottom: 5px; /* Adjust as needed */
-    right: 5px; /* Adjust as needed */
+    /* Default positioning, can be overridden */
+    bottom: 5px;
+    right: 5px;
+    z-index: 2; /* Above other space content */
 }
 .token.p0 { background-color: red; left: 5px; bottom: 5px; }
 .token.p1 { background-color: blue; left: 25px; bottom: 5px; }
 .token.p2 { background-color: green; left: 5px; bottom: 25px; }
 .token.p3 { background-color: yellow; left: 25px; bottom: 25px; }
-.token.p4 { background-color: purple; left: 45px; bottom: 5px; } /* For more players */
-.token.p5 { background-color: orange; left: 45px; bottom: 25px; } /* For more players */
+.token.p4 { background-color: purple; left: 45px; bottom: 5px; }
+.token.p5 { background-color: orange; left: 45px; bottom: 25px; }
 
 /* Positioning for tokens *actually in jail* (on space 10) */
 .token.in-jail-position.p0 { top: 5px; right: 5px; left: auto; bottom: auto; }
@@ -189,6 +192,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     position: absolute;
     top: 0;
     left: 0;
+    z-index: 0; /* Behind other content */
 }
 /* Property Colors */
 .brown { background-color: #8B4513; }
@@ -202,34 +206,23 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 
 .space-name {
     font-weight: bold;
-    font-size: 0.7em;
-    margin-top: 5px;
-}
-.space-price {
-    font-size: 0.7em;
-    color: #555;
-}
-.space-owner {
-    position: absolute;
-    bottom: 2px;
-    font-size: 0.6em;
-    color: #333;
+    margin-top: 12px; /* 10px for color-bar + 2px spacing */
     width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    line-height: 1.1;
+    z-index: 1;
 }
 
-/* Dwelling/Fortress Styles */
 .dwelling-container {
-    position: absolute;
-    top: 15px; /* Position below the color bar */
-    left: 2px;
-    right: 2px;
     display: flex;
     gap: 2px;
     flex-wrap: wrap;
     justify-content: center;
+    align-items: center;
+    margin-top: 3px;
+    margin-bottom: 3px;
+    width: 100%;
+    min-height: 12px; /* Reserves space (8px dwelling + 2*1px border + gap) */
+    z-index: 1;
 }
 .dwelling {
     width: 8px;
@@ -242,6 +235,27 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     height: 10px;
     background-color: #dc3545; /* Red */
     border: 1px solid #bd2130;
+}
+
+.space-price {
+    color: #555;
+    z-index: 1;
+}
+
+.space-owner {
+    position: absolute;
+    bottom: 2px;
+    left: 0;
+    right: 0;
+    font-size: 0.6em;
+    color: #333;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding: 0 2px;
+    box-sizing: border-box;
+    z-index: 1;
 }
 
 
@@ -458,7 +472,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     color: #333;
 }
 
-#property-modal-content .color-bar {
+#property-modal-content .color-bar { /* Style for the color bar inside the modal */
     height: 15px;
     width: 100%;
     margin-bottom: 15px;

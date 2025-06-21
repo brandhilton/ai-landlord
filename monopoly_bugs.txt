@@ -551,6 +551,3 @@ ui.js
 >>>>>>>>>>>>>>>>>>> I uploaded index.html and style.css fine, but it consistently failed when I tried to upload a .js file. I had to do it by copying and pasting the contents of the files. After uploading all the source files, the token count stands at 53,489.
 
 The dwelling rectangles sometimes overlap the property names. fix this.
-
-*******************
->>>>>>>>>>>>>>>>>>> Dear God, the carnage! Totally broken.
