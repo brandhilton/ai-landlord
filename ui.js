@@ -203,16 +203,25 @@ export function updateBoardUI() {
             if (spaceDiv) {
                 const token = document.createElement('div');
                 token.className = `token p${player.id}`;
+                // MODIFIED: If player is in jail, token should be added to the jail cell, not just space-10
                 if (player.position === 10 && player.inJail) {
                     token.classList.add('in-jail-position');
+                    const jailCell = spaceDiv.querySelector('.jail-cell');
+                    if (jailCell) {
+                        jailCell.appendChild(token); // Add token inside the cell
+                    } else {
+                        spaceDiv.appendChild(token); // Fallback to spaceDiv if cell not found
+                    }
+                } else {
+                    spaceDiv.appendChild(token);
                 }
-                spaceDiv.appendChild(token);
             }
         });
     }
 
     board.forEach(space => {
-        if (['location', 'hyperspace_lane', 'facility'].includes(space.type)) {
+        // Only update properties, not the special jail square (ID 10) here for owner/dwellings
+        if (['location', 'hyperspace_lane', 'facility'].includes(space.type) && space.id !== 10) {
             const spaceDiv = document.getElementById(`space-${space.id}`);
             if (spaceDiv) {
                 let ownerSpan = spaceDiv.querySelector('.space-owner');
@@ -261,42 +270,91 @@ export function createBoardUI() {
         spaceDiv.id = `space-${space.id}`;
         spaceDiv.classList.add('board-space');
         spaceDiv.dataset.spaceId = space.id;
-        if ([0, 10, 20, 30].includes(space.id)) {
-            spaceDiv.classList.add('corner');
-        }
 
+        if (space.id === 10) { // MODIFIED: Special handling for Jail Square (ID 10)
+            spaceDiv.classList.add('jail-square-layout'); // Add specific class for grid layout
+            spaceDiv.classList.add('corner'); // It's still a corner
+
+            // Create Jail specific HTML structure
+            const justTextContainer = document.createElement('div');
+            justTextContainer.className = 'jail-just-text-container';
+            const justText = document.createElement('span');
+            justText.className = 'jail-rotated-text';
+            justText.textContent = 'JUST';
+            justTextContainer.appendChild(justText);
+            spaceDiv.appendChild(justTextContainer);
+
+            const visitingTextContainer = document.createElement('div');
+            visitingTextContainer.className = 'jail-visiting-text-container';
+            const visitingText = document.createElement('span');
+            visitingText.className = 'jail-rotated-text';
+            visitingText.textContent = 'VISITING';
+            visitingTextContainer.appendChild(visitingText);
+            spaceDiv.appendChild(visitingTextContainer);
+            
+            const jailCell = document.createElement('div');
+            jailCell.className = 'jail-cell';
+
+            const inDetentionText = document.createElement('span');
+            inDetentionText.className = 'jail-text-in-detention';
+            inDetentionText.textContent = 'IN';
+            jailCell.appendChild(inDetentionText);
+
+            const barsGraphic = document.createElement('div');
+            barsGraphic.className = 'jail-bars-graphic';
+            for (let i = 0; i < 3; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'jail-bar';
+                barsGraphic.appendChild(bar);
+            }
+            jailCell.appendChild(barsGraphic);
+
+            const detentionFooterText = document.createElement('span');
+            detentionFooterText.className = 'jail-text-detention-footer';
+            detentionFooterText.textContent = 'DETENTION';
+            jailCell.appendChild(detentionFooterText);
+
+            spaceDiv.appendChild(jailCell);
+
+        } else { // Original creation for other spaces
+            if ([0, 20, 30].includes(space.id)) { // Other corners
+                spaceDiv.classList.add('corner');
+            }
+
+            if (space.type === 'location' || space.type === 'hyperspace_lane' || space.type === 'facility') {
+                const colorBar = document.createElement('div');
+                colorBar.className = `property-color-bar ${space.colorGroup || ''}`;
+                spaceDiv.appendChild(colorBar);
+            }
+
+            if (space.type === 'location') {
+                const dwellingContainer = document.createElement('div');
+                dwellingContainer.className = 'dwelling-container';
+                spaceDiv.appendChild(dwellingContainer);
+            }
+
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'space-name';
+            nameDiv.textContent = space.name;
+            spaceDiv.appendChild(nameDiv);
+
+            if (space.price) {
+                const priceDiv = document.createElement('div');
+                priceDiv.className = 'space-price';
+                priceDiv.textContent = `₡${space.price}`;
+                spaceDiv.appendChild(priceDiv);
+            }
+            
+            const ownerDiv = document.createElement('div');
+            ownerDiv.className = 'space-owner';
+            spaceDiv.appendChild(ownerDiv);
+        }
+        
+        // Assign grid area (common for all, including jail)
         if (space.id >= 0 && space.id <= 10) { spaceDiv.style.gridArea = `11 / ${11 - space.id}`; }
         else if (space.id >= 11 && space.id <= 19) { spaceDiv.style.gridArea = `${11 - (space.id - 10)} / 1`; }
         else if (space.id >= 20 && space.id <= 30) { spaceDiv.style.gridArea = `1 / ${space.id - 19}`; }
         else if (space.id >= 31 && space.id <= 39) { spaceDiv.style.gridArea = `${(space.id - 29)} / 11`; }
-
-        if (space.type === 'location' || space.type === 'hyperspace_lane' || space.type === 'facility') {
-            const colorBar = document.createElement('div');
-            colorBar.className = `property-color-bar ${space.colorGroup || ''}`;
-            spaceDiv.appendChild(colorBar);
-        }
-
-        if (space.type === 'location') {
-            const dwellingContainer = document.createElement('div');
-            dwellingContainer.className = 'dwelling-container';
-            spaceDiv.appendChild(dwellingContainer);
-        }
-
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'space-name';
-        nameDiv.textContent = space.name;
-        spaceDiv.appendChild(nameDiv);
-
-        if (space.price) {
-            const priceDiv = document.createElement('div');
-            priceDiv.className = 'space-price';
-            priceDiv.textContent = `₡${space.price}`;
-            spaceDiv.appendChild(priceDiv);
-        }
-        
-        const ownerDiv = document.createElement('div');
-        ownerDiv.className = 'space-owner';
-        spaceDiv.appendChild(ownerDiv);
 
         DOMElements.gameBoardDiv.appendChild(spaceDiv);
     });
