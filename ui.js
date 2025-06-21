@@ -273,7 +273,7 @@ export function createBoardUI() {
             spaceDiv.classList.add('jail-square-layout');
             spaceDiv.classList.add('corner');
 
-            const justTextContainer = document.createElement('div');
+            const justTextContainer = document.createElement('div'); // Will contain "VISITING" for the bottom path
             justTextContainer.className = 'jail-just-text-container';
             const justText = document.createElement('span');
             justText.className = 'jail-rotated-text';
@@ -281,7 +281,7 @@ export function createBoardUI() {
             justTextContainer.appendChild(justText);
             spaceDiv.appendChild(justTextContainer);
 
-            const visitingTextContainer = document.createElement('div');
+            const visitingTextContainer = document.createElement('div'); // Will contain "VISITING" for the left path
             visitingTextContainer.className = 'jail-visiting-text-container';
             const visitingText = document.createElement('span');
             visitingText.className = 'jail-rotated-text';
@@ -299,7 +299,7 @@ export function createBoardUI() {
 
             const barsGraphic = document.createElement('div');
             barsGraphic.className = 'jail-bars-graphic';
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 3; i++) { // Create 3 bars
                 const bar = document.createElement('div');
                 bar.className = 'jail-bar';
                 barsGraphic.appendChild(bar);
