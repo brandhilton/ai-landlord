@@ -29,27 +29,27 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 #game-screen {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centers H1 and main-game-layout */
-    gap: 20px; /* Space between H1 and main-game-layout */
-    width: 100%; /* Take full width available */
+    align-items: center;
+    gap: 20px;
+    width: 100%;
 }
 
 /* Container for the three main columns */
 #main-game-layout {
     display: flex;
-    gap: 20px; /* Space between the columns */
-    justify-content: center; /* Center the entire layout horizontally */
-    align-items: flex-start; /* Align columns to the top */
-    flex-wrap: wrap; /* Allow columns to wrap on smaller screens */
+    gap: 20px;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
 }
 
 /* Left Column (Board + Message Log) */
 #left-column {
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Space between board and message log */
-    flex-shrink: 0; /* Prevent it from shrinking */
-    position: relative; /* Make this a positioning context for the logo */
+    gap: 20px;
+    flex-shrink: 0;
+    position: relative;
 }
 
 /* Middle Column (Game Controls) */
@@ -101,16 +101,13 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     background-color: #f9f9f9;
     display: flex;
     flex-direction: column;
-    /* MODIFIED: justifyContent to space-around or space-between to push elements apart */
-    /* OR, better, control spacing with padding and margins on children */
-    justify-content: flex-start; /* Align children to the top */
+    justify-content: flex-start;
     align-items: center;
     font-size: 0.75em;
     text-align: center;
     padding: 3px;
-    /* MODIFIED: Add padding-top for color bar and dwellings, padding-bottom for owner */
-    padding-top: 20px; /* 10px for color bar + 10px for dwellings below it */
-    padding-bottom: 15px; /* Space for absolutely positioned owner text */
+    padding-top: 20px;
+    padding-bottom: 15px;
     box-sizing: border-box;
     position: relative;
     cursor: pointer;
@@ -118,14 +115,14 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 }
 .board-space.corner {
     background-color: #d0d0d0;
-    padding-top: 3px; /* Reset for corners */
-    padding-bottom: 3px; /* Reset for corners */
-    justify-content: center; /* Corners can center fully */
+    padding-top: 3px;
+    padding-bottom: 3px;
+    justify-content: center;
 }
 
 /* Special styling for the jail square */
 #space-10.jail-square-layout {
-    padding: 0; /* Jail handles its own internal padding/layout */
+    padding: 0;
     display: grid;
     grid-template-columns: 25% 75%;
     grid-template-rows: 75% 25%;
@@ -310,22 +307,21 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 .dark-blue { background-color: #00008B; }
 
 .space-name {
-    font-weight: bold;
-    /* margin-top: 5px; Removed, padding-top on .board-space handles this */
+    font-weight: normal; /* Property names are no longer bold */
     z-index: 3;
-    line-height: 1.1; /* Allow some space for descenders/ascenders */
-    width: 95%; /* Prevent text from touching edges */
-    word-wrap: break-word; /* Ensure long names wrap */
+    line-height: 1.1;
+    width: 95%;
+    word-wrap: break-word;
 }
 .space-price {
     color: #555;
     z-index: 3;
     line-height: 1.1;
-    margin-top: 2px; /* Small space between name and price */
+    margin-top: 2px;
 }
 .space-owner {
     position: absolute;
-    bottom: 18px; /* Raised to be above the token line */
+    bottom: 18px;
     left: 0;
     right: 0;
     font-size: 0.8em;
@@ -340,7 +336,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 /* Dwelling/Fortress Styles */
 .dwelling-container {
     position: absolute;
-    top: 10px; /* Below color-bar */
+    top: 10px;
     left: 2px;
     right: 2px;
     display: flex;
