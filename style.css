@@ -54,13 +54,13 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 
 /* Middle Column (Game Controls) */
 #middle-column {
-    width: 350px; /* This might need to increase if board is much wider */
+    width: 350px;
     flex-shrink: 0;
 }
 
 /* Right Column (Debug Controls) */
 #right-column {
-    width: 350px; /* This might need to increase if board is much wider */
+    width: 350px;
     flex-shrink: 0;
 }
 
@@ -71,7 +71,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     background-color: white;
     border: 1px solid #ccc;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    padding: 20px; /* Keep padding, so cells are 990px / 11 = 90px */
+    padding: 20px;
     border-radius: 8px;
     box-sizing: border-box;
     display: grid;
@@ -84,10 +84,10 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 /* Snarky Logo in the center of the board */
 #board-logo {
     position: absolute;
-    top: 515px; /* Half of 1030px */
-    left: 515px; /* Half of 1030px */
+    top: 515px;
+    left: 515px;
     transform: translate(-50%, -50%) rotate(-10deg);
-    font-size: 4.5em; /* Can be larger with bigger board */
+    font-size: 4.5em;
     font-weight: bold;
     color: rgba(0, 0, 0, 0.15);
     text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.7);
@@ -101,21 +101,31 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     background-color: #f9f9f9;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    /* MODIFIED: justifyContent to space-around or space-between to push elements apart */
+    /* OR, better, control spacing with padding and margins on children */
+    justify-content: flex-start; /* Align children to the top */
     align-items: center;
     font-size: 0.75em;
     text-align: center;
     padding: 3px;
+    /* MODIFIED: Add padding-top for color bar and dwellings, padding-bottom for owner */
+    padding-top: 20px; /* 10px for color bar + 10px for dwellings below it */
+    padding-bottom: 15px; /* Space for absolutely positioned owner text */
     box-sizing: border-box;
     position: relative;
     cursor: pointer;
     overflow: hidden;
 }
-.board-space.corner { background-color: #d0d0d0; }
+.board-space.corner {
+    background-color: #d0d0d0;
+    padding-top: 3px; /* Reset for corners */
+    padding-bottom: 3px; /* Reset for corners */
+    justify-content: center; /* Corners can center fully */
+}
 
 /* Special styling for the jail square */
 #space-10.jail-square-layout {
-    padding: 0;
+    padding: 0; /* Jail handles its own internal padding/layout */
     display: grid;
     grid-template-columns: 25% 75%;
     grid-template-rows: 75% 25%;
@@ -159,7 +169,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     border-radius: 1px;
 }
 .jail-text-detention-footer {
-    font-weight: normal; /* MODIFIED: Changed from bold to normal */
+    font-weight: normal;
     font-size: 1em;
     color: black;
     line-height: 1;
@@ -185,7 +195,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     box-sizing: border-box;
 }
 .jail-rotated-text {
-    font-weight: bold; /* "VISITING" can remain bold if desired */
+    font-weight: bold;
     font-size: 0.9em;
     white-space: nowrap;
     color: #333;
@@ -301,18 +311,21 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 
 .space-name {
     font-weight: bold;
-    margin-top: 5px;
+    /* margin-top: 5px; Removed, padding-top on .board-space handles this */
     z-index: 3;
-    line-height: 1.2;
+    line-height: 1.1; /* Allow some space for descenders/ascenders */
+    width: 95%; /* Prevent text from touching edges */
+    word-wrap: break-word; /* Ensure long names wrap */
 }
 .space-price {
     color: #555;
     z-index: 3;
-    line-height: 1.2;
+    line-height: 1.1;
+    margin-top: 2px; /* Small space between name and price */
 }
 .space-owner {
     position: absolute;
-    bottom: 18px;
+    bottom: 18px; /* Raised to be above the token line */
     left: 0;
     right: 0;
     font-size: 0.8em;
@@ -327,7 +340,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 /* Dwelling/Fortress Styles */
 .dwelling-container {
     position: absolute;
-    top: 10px;
+    top: 10px; /* Below color-bar */
     left: 2px;
     right: 2px;
     display: flex;

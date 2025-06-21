@@ -13,7 +13,8 @@ export const board = [
     { id: 11, name: "Cloud City", type: "location", colorGroup: "pink", price: 140, rent: [10, 50, 150, 450, 625, 750], houseCost: 100, owner: null, houses: 0, mortgaged: false },
     { id: 12, name: "Power Generator", type: "facility", price: 150, owner: null, mortgaged: false },
     { id: 13, name: "Bespin Platforms", type: "location", colorGroup: "pink", price: 140, rent: [10, 50, 150, 450, 625, 750], houseCost: 100, owner: null, houses: 0, mortgaged: false },
-    { id: 14, name: "Carbon-Freezing Chamber", type: "location", colorGroup: "pink", price: 160, rent: [12, 60, 180, 500, 700, 800], houseCost: 100, owner: null, houses: 0, mortgaged: false },
+    // MODIFIED NAME
+    { id: 14, name: "Cryo Chamber", type: "location", colorGroup: "pink", price: 160, rent: [12, 60, 180, 500, 700, 800], houseCost: 100, owner: null, houses: 0, mortgaged: false },
     { id: 15, name: "Hyperspace Lane 2", type: "hyperspace_lane", price: 200, rent: [25,50,100,200], owner: null, mortgaged: false },
     { id: 16, name: "Dagobah Swamp", type: "location", colorGroup: "orange", price: 180, rent: [14, 70, 200, 550, 750, 950], houseCost: 100, owner: null, houses: 0, mortgaged: false },
     { id: 17, name: "Supply Drop", type: "supply_drop" },
@@ -26,7 +27,8 @@ export const board = [
     { id: 24, name: "Starkiller Base", type: "location", colorGroup: "red", price: 240, rent: [20, 100, 300, 750, 925, 1100], houseCost: 150, owner: null, houses: 0, mortgaged: false },
     { id: 25, name: "Hyperspace Lane 3", type: "hyperspace_lane", price: 200, rent: [25,50,100,200], owner: null, mortgaged: false },
     { id: 26, name: "Coruscant Underworld", type: "location", colorGroup: "yellow", price: 260, rent: [22, 110, 330, 800, 975, 1150], houseCost: 150, owner: null, houses: 0, mortgaged: false },
-    { id: 27, name: "Galactic Senate Building", type: "location", colorGroup: "yellow", price: 260, rent: [22, 110, 330, 800, 975, 1150], houseCost: 150, owner: null, houses: 0, mortgaged: false },
+    // MODIFIED NAME
+    { id: 27, name: "Senate Hall", type: "location", colorGroup: "yellow", price: 260, rent: [22, 110, 330, 800, 975, 1150], houseCost: 150, owner: null, houses: 0, mortgaged: false },
     { id: 28, name: "Hydroponics Farm", type: "facility", price: 150, owner: null, mortgaged: false },
     { id: 29, name: "Imperial Palace", type: "location", colorGroup: "yellow", price: 280, rent: [24, 120, 360, 850, 1025, 1200], houseCost: 150, owner: null, houses: 0, mortgaged: false },
     { id: 30, name: "Send to Detention Block", type: "send_to_detention" },
