@@ -203,14 +203,13 @@ export function updateBoardUI() {
             if (spaceDiv) {
                 const token = document.createElement('div');
                 token.className = `token p${player.id}`;
-                // MODIFIED: If player is in jail, token should be added to the jail cell, not just space-10
                 if (player.position === 10 && player.inJail) {
                     token.classList.add('in-jail-position');
                     const jailCell = spaceDiv.querySelector('.jail-cell');
                     if (jailCell) {
-                        jailCell.appendChild(token); // Add token inside the cell
+                        jailCell.appendChild(token);
                     } else {
-                        spaceDiv.appendChild(token); // Fallback to spaceDiv if cell not found
+                        spaceDiv.appendChild(token);
                     }
                 } else {
                     spaceDiv.appendChild(token);
@@ -220,7 +219,6 @@ export function updateBoardUI() {
     }
 
     board.forEach(space => {
-        // Only update properties, not the special jail square (ID 10) here for owner/dwellings
         if (['location', 'hyperspace_lane', 'facility'].includes(space.type) && space.id !== 10) {
             const spaceDiv = document.getElementById(`space-${space.id}`);
             if (spaceDiv) {
@@ -271,16 +269,15 @@ export function createBoardUI() {
         spaceDiv.classList.add('board-space');
         spaceDiv.dataset.spaceId = space.id;
 
-        if (space.id === 10) { // MODIFIED: Special handling for Jail Square (ID 10)
-            spaceDiv.classList.add('jail-square-layout'); // Add specific class for grid layout
-            spaceDiv.classList.add('corner'); // It's still a corner
+        if (space.id === 10) {
+            spaceDiv.classList.add('jail-square-layout');
+            spaceDiv.classList.add('corner');
 
-            // Create Jail specific HTML structure
             const justTextContainer = document.createElement('div');
             justTextContainer.className = 'jail-just-text-container';
             const justText = document.createElement('span');
             justText.className = 'jail-rotated-text';
-            justText.textContent = 'JUST';
+            justText.textContent = 'VISITING'; // MODIFIED: "JUST" changed to "VISITING"
             justTextContainer.appendChild(justText);
             spaceDiv.appendChild(justTextContainer);
 
@@ -316,8 +313,8 @@ export function createBoardUI() {
 
             spaceDiv.appendChild(jailCell);
 
-        } else { // Original creation for other spaces
-            if ([0, 20, 30].includes(space.id)) { // Other corners
+        } else {
+            if ([0, 20, 30].includes(space.id)) {
                 spaceDiv.classList.add('corner');
             }
 
@@ -350,7 +347,6 @@ export function createBoardUI() {
             spaceDiv.appendChild(ownerDiv);
         }
         
-        // Assign grid area (common for all, including jail)
         if (space.id >= 0 && space.id <= 10) { spaceDiv.style.gridArea = `11 / ${11 - space.id}`; }
         else if (space.id >= 11 && space.id <= 19) { spaceDiv.style.gridArea = `${11 - (space.id - 10)} / 1`; }
         else if (space.id >= 20 && space.id <= 30) { spaceDiv.style.gridArea = `1 / ${space.id - 19}`; }

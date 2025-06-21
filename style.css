@@ -113,46 +113,44 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 }
 .board-space.corner { background-color: #d0d0d0; }
 
-/* MODIFIED: Special styling for the jail square */
+/* Special styling for the jail square */
 #space-10.jail-square-layout {
     padding: 0;
     display: grid;
-    /* Create a 2x2 internal grid. Cell takes 75% height and width. */
     grid-template-columns: 25% 75%; /* Left path (VISITING), Right (CELL) */
-    grid-template-rows: 75% 25%;    /* Top (CELL), Bottom path (JUST) */
-    justify-content: initial; /* Override from .board-space */
-    align-items: initial;     /* Override from .board-space */
-    overflow: hidden; /* Critical to ensure jail content doesn't expand the square */
+    grid-template-rows: 75% 25%;    /* Top (CELL), Bottom path (VISITING) */
+    justify-content: initial;
+    align-items: initial;
+    overflow: hidden;
 }
 
 .jail-cell {
-    /* MODIFIED: Cell is now in the TOP-RIGHT of the 2x2 grid */
-    grid-column: 2 / 3;  /* Second column (75% width) */
-    grid-row: 1 / 2;     /* First row (75% height) */
-    background-color: #ffcc66; /* Orange-ish for jail */
-    border-left: 2px solid black; /* Border on the left of the cell */
-    border-bottom: 2px solid black; /* Border on the bottom of the cell */
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+    background-color: #ffcc66;
+    border-left: 2px solid black;
+    border-bottom: 2px solid black;
     box-sizing: border-box;
     position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 2px; /* Minimal padding for cell content */
+    padding: 2px;
 }
 .jail-text-in-detention {
-    font-weight: bold;
-    font-size: 0.9em;
+    font-weight: normal; /* MODIFIED: "IN" can be less bold */
+    font-size: 0.8em;   /* MODIFIED: "IN" slightly smaller */
     color: black;
-    margin-bottom: 2px;
+    margin-bottom: 1px; /* Reduced margin */
     line-height: 1;
 }
 .jail-bars-graphic {
     display: flex;
     justify-content: space-around;
-    width: 60%;
-    height: 40%;
-    margin-bottom: 2px;
+    width: 50%; /* Reduced width */
+    height: 35%; /* Reduced height to make more room for text */
+    margin-bottom: 1px; /* Reduced margin */
 }
 .jail-bar {
     width: 3px;
@@ -162,31 +160,30 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 }
 .jail-text-detention-footer {
     font-weight: bold;
-    font-size: 0.9em;
+    font-size: 0.85em; /* MODIFIED: Ensure "DETENTION" fits */
     color: black;
     line-height: 1;
+    letter-spacing: -0.5px; /* MODIFIED: Slightly squeeze letters if needed */
 }
 
-/* "JUST VISITING" path styling */
-.jail-just-text-container {
-    /* MODIFIED: "JUST" text is along the BOTTOM edge, below the cell */
-    grid-column: 1 / 3; /* Span both columns of the BOTTOM ROW (25% height) */
-    grid-row: 2 / 3;    /* Second row */
+/* "VISITING" path styling (was "JUST VISITING") */
+.jail-just-text-container { /* This class name is kept for now, but displays "VISITING" */
+    grid-column: 1 / 3;
+    grid-row: 2 / 3;
     display: flex;
-    justify-content: center; /* Center "JUST" horizontally in this strip */
-    align-items: flex-start;  /* Align "JUST" to the top of this strip, below the cell */
-    padding-top: 2px; /* Small space below the cell's bottom border */
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 2px;
     box-sizing: border-box;
 }
 
-.jail-visiting-text-container {
-    /* MODIFIED: "VISITING" text is along the LEFT edge, left of the cell */
-    grid-column: 1 / 2;    /* First column (25% width) */
-    grid-row: 1 / 2;       /* First row (same row as cell, but left of it) */
+.jail-visiting-text-container { /* This class name is kept, also displays "VISITING" */
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
     display: flex;
-    justify-content: flex-end; /* Align "VISITING" to the right of this strip, left of cell */
-    align-items: center;   /* Center "VISITING" vertically in this strip */
-    padding-right: 2px; /* Small space left of the cell's left border */
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 2px;
     box-sizing: border-box;
 }
 
@@ -197,11 +194,9 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     color: #333;
     line-height: 1;
 }
-/* "VISITING" text is rotated */
 #space-10.jail-square-layout .jail-visiting-text-container .jail-rotated-text {
     transform: rotate(90deg);
 }
-/* END OF MODIFIED JAIL STYLES */
 
 
 /* Original grid areas for other spaces */
@@ -252,8 +247,8 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 /* --- TOKEN STYLES --- */
 .token {
     position: absolute;
-    width: 12px;
-    height: 12px;
+    width: 10px; /* MODIFIED: Made tokens smaller to fit more in jail */
+    height: 10px;
     border-radius: 50%;
     border: 1px solid black;
     box-sizing: border-box;
@@ -267,21 +262,24 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 .token.p4 { background-color: purple; }
 .token.p5 { background-color: orange; }
 
-/* Positioning for tokens on normal spaces */
+/* Positioning for tokens on normal spaces (assuming 10px tokens + 2px gap = 12px step) */
 .token.p0:not(.in-jail-position) { left: 3px; bottom: 3px; }
-.token.p1:not(.in-jail-position) { left: 17px; bottom: 3px; }
-.token.p2:not(.in-jail-position) { left: 31px; bottom: 3px; }
-.token.p3:not(.in-jail-position) { left: 45px; bottom: 3px; }
-.token.p4:not(.in-jail-position) { left: 3px; bottom: 17px; }
-.token.p5:not(.in-jail-position) { left: 3px; bottom: 31px; }
+.token.p1:not(.in-jail-position) { left: 15px; bottom: 3px; }
+.token.p2:not(.in-jail-position) { left: 27px; bottom: 3px; }
+.token.p3:not(.in-jail-position) { left: 39px; bottom: 3px; }
+.token.p4:not(.in-jail-position) { left: 3px; bottom: 15px; }
+.token.p5:not(.in-jail-position) { left: 3px; bottom: 27px; }
 
-/* Positioning for tokens IN JAIL (within .jail-cell) */
-.token.in-jail-position.p0 { top: 20%; left: 20%; }
-.token.in-jail-position.p1 { top: 20%; left: 50%; }
-.token.in-jail-position.p2 { top: 50%; left: 20%; }
-.token.in-jail-position.p3 { top: 50%; left: 50%; }
-.token.in-jail-position.p4 { top: 80%; left: 20%; }
-.token.in-jail-position.p5 { top: 80%; left: 50%; }
+/* MODIFIED: Positioning for tokens IN JAIL (within .jail-cell) - 3x2 grid */
+/* Using percentages for responsive positioning within the cell. */
+/* Top row in cell */
+.token.in-jail-position.p0 { top: 15%; left: 15%; }
+.token.in-jail-position.p1 { top: 15%; left: 45%; }
+.token.in-jail-position.p2 { top: 15%; left: 75%; }
+/* Bottom row in cell */
+.token.in-jail-position.p3 { top: 55%; left: 15%; }
+.token.in-jail-position.p4 { top: 55%; left: 45%; }
+.token.in-jail-position.p5 { top: 55%; left: 75%; }
 /* --- END OF TOKEN STYLES --- */
 
 
