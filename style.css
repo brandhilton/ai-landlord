@@ -112,7 +112,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 }
 .board-space.corner { background-color: #d0d0d0; }
 
-/* MODIFIED: Special styling for the jail square */
+/* Special styling for the jail square */
 #space-10.jail-square-layout {
     padding: 0; /* Override default board-space padding */
     display: grid;
@@ -124,12 +124,12 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 
 .jail-cell {
     grid-column: 2 / 3;
-    grid-row: 1 / 3; /* Cell spans both rows of the second column if JUST is only in its own row */
+    grid-row: 1 / 3;
     background-color: #ffcc66; /* Typical jail background color */
     border-left: 2px solid black;
     border-top: 2px solid black;
     box-sizing: border-box;
-    position: relative; /* For positioning text and bars inside */
+    position: relative; /* MODIFIED: Ensured this is relative for token positioning */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -138,16 +138,16 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 }
 .jail-text-in-detention {
     font-weight: bold;
-    font-size: 0.9em; /* Relative to .board-space font-size */
+    font-size: 0.9em;
     color: black;
-    margin-bottom: 5px; /* Space before bars */
+    margin-bottom: 5px;
 }
 .jail-bars-graphic {
     display: flex;
     justify-content: space-around;
     width: 60%;
-    height: 50%; /* Adjust as needed */
-    margin-bottom: 5px; /* Space after bars */
+    height: 50%;
+    margin-bottom: 5px;
 }
 .jail-bar {
     width: 4px;
@@ -161,73 +161,24 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     color: black;
 }
 
-
-.jail-just-visiting-path {
-    grid-column: 1 / 2; /* First column */
-    grid-row: 1 / 3;    /* Spans both rows for the L-shape part */
-    position: relative; /* For absolute positioning of text */
-    display: flex;
-    flex-direction: column; /* To stack "JUST" above the area for "VISITING" to use */
-    justify-content: flex-end; /* "JUST" at the bottom of its allocated top-left cell space */
-    align-items: center;
-}
-
-.jail-just-text {
-    font-weight: bold;
-    font-size: 0.8em;
-    writing-mode: vertical-rl;
-    transform: rotate(180deg); /* Flips it to read top-to-bottom */
-    white-space: nowrap;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(90deg); /* This combination can work */
-    padding-bottom: 5px; /* if it's display block/flex item */
-    /* Crude positioning for example, refine this */
-    display: block; /* Required for transform to work as expected on span */
-    text-align: center;
-    left: 50%;
-    transform: translateX(-50%) rotate(0deg); /* Simpler approach first */
-    top: 5px;
-    line-height: 1;
-}
-
-.jail-visiting-text {
-    font-weight: bold;
-    font-size: 0.8em;
-    writing-mode: vertical-lr; /* Reads top-to-bottom */
-    white-space: nowrap;
-    /* Crude positioning for example, refine this */
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(0deg); /* This combination can work */
-    padding-left: 5px; /* if it's display block/flex item */
-    display: block;
-    text-align: center;
-    transform: rotate(90deg);
-    bottom: 5px;
-    left: 10px; /* Adjust based on cell width */
-    top: auto;
-    line-height: 1;
-}
-
-/* This is a simplified L-shape text positioning. Might need specific tweaks. */
+/* Simplified L-shape text positioning for "JUST VISITING" */
 #space-10.jail-square-layout .jail-just-text-container {
-    grid-column: 1 / 3; /* Span full width */
-    grid-row: 1 / 2;    /* Top row */
+    grid-column: 1 / 3; /* Span full width of the jail square */
+    grid-row: 1 / 2;    /* Top row part of the L */
     display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-right: 30%; /* Push text towards left of cell */
+    justify-content: center; /* Center "JUST" horizontally */
+    align-items: center;     /* Center "JUST" vertically */
+    padding-right: 30%; /* Push text towards left, away from cell area */
+    box-sizing: border-box;
 }
 #space-10.jail-square-layout .jail-visiting-text-container {
-    grid-column: 1 / 2;    /* Left column */
-    grid-row: 2 / 3;    /* Bottom row */
+    grid-column: 1 / 2;    /* Left column part of the L */
+    grid-row: 2 / 3;    /* Bottom row part of the L */
     display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-bottom: 30%; /* Push text towards top of cell */
+    justify-content: center; /* Center "VISITING" horizontally */
+    align-items: center;     /* Center "VISITING" vertically */
+    padding-bottom: 30%; /* Push text towards top, away from cell area */
+    box-sizing: border-box;
 }
 .jail-rotated-text {
     font-weight: bold;
@@ -237,7 +188,6 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 #space-10.jail-square-layout .jail-visiting-text-container .jail-rotated-text {
     transform: rotate(90deg);
 }
-/* END OF MODIFIED JAIL STYLES */
 
 
 /* Original grid areas for other spaces */
@@ -251,7 +201,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 #chance1 { grid-area: 11 / 4; }
 #vermont-avenue { grid-area: 11 / 3; }
 #connecticut-avenue { grid-area: 11 / 2; }
-/* #jail is now styled by #space-10.jail-square-layout */
+/* #jail (ID 10) is handled by #space-10.jail-square-layout */
 
 #st-charles-place { grid-area: 10 / 1; }
 #electric-company { grid-area: 9 / 1; }
@@ -286,6 +236,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 #boardwalk { grid-area: 10 / 11; }
 
 
+/* --- MODIFIED TOKEN STYLES --- */
 .token {
     position: absolute;
     width: 15px;
@@ -295,25 +246,32 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     box-sizing: border-box;
     z-index: 5; /* Ensure tokens are on top */
 }
-/* Default token positioning for non-jail spaces */
-.token.p0:not(.in-jail-position) { background-color: red; left: 5px; bottom: 5px; }
-.token.p1:not(.in-jail-position) { background-color: blue; left: 25px; bottom: 5px; }
-.token.p2:not(.in-jail-position) { background-color: green; left: 5px; bottom: 25px; }
-.token.p3:not(.in-jail-position) { background-color: yellow; left: 25px; bottom: 25px; }
-.token.p4:not(.in-jail-position) { background-color: purple; left: 45px; bottom: 5px; }
-.token.p5:not(.in-jail-position) { background-color: orange; left: 45px; bottom: 25px; }
 
-/* MODIFIED: Token positioning specifically for IN JAIL (within .jail-cell) */
-.token.in-jail-position { /* These are relative to #space-10 or .jail-cell if .jail-cell is pos:relative */
-    /* Assuming .jail-cell is roughly 70-75% of the space width/height and offset */
-    /* Example: if cell starts at 25% from top/left */
-}
-.token.in-jail-position.p0 { top: 30%; left: 30%; } /* Adjust these percentages */
-.token.in-jail-position.p1 { top: 30%; left: 50%; }
-.token.in-jail-position.p2 { top: 50%; left: 30%; }
-.token.in-jail-position.p3 { top: 50%; left: 50%; }
-.token.in-jail-position.p4 { top: 70%; left: 30%; }
-.token.in-jail-position.p5 { top: 70%; left: 50%; }
+/* Specific Player Token Colors - Applied universally */
+.token.p0 { background-color: red; }
+.token.p1 { background-color: blue; }
+.token.p2 { background-color: green; }
+.token.p3 { background-color: yellow; }
+.token.p4 { background-color: purple; }
+.token.p5 { background-color: orange; }
+
+/* Positioning for tokens on normal spaces */
+.token.p0:not(.in-jail-position) { left: 5px; bottom: 5px; }
+.token.p1:not(.in-jail-position) { left: 25px; bottom: 5px; }
+.token.p2:not(.in-jail-position) { left: 5px; bottom: 25px; }
+.token.p3:not(.in-jail-position) { left: 25px; bottom: 25px; }
+.token.p4:not(.in-jail-position) { left: 45px; bottom: 5px; }
+.token.p5:not(.in-jail-position) { left: 45px; bottom: 25px; }
+
+/* Positioning for tokens IN JAIL (within .jail-cell) */
+/* These are now relative to .jail-cell thanks to .jail-cell { position: relative; } */
+.token.in-jail-position.p0 { top: 10px; left: 10px; }
+.token.in-jail-position.p1 { top: 10px; left: 30px; }
+.token.in-jail-position.p2 { top: 30px; left: 10px; }
+.token.in-jail-position.p3 { top: 30px; left: 30px; }
+.token.in-jail-position.p4 { top: 50px; left: 10px; } /* May need adjustment if cell is small */
+.token.in-jail-position.p5 { top: 50px; left: 30px; } /* May need adjustment if cell is small */
+/* --- END OF MODIFIED TOKEN STYLES --- */
 
 
 .property-color-bar {
@@ -360,7 +318,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 /* Dwelling/Fortress Styles */
 .dwelling-container {
     position: absolute;
-    top: 10px;
+    top: 10px; /* Below color bar */
     left: 2px;
     right: 2px;
     display: flex;
