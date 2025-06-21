@@ -54,44 +54,46 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 
 /* Middle Column (Game Controls) */
 #middle-column {
-    width: 350px;
+    width: 350px; /* This might need to increase if board is much wider */
     flex-shrink: 0;
 }
 
 /* Right Column (Debug Controls) */
 #right-column {
-    width: 350px;
+    width: 350px; /* This might need to increase if board is much wider */
     flex-shrink: 0;
 }
 
 /* Game Board Styling (now a distinct block) */
 #game-board {
-    width: 800px; /* Fixed width for the entire board container */
-    height: 800px; /* Fixed height for the entire board container */
+    /* MODIFIED: Increased board size */
+    width: 1030px;
+    height: 1030px;
     background-color: white;
     border: 1px solid #ccc;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    padding: 20px;
+    padding: 20px; /* Keep padding, so cells are 990px / 11 = 90px */
     border-radius: 8px;
-    box-sizing: border-box; /* Include padding and border in the width/height */
-    display: grid; /* Use grid for the board layout itself */
-    grid-template-columns: repeat(11, 1fr); /* This ensures all cells are equal width */
-    grid-template-rows: repeat(11, 1fr);    /* This ensures all cells are equal height */
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    grid-template-rows: repeat(11, 1fr);
     position: relative;
-    background-color: #e0e0e0; /* Background for board grid area */
+    background-color: #e0e0e0;
 }
 
 /* Snarky Logo in the center of the board */
 #board-logo {
     position: absolute;
-    top: 400px; /* Half of board height */
-    left: 400px; /* Half of board width */
+    /* MODIFIED: Adjust logo position based on new board size */
+    top: 515px; /* Half of 1030px */
+    left: 515px; /* Half of 1030px */
     transform: translate(-50%, -50%) rotate(-10deg);
-    font-size: 3.5em;
+    font-size: 4.5em; /* Can be larger with bigger board */
     font-weight: bold;
     color: rgba(0, 0, 0, 0.15);
     text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.7);
-    pointer-events: none; /* Allows clicking through the logo */
+    pointer-events: none;
     z-index: 1;
     white-space: nowrap;
 }
@@ -101,15 +103,15 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     background-color: #f9f9f9;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Original vertical centering */
-    align-items: center;    /* Original horizontal centering */
-    font-size: 0.7em;       /* Original font size */
+    justify-content: center;
+    align-items: center;
+    font-size: 0.75em; /* MODIFIED: Slightly larger font for larger spaces */
     text-align: center;
-    padding: 2px;           /* Original padding */
+    padding: 3px; /* MODIFIED: Slightly more padding */
     box-sizing: border-box;
     position: relative;
-    cursor: pointer; /* Indicate clickable */
-    overflow: hidden; /* Added to all board spaces */
+    cursor: pointer;
+    overflow: hidden;
 }
 .board-space.corner { background-color: #d0d0d0; }
 
@@ -117,8 +119,8 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 #space-10.jail-square-layout {
     padding: 0;
     display: grid;
-    grid-template-columns: 25% 75%; /* Left path (VISITING), Right (CELL) */
-    grid-template-rows: 75% 25%;    /* Top (CELL), Bottom path (VISITING) */
+    grid-template-columns: 25% 75%;
+    grid-template-rows: 75% 25%;
     justify-content: initial;
     align-items: initial;
     overflow: hidden;
@@ -139,57 +141,54 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     padding: 2px;
 }
 .jail-text-in-detention {
-    font-weight: normal; /* MODIFIED: "IN" can be less bold */
-    font-size: 0.8em;   /* MODIFIED: "IN" slightly smaller */
+    font-weight: normal;
+    font-size: 0.9em; /* Relative to .board-space font-size */
     color: black;
-    margin-bottom: 1px; /* Reduced margin */
+    margin-bottom: 1px;
     line-height: 1;
 }
 .jail-bars-graphic {
     display: flex;
     justify-content: space-around;
-    width: 50%; /* Reduced width */
-    height: 35%; /* Reduced height to make more room for text */
-    margin-bottom: 1px; /* Reduced margin */
+    width: 50%;
+    height: 35%;
+    margin-bottom: 1px;
 }
 .jail-bar {
-    width: 3px;
+    width: 4px; /* Slightly thicker bars for larger cell */
     height: 100%;
     background-color: #555;
     border-radius: 1px;
 }
 .jail-text-detention-footer {
     font-weight: bold;
-    font-size: 0.85em; /* MODIFIED: Ensure "DETENTION" fits */
+    font-size: 1em; /* Relative to .board-space font-size */
     color: black;
     line-height: 1;
-    letter-spacing: -0.5px; /* MODIFIED: Slightly squeeze letters if needed */
+    letter-spacing: -0.5px;
 }
 
-/* "VISITING" path styling (was "JUST VISITING") */
-.jail-just-text-container { /* This class name is kept for now, but displays "VISITING" */
+.jail-just-text-container {
     grid-column: 1 / 3;
     grid-row: 2 / 3;
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding-top: 2px;
+    padding-top: 3px; /* Increased padding */
     box-sizing: border-box;
 }
-
-.jail-visiting-text-container { /* This class name is kept, also displays "VISITING" */
+.jail-visiting-text-container {
     grid-column: 1 / 2;
     grid-row: 1 / 2;
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    padding-right: 2px;
+    padding-right: 3px; /* Increased padding */
     box-sizing: border-box;
 }
-
 .jail-rotated-text {
     font-weight: bold;
-    font-size: 0.8em;
+    font-size: 0.9em; /* Relative to .board-space font-size */
     white-space: nowrap;
     color: #333;
     line-height: 1;
@@ -247,8 +246,8 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 /* --- TOKEN STYLES --- */
 .token {
     position: absolute;
-    width: 10px; /* MODIFIED: Made tokens smaller to fit more in jail */
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     border: 1px solid black;
     box-sizing: border-box;
@@ -262,21 +261,30 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 .token.p4 { background-color: purple; }
 .token.p5 { background-color: orange; }
 
-/* Positioning for tokens on normal spaces (assuming 10px tokens + 2px gap = 12px step) */
-.token.p0:not(.in-jail-position) { left: 3px; bottom: 3px; }
-.token.p1:not(.in-jail-position) { left: 15px; bottom: 3px; }
-.token.p2:not(.in-jail-position) { left: 27px; bottom: 3px; }
-.token.p3:not(.in-jail-position) { left: 39px; bottom: 3px; }
-.token.p4:not(.in-jail-position) { left: 3px; bottom: 15px; }
-.token.p5:not(.in-jail-position) { left: 3px; bottom: 27px; }
+/* MODIFIED Positioning for tokens on normal spaces - Side by Side at Bottom */
+/* Base position for the line of tokens */
+.token:not(.in-jail-position) {
+    bottom: 3px; /* All tokens in the line share this bottom offset */
+}
+/* Player 1 (p0) - First in line */
+.token.p0:not(.in-jail-position) { left: 3px; }
+/* Player 2 (p1) */
+.token.p1:not(.in-jail-position) { left: 17px; /* 3px + 12px + 2px gap */ }
+/* Player 3 (p2) */
+.token.p2:not(.in-jail-position) { left: 31px; /* 17px + 12px + 2px gap */ }
+/* Player 4 (p3) */
+.token.p3:not(.in-jail-position) { left: 45px; /* 31px + 12px + 2px gap */ }
+/* Player 5 (p4) */
+.token.p4:not(.in-jail-position) { left: 59px; /* 45px + 12px + 2px gap */ }
+/* Player 6 (p5) */
+.token.p5:not(.in-jail-position) { left: 73px; /* 59px + 12px + 2px gap */ }
+/* Total width: 73px (start of p5) + 12px (width of p5) = 85px. Fits in ~90px cell. */
 
-/* MODIFIED: Positioning for tokens IN JAIL (within .jail-cell) - 3x2 grid */
-/* Using percentages for responsive positioning within the cell. */
-/* Top row in cell */
+
+/* Positioning for tokens IN JAIL (within .jail-cell) - 3x2 grid */
 .token.in-jail-position.p0 { top: 15%; left: 15%; }
 .token.in-jail-position.p1 { top: 15%; left: 45%; }
 .token.in-jail-position.p2 { top: 15%; left: 75%; }
-/* Bottom row in cell */
 .token.in-jail-position.p3 { top: 55%; left: 15%; }
 .token.in-jail-position.p4 { top: 55%; left: 45%; }
 .token.in-jail-position.p5 { top: 55%; left: 75%; }
@@ -303,19 +311,23 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 
 .space-name {
     font-weight: bold;
-    font-size: 0.7em;
-    margin-top: 5px;
+    /* font-size: 0.7em; /* Inherits from .board-space now 0.75em */
+    margin-top: 5px; /* Adjust if text overlaps dwellings */
     z-index: 3;
+    line-height: 1.2; /* Increased for better readability in larger space */
 }
 .space-price {
-    font-size: 0.7em;
+    /* font-size: 0.7em; /* Inherits */
     color: #555;
     z-index: 3;
+    line-height: 1.2;
 }
 .space-owner {
     position: absolute;
-    bottom: 2px;
-    font-size: 0.6em;
+    bottom: 18px; /* MODIFIED: Move owner text up to be above the line of tokens */
+    left: 0; /* Span full width to center text */
+    right: 0;
+    font-size: 0.8em; /* Relative to .board-space font-size */
     color: #333;
     width: 100%;
     overflow: hidden;
@@ -345,7 +357,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     box-sizing: border-box;
 }
 .fortress {
-    width: 20px;
+    width: 20px; /* Can be larger now space is wider */
     height: 10px;
     background-color: #dc3545;
     border: 1px solid #bd2130;
@@ -448,7 +460,8 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     padding: 20px;
     border-radius: 8px;
     box-sizing: border-box;
-    width: 800px;
+    /* MODIFIED: Message log can be wider if board is wider */
+    width: 1030px; /* Match new board width */
     min-height: 200px;
 }
 
