@@ -71,7 +71,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     background-color: white;
     border: 1px solid #ccc;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    padding: 20px;
+    padding: 20px; /* Overall padding for the grid container itself */
     border-radius: 8px;
     box-sizing: border-box;
     display: grid;
@@ -91,7 +91,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     color: rgba(0, 0, 0, 0.15);
     text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.7);
     pointer-events: none;
-    z-index: 0; /* Behind board spaces if they have higher z-index */
+    z-index: 0;
     white-space: nowrap;
 }
 
@@ -101,18 +101,24 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     box-sizing: border-box;
     position: relative; /* For absolute children */
     cursor: pointer;
-    overflow: hidden; /* Clip absolute children if they exceed bounds */
-    display: flex; /* To help with the .space-text-content wrapper */
-    flex-direction: column; /* .space-text-content will be a child */
-    padding-top: 12px; /* KEY: Space for color bar (10px) + dwellings (on top) */
+    overflow: hidden;
+
+    display: flex;
+    flex-direction: column;
+    /* justify-content: center; Reverted from this for more control */
+    align-items: center; /* Center text horizontally */
+    text-align: center;
+    font-size: 0.7em; /* Base font size for space content */
+    padding: 2px; /* Minimal internal padding for the space itself */
+    padding-top: 12px; /* Make space for absolute color bar and dwellings */
 }
 .board-space.corner {
     background-color: #d0d0d0;
-    padding-top: 0; /* Corners don't have color bars/dwellings this way */
+    padding-top: 2px; /* Reset padding-top for corners as they don't have color bars/dwellings */
+    justify-content: center; /* Corners can vertically center their content */
 }
 
-/* Grid area definitions (set by JS, CSS can be fallback) */
-/* ... (keep existing grid-area definitions for #go, #mediterranean-avenue etc. as fallbacks) ... */
+/* Grid area definitions are primarily set by JS in createBoardUI, CSS can be fallback/reference */
 
 .property-color-bar {
     position: absolute;
@@ -134,12 +140,12 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 
 .dwelling-container {
     position: absolute;
-    top: 1px; /* Position dwellings to overlap the top of the color bar */
+    top: 1px; /* Sit on top of the color bar, slightly inset */
     left: 0;
     right: 0; /* Span the width to allow centering of dwellings */
     height: 8px; /* Container height for dwellings (slightly less than color bar) */
     display: flex;
-    gap: 1px; /* Small gap between dwellings */
+    gap: 1px;
     justify-content: center;
     align-items: center;
     z-index: 2; /* Above color bar */
@@ -153,69 +159,62 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     box-sizing: border-box;
 }
 .fortress {
-    width: 16px;
+    width: 16px; /* Wider for fortress */
     height: 7px;
     background-color: #dc3545;
     border: 1px solid #bd2130;
     box-sizing: border-box;
 }
 
-/* Wrapper for text content, to flow below the top absolute elements */
-.space-text-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* Distributes name/price at top, owner at bottom */
-    align-items: center; /* Center text horizontally */
-    text-align: center;
-    height: 100%; /* Take remaining height after padding-top */
-    width: 100%;
-    font-size: 0.85em; /* Relative to .board-space's font-size if any, or default */
-    padding: 1px 2px; /* Small internal padding */
-    box-sizing: border-box;
-    z-index: 3; /* Above color bar/dwellings */
-}
-
+/* Text content flows naturally below the padding-top area */
 .space-name {
     font-weight: bold;
-    line-height: 1.1;
-    width: 95%;
-    word-wrap: break-word; /* Or overflow-wrap: break-word; */
-    /* margin-top is handled by .board-space padding-top */
+    line-height: 1.1; /* For multi-line names */
+    width: 95%; /* Prevent touching edges */
+    word-wrap: break-word;
+    margin-bottom: 2px; /* Space between name and price */
+    z-index: 3; /* Above dwellings/color bar if any overlap somehow */
 }
 
 .space-price {
     color: #555;
-    margin-top: 1px; /* Small space between name and price */
-    margin-bottom: 1px; /* Small space before owner if name/price are short */
+    line-height: 1;
+    margin-bottom: auto; /* Pushes price (and name above it) up, and owner (if in flow) down */
+    z-index: 3;
 }
 
 .space-owner {
+    position: absolute; /* Kept absolute as per original structure seen in screenshot */
+    bottom: 1px;
+    left: 0;
+    right: 0;
+    font-size: 0.9em; /* Slightly smaller than main text */
     color: #333;
-    width: 95%;
+    width: 100%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    /* margin-top: auto; REMOVED - justify-content on parent handles it */
-    /* margin-bottom: 1px; /* Ensure it's not flush with bottom */
+    padding: 0 2px; /* Give a little breathing room */
+    box-sizing: border-box;
+    z-index: 3;
 }
 
 .token {
     position: absolute;
-    width: 12px; /* Slightly larger tokens again */
+    width: 12px;
     height: 12px;
     border-radius: 50%;
     border: 1px solid black;
     box-sizing: border-box;
     z-index: 4; /* On top of all other space content */
 }
-/* Token positioning: Try to place them in corners, avoiding text as much as possible */
-/* These are very sensitive to space height and font sizes */
-.token.p0 { background-color: red; left: 3px; bottom: 3px; }
-.token.p1 { background-color: blue; right: 3px; bottom: 3px; }
-.token.p2 { background-color: green; left: 3px; top: 15px; } /* If padding-top is 12px, this is just below it */
-.token.p3 { background-color: yellow; right: 3px; top: 15px; }
-.token.p4 { background-color: purple; left: 18px; bottom: 3px; }
-.token.p5 { background-color: orange; right: 18px; bottom: 3px; }
+/* Token positioning - requires careful adjustment */
+.token.p0 { background-color: red; left: 3px; bottom: 15px; } /* Try to clear owner text */
+.token.p1 { background-color: blue; right: 3px; bottom: 15px; }
+.token.p2 { background-color: green; left: 18px; bottom: 15px; }
+.token.p3 { background-color: yellow; right: 18px; bottom: 15px; }
+.token.p4 { background-color: purple; left: 3px; bottom: 28px; } /* Higher up */
+.token.p5 { background-color: orange; right: 3px; bottom: 28px; }
 
 /* Positioning for tokens *actually in jail* (on space 10) */
 .token.in-jail-position.p0 { top: 3px; right: 3px; left: auto; bottom: auto; }
@@ -226,7 +225,8 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 .token.in-jail-position.p5 { top: 18px; right: 33px; left: auto; bottom: auto; }
 
 
-/* Game Controls Panel (Middle Column) */
+/* --- Rest of your CSS (Game Controls, Player List, Message Log, Modals, Debug etc.) --- */
+/* (Make sure to include the full, unchanged remainder of your style.css here) */
 #game-controls-panel {
     display: flex;
     flex-direction: column;
@@ -310,7 +310,6 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     margin-bottom: 3px;
 }
 
-/* Message Log Area (bottom-left) */
 #message-log-area {
     display: flex;
     flex-direction: column;
@@ -356,7 +355,6 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     border: 1px solid #ccc;
 }
 
-/* Debug Controls Styling */
 #debug-controls {
     padding: 20px;
     border: 1px solid #ddd;
@@ -404,7 +402,6 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     margin-top: 5px;
 }
 
-/* Property Info Modal Styles */
 #property-modal-overlay, #auction-modal-overlay, #trade-modal-overlay, #trade-review-modal-overlay {
     position: fixed;
     top: 0;
@@ -497,7 +494,6 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     margin-top: 10px;
 }
 
-/* Trade Modal Styles */
 .trade-interface {
     display: flex;
     gap: 20px;

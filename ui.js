@@ -206,6 +206,7 @@ export function createBoardUI() {
             spaceDiv.classList.add('corner');
         }
 
+        // Grid area assignment from CSS is preferred if IDs match; JS can set it too.
         if (space.id >= 0 && space.id <= 10) { spaceDiv.style.gridArea = `11 / ${11 - space.id}`; }
         else if (space.id >= 11 && space.id <= 19) { spaceDiv.style.gridArea = `${11 - (space.id - 10)} / 1`; }
         else if (space.id >= 20 && space.id <= 30) { spaceDiv.style.gridArea = `1 / ${space.id - 19}`; }
@@ -222,38 +223,37 @@ export function createBoardUI() {
         }
 
         // Create dwelling container (absolute, for locations only)
+        // This will be populated by updateBoardUI
         if (space.type === 'location') {
             const dwellingContainer = document.createElement('div');
             dwellingContainer.className = 'dwelling-container';
-            spaceDiv.appendChild(dwellingContainer); // Populated in updateBoardUI
+            spaceDiv.appendChild(dwellingContainer);
         }
 
-        // Create wrapper for text content (name, price, owner)
-        const textContentDiv = document.createElement('div');
-        textContentDiv.className = 'space-text-content';
-
+        // Name, Price, and Owner are direct children for flex layout within .board-space's padding
         const nameDiv = document.createElement('div');
         nameDiv.className = 'space-name';
         nameDiv.textContent = space.name;
-        textContentDiv.appendChild(nameDiv);
+        spaceDiv.appendChild(nameDiv);
 
         if (space.price) {
             const priceDiv = document.createElement('div');
             priceDiv.className = 'space-price';
             priceDiv.textContent = `₡${space.price}`;
-            textContentDiv.appendChild(priceDiv);
-        } else { // Add a placeholder for price to maintain structure if needed
+            spaceDiv.appendChild(priceDiv);
+        } else { // Add a placeholder for price to help with flex spacing if needed
             const emptyPriceDiv = document.createElement('div');
-            emptyPriceDiv.className = 'space-price'; // Keep class for consistent spacing
-            emptyPriceDiv.innerHTML = '&nbsp;'; // Non-breaking space
-            textContentDiv.appendChild(emptyPriceDiv);
+            emptyPriceDiv.className = 'space-price';
+            emptyPriceDiv.innerHTML = '&nbsp;'; // Non-breaking space, won't take up much visual space
+            spaceDiv.appendChild(emptyPriceDiv);
         }
-
+        
+        // Owner div is created here, populated by updateBoardUI
         const ownerDiv = document.createElement('div');
-        ownerDiv.className = 'space-owner'; // Populated in updateBoardUI
-        textContentDiv.appendChild(ownerDiv);
+        ownerDiv.className = 'space-owner';
+        spaceDiv.appendChild(ownerDiv);
 
-        spaceDiv.appendChild(textContentDiv);
+
         DOMElements.gameBoardDiv.appendChild(spaceDiv);
     });
 }
@@ -270,7 +270,7 @@ export function updateBoardUI() {
                 if (player.position === 10 && player.inJail) {
                     token.classList.add('in-jail-position');
                 }
-                spaceDiv.appendChild(token);
+                spaceDiv.appendChild(token); // Append token last to spaceDiv
             }
         });
     }
@@ -279,13 +279,13 @@ export function updateBoardUI() {
         const spaceDiv = document.getElementById(`space-${space.id}`);
         if (!spaceDiv) return;
 
-        const ownerSpan = spaceDiv.querySelector('.space-owner');
+        const ownerSpan = spaceDiv.querySelector('.space-owner'); // Query the existing owner span
         if (ownerSpan) {
             if (space.owner !== null && state.players && state.players[space.owner]) {
                 let ownerName = state.players[space.owner].name;
-                // Simple truncation for display
-                if (ownerName.length > 7 && spaceDiv.offsetWidth < 60) { // Adjust length and width check
-                     ownerName = ownerName.substring(0, 1) + "."; // Initial
+                // Basic truncation for display
+                if (ownerName.length > 7 && spaceDiv.offsetWidth < 60) {
+                     ownerName = ownerName.substring(0, 1) + "."; // Initial if very narrow
                 } else if (ownerName.length > 10) {
                     ownerName = ownerName.substring(0,9) + ".";
                 }
@@ -299,7 +299,7 @@ export function updateBoardUI() {
         if (space.type === 'location') {
             const dwellingContainer = spaceDiv.querySelector('.dwelling-container');
             if (dwellingContainer) {
-                dwellingContainer.innerHTML = '';
+                dwellingContainer.innerHTML = ''; // Clear existing
                 if (space.houses === 5) {
                     const fortress = document.createElement('div');
                     fortress.className = 'fortress';
