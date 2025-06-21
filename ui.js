@@ -28,7 +28,7 @@ export const DOMElements = {
     payBailBtn: document.getElementById('pay-bail-btn'),
     useJailCardBtn: document.getElementById('use-jail-card-btn'),
     debugControlsDiv: document.getElementById('debug-controls'),
-    toggleDebugBtn: document.getElementById('toggle-debug-btn'), // Assuming you might add a button for this
+    toggleDebugBtn: document.getElementById('toggle-debug-btn'),
     debugMovePlayerSelect: document.getElementById('debug-move-player-select'),
     debugMoveSpaceSelect: document.getElementById('debug-move-space-select'),
     debugMoveBtn: document.getElementById('debug-move-btn'),
@@ -93,35 +93,29 @@ export const DOMElements = {
     acceptTradeBtn: document.getElementById('accept-trade-btn'),
     rejectTradeBtn: document.getElementById('reject-trade-btn'),
 
-    // Functions attached to DOMElements object
     showPropertyModal: function(spaceId) {
         const space = board[spaceId];
         if (!space || !['location', 'hyperspace_lane', 'facility'].includes(space.type)) {
             return;
         }
-
         this.modalPropertyName.textContent = space.name;
         this.modalPropertyType.textContent = space.type.replace('_', ' ').toUpperCase();
         this.modalPropertyPrice.textContent = space.price;
         this.modalPropertyOwner.textContent = space.owner !== null && state.players[space.owner] ? state.players[space.owner].name : 'Unowned';
         this.modalPropertyMortgaged.textContent = space.mortgaged ? 'Yes' : 'No';
         this.modalPropertyMortgageValue.textContent = space.price / 2;
-
-        this.modalPropertyColorBar.className = 'color-bar'; // Reset classes
+        this.modalPropertyColorBar.className = 'color-bar';
         if (space.colorGroup) {
             this.modalPropertyColorBar.classList.add(space.colorGroup);
         } else {
-            this.modalPropertyColorBar.style.backgroundColor = 'transparent'; // Fallback for non-colored groups
+            this.modalPropertyColorBar.style.backgroundColor = 'transparent';
         }
-
         this.modalPropertyRentList.innerHTML = '';
-
         if (space.type === 'location') {
             this.modalPropertyHousesRow.style.display = 'block';
             this.modalPropertyHouseCostRow.style.display = 'block';
             this.modalPropertyHouses.textContent = space.houses === 5 ? 'Fortress' : space.houses;
             this.modalPropertyHouseCost.textContent = space.houseCost;
-
             this.modalPropertyRentList.innerHTML += `<li><strong>Rent:</strong> ₡${space.rent[0]}</li>`;
             for (let i = 1; i <= 4; i++) {
                 this.modalPropertyRentList.innerHTML += `<li>With ${i} Dwelling${i > 1 ? 's' : ''}: ₡${space.rent[i]}</li>`;
@@ -139,14 +133,11 @@ export const DOMElements = {
             this.modalPropertyRentList.innerHTML += `<li><strong>Rent (1 Facility):</strong> 4 times amount shown on dice</li>`;
             this.modalPropertyRentList.innerHTML += `<li><strong>Rent (2 Facilities):</strong> 10 times amount shown on dice</li>`;
         }
-
         this.propertyModalOverlay.style.display = 'flex';
     },
-
     hidePropertyModal: function() {
         this.propertyModalOverlay.style.display = 'none';
     },
-
     toggleDebugControls: function() {
         if (this.debugControlsDiv.style.display === 'none' || this.debugControlsDiv.style.display === '') {
             this.debugControlsDiv.style.display = 'flex';
@@ -159,13 +150,12 @@ export const DOMElements = {
     }
 };
 
-// --- UI Functions ---
 export function logMessage(message, type = 'info') {
     const div = document.createElement('div');
     div.textContent = message;
-    div.className = type; // Assumes CSS classes like .info, .error, .success, .warning
-    DOMElements.messageLog.prepend(div); // Add to top
-    if (DOMElements.messageLog.children.length > 50) { // Keep log from getting too long
+    div.className = type;
+    DOMElements.messageLog.prepend(div);
+    if (DOMElements.messageLog.children.length > 50) {
         DOMElements.messageLog.removeChild(DOMElements.messageLog.lastChild);
     }
 }
@@ -173,7 +163,6 @@ export function logMessage(message, type = 'info') {
 export function updatePlayerInfo() {
     DOMElements.playerListContainer.innerHTML = '';
     if (!state.players || state.players.length === 0) return;
-
     state.players.forEach((player, index) => {
         const playerDiv = document.createElement('div');
         playerDiv.className = `player-status ${index === state.currentPlayerIndex ? 'current' : ''}`;
@@ -184,7 +173,6 @@ export function updatePlayerInfo() {
                    (prop.mortgaged ? ' (M)' : '') +
                    (prop.houses > 0 ? ` (D:${prop.houses === 5 ? 'F' : prop.houses})` : '');
         }).join(', ') || 'None';
-
         playerDiv.innerHTML = `
             <h4>${player.name} (P${player.id + 1})</h4>
             <ul>
@@ -200,18 +188,79 @@ export function updatePlayerInfo() {
     if (state.players[state.currentPlayerIndex]) {
         DOMElements.currentPlayerDisplay.textContent = `Current Player: ${state.players[state.currentPlayerIndex].name}`;
     } else if (state.players.length > 0) {
-        // Fallback if currentPlayerIndex is somehow out of sync but players exist
         DOMElements.currentPlayerDisplay.textContent = `Current Player: ${state.players[0].name}`;
     } else {
         DOMElements.currentPlayerDisplay.textContent = `Current Player: -`;
     }
 }
 
+export function createBoardUI() {
+    DOMElements.gameBoardDiv.innerHTML = '';
+    board.forEach((space) => {
+        const spaceDiv = document.createElement('div');
+        spaceDiv.id = `space-${space.id}`;
+        spaceDiv.classList.add('board-space');
+        spaceDiv.dataset.spaceId = space.id;
+
+        if ([0, 10, 20, 30].includes(space.id)) {
+            spaceDiv.classList.add('corner');
+        }
+
+        if (space.id >= 0 && space.id <= 10) { spaceDiv.style.gridArea = `11 / ${11 - space.id}`; }
+        else if (space.id >= 11 && space.id <= 19) { spaceDiv.style.gridArea = `${11 - (space.id - 10)} / 1`; }
+        else if (space.id >= 20 && space.id <= 30) { spaceDiv.style.gridArea = `1 / ${space.id - 19}`; }
+        else if (space.id >= 31 && space.id <= 39) { spaceDiv.style.gridArea = `${(space.id - 29)} / 11`; }
+
+        // Create color bar (absolute)
+        if (space.type === 'location' || space.type === 'hyperspace_lane' || space.type === 'facility') {
+            const colorBar = document.createElement('div');
+            colorBar.className = 'property-color-bar';
+            if (space.colorGroup) {
+                colorBar.classList.add(space.colorGroup);
+            }
+            spaceDiv.appendChild(colorBar);
+        }
+
+        // Create dwelling container (absolute, for locations only)
+        if (space.type === 'location') {
+            const dwellingContainer = document.createElement('div');
+            dwellingContainer.className = 'dwelling-container';
+            spaceDiv.appendChild(dwellingContainer); // Populated in updateBoardUI
+        }
+
+        // Create wrapper for text content (name, price, owner)
+        const textContentDiv = document.createElement('div');
+        textContentDiv.className = 'space-text-content';
+
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'space-name';
+        nameDiv.textContent = space.name;
+        textContentDiv.appendChild(nameDiv);
+
+        if (space.price) {
+            const priceDiv = document.createElement('div');
+            priceDiv.className = 'space-price';
+            priceDiv.textContent = `₡${space.price}`;
+            textContentDiv.appendChild(priceDiv);
+        } else { // Add a placeholder for price to maintain structure if needed
+            const emptyPriceDiv = document.createElement('div');
+            emptyPriceDiv.className = 'space-price'; // Keep class for consistent spacing
+            emptyPriceDiv.innerHTML = '&nbsp;'; // Non-breaking space
+            textContentDiv.appendChild(emptyPriceDiv);
+        }
+
+        const ownerDiv = document.createElement('div');
+        ownerDiv.className = 'space-owner'; // Populated in updateBoardUI
+        textContentDiv.appendChild(ownerDiv);
+
+        spaceDiv.appendChild(textContentDiv);
+        DOMElements.gameBoardDiv.appendChild(spaceDiv);
+    });
+}
+
 export function updateBoardUI() {
-    // Remove existing tokens
     document.querySelectorAll('.token').forEach(token => token.remove());
 
-    // Add tokens
     if (state.players) {
         state.players.forEach(player => {
             const spaceDiv = document.getElementById(`space-${player.position}`);
@@ -226,90 +275,44 @@ export function updateBoardUI() {
         });
     }
 
-    // Update owner and houses on properties
     board.forEach(space => {
-        if (['location', 'hyperspace_lane', 'facility'].includes(space.type)) {
-            const spaceDiv = document.getElementById(`space-${space.id}`);
-            if (spaceDiv) {
-                let ownerSpan = spaceDiv.querySelector('.space-owner');
-                if (!ownerSpan) {
-                    ownerSpan = document.createElement('div');
-                    ownerSpan.className = 'space-owner';
-                    spaceDiv.appendChild(ownerSpan);
-                }
-                if (space.owner !== null && state.players && state.players[space.owner]) {
-                    ownerSpan.textContent = `Owner: ${state.players[space.owner].name}`;
-                    ownerSpan.style.color = space.mortgaged ? 'red' : 'green';
-                } else {
-                    ownerSpan.textContent = ''; // Clear if unowned or owner data is missing
-                }
+        const spaceDiv = document.getElementById(`space-${space.id}`);
+        if (!spaceDiv) return;
 
-                if (space.type === 'location') {
-                    const dwellingContainer = spaceDiv.querySelector('.dwelling-container');
-                    if (dwellingContainer) { // Should always exist now
-                        dwellingContainer.innerHTML = ''; // Clear existing icons
+        const ownerSpan = spaceDiv.querySelector('.space-owner');
+        if (ownerSpan) {
+            if (space.owner !== null && state.players && state.players[space.owner]) {
+                let ownerName = state.players[space.owner].name;
+                // Simple truncation for display
+                if (ownerName.length > 7 && spaceDiv.offsetWidth < 60) { // Adjust length and width check
+                     ownerName = ownerName.substring(0, 1) + "."; // Initial
+                } else if (ownerName.length > 10) {
+                    ownerName = ownerName.substring(0,9) + ".";
+                }
+                ownerSpan.textContent = `Owner: ${ownerName}`;
+                ownerSpan.style.color = space.mortgaged ? 'grey' : '#333';
+            } else {
+                ownerSpan.textContent = '';
+            }
+        }
 
-                        if (space.houses === 5) { // Fortress
-                            const fortress = document.createElement('div');
-                            fortress.className = 'fortress';
-                            dwellingContainer.appendChild(fortress);
-                        } else if (space.houses > 0) { // Dwellings
-                            for (let i = 0; i < space.houses; i++) {
-                                const dwelling = document.createElement('div');
-                                dwelling.className = 'dwelling';
-                                dwellingContainer.appendChild(dwelling);
-                            }
-                        }
+        if (space.type === 'location') {
+            const dwellingContainer = spaceDiv.querySelector('.dwelling-container');
+            if (dwellingContainer) {
+                dwellingContainer.innerHTML = '';
+                if (space.houses === 5) {
+                    const fortress = document.createElement('div');
+                    fortress.className = 'fortress';
+                    dwellingContainer.appendChild(fortress);
+                } else if (space.houses > 0) {
+                    for (let i = 0; i < space.houses; i++) {
+                        const dwelling = document.createElement('div');
+                        dwelling.className = 'dwelling';
+                        dwellingContainer.appendChild(dwelling);
                     }
                 }
             }
         }
-    });
-}
-
-export function createBoardUI() {
-    DOMElements.gameBoardDiv.innerHTML = ''; // Clear existing board
-    board.forEach((space, index) => {
-        const spaceDiv = document.createElement('div');
-        spaceDiv.id = `space-${space.id}`;
-        spaceDiv.classList.add('board-space');
-        spaceDiv.dataset.spaceId = space.id;
-        if ([0, 10, 20, 30].includes(space.id)) {
-            spaceDiv.classList.add('corner');
-        }
-
-        // CSS Grid Area assignment
-        if (space.id >= 0 && space.id <= 10) { spaceDiv.style.gridArea = `11 / ${11 - space.id}`; }
-        else if (space.id >= 11 && space.id <= 19) { spaceDiv.style.gridArea = `${11 - (space.id - 10)} / 1`; }
-        else if (space.id >= 20 && space.id <= 30) { spaceDiv.style.gridArea = `1 / ${space.id - 19}`; }
-        else if (space.id >= 31 && space.id <= 39) { spaceDiv.style.gridArea = `${(space.id - 29)} / 11`; }
-
-        if (space.type === 'location' || space.type === 'hyperspace_lane' || space.type === 'facility') {
-            const colorBar = document.createElement('div');
-            colorBar.className = `property-color-bar ${space.colorGroup || ''}`;
-            spaceDiv.appendChild(colorBar);
-        }
-
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'space-name';
-        nameDiv.textContent = space.name;
-        spaceDiv.appendChild(nameDiv);
-
-        if (space.type === 'location') {
-            const dwellingContainer = document.createElement('div');
-            dwellingContainer.className = 'dwelling-container';
-            spaceDiv.appendChild(dwellingContainer);
-        }
-
-        if (space.price) {
-            const priceDiv = document.createElement('div');
-            priceDiv.className = 'space-price';
-            priceDiv.textContent = `₡${space.price}`;
-            spaceDiv.appendChild(priceDiv);
-        }
-        // .space-owner is added/updated in updateBoardUI as it's absolute and dynamic
-
-        DOMElements.gameBoardDiv.appendChild(spaceDiv);
     });
 }
 
@@ -332,7 +335,6 @@ export function populateDebugPropertySelects() {
     const propertyOptions = board.filter(s => ['location', 'hyperspace_lane', 'facility'].includes(s.type))
                                 .map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     DOMElements.debugPropertySelect.innerHTML = `<option value="">-- Select Holding --</option>` + propertyOptions;
-
     const housePropertyOptions = board.filter(s => s.type === 'location')
                                     .map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     DOMElements.debugHousePropertySelect.innerHTML = `<option value="">-- Select Location --</option>` + housePropertyOptions;
