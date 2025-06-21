@@ -81,19 +81,19 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     background-color: #e0e0e0;
 }
 
-/* Snarky Logo in the center of the board */
-#board-logo {
+/* MODIFIED: Styles for the image logo */
+#board-logo-img {
     position: absolute;
-    top: 515px;
-    left: 515px;
-    transform: translate(-50%, -50%) rotate(-10deg);
-    font-size: 4.5em;
-    font-weight: bold;
-    color: rgba(0, 0, 0, 0.15);
-    text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.7);
+    top: 515px; /* Center of 1030px board */
+    left: 515px; /* Center of 1030px board */
+    transform: translate(-50%, -50%) rotate(-10deg); /* Keep the tilt */
+    width: 300px;  /* Adjust as needed */
+    height: auto;  /* Maintain aspect ratio, or set explicit height */
+    max-width: 70%; /* Don't let it get too big relative to board center */
+    max-height: 70%;
     pointer-events: none;
-    z-index: 1;
-    white-space: nowrap;
+    z-index: 1; /* Or higher if needed, but should be above board cells */
+    opacity: 0.75; /* Optional: make it slightly transparent like the text was */
 }
 
 .board-space {
@@ -307,7 +307,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
 .dark-blue { background-color: #00008B; }
 
 .space-name {
-    font-weight: normal; /* Property names are no longer bold */
+    font-weight: normal;
     z-index: 3;
     line-height: 1.1;
     width: 95%;
