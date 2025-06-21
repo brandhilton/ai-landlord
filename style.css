@@ -81,19 +81,19 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     background-color: #e0e0e0;
 }
 
-/* MODIFIED: Styles for the image logo */
+/* Styles for the image logo */
 #board-logo-img {
     position: absolute;
-    top: 515px; /* Center of 1030px board */
-    left: 515px; /* Center of 1030px board */
-    transform: translate(-50%, -50%) rotate(-10deg); /* Keep the tilt */
-    width: 300px;  /* Adjust as needed */
-    height: auto;  /* Maintain aspect ratio, or set explicit height */
-    max-width: 70%; /* Don't let it get too big relative to board center */
+    top: 515px;
+    left: 515px;
+    transform: translate(-50%, -50%); /* Tilt removed */
+    width: 300px;
+    height: auto;
+    max-width: 70%;
     max-height: 70%;
     pointer-events: none;
-    z-index: 1; /* Or higher if needed, but should be above board cells */
-    opacity: 0.75; /* Optional: make it slightly transparent like the text was */
+    z-index: 1;
+    opacity: 1; /* Made fully opaque */
 }
 
 .board-space {
