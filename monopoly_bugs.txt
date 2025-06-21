@@ -1,4 +1,14 @@
-"Buy Property" button didn't work (2 attempts to fix)
+The thought behind this project was this: Rob shared a video with me of a guy who videod himself in front of a whiteboard drawing out a rough sketch of an app while describing what he wanted it to do, mentioning a couple of javascript packages that would help, and giving that video to Google Gemini. Gemini wrote the app in a minute or so, and it seemed fine. But then he didn't take it any further. He didn't iterate on the design, add features, look for bugs, change his mind on requirements - any of the normal things that happen in a normal project. I was also thinking of my favorite Systems Analyst, Liz, and thinking, "With Gemini, could Liz do everything without a software dev team?" So I decided to try and see what would happen.
+
+Unfortunately, I didn't write down my initial prompt, it was something like the following: "Write me a monopoly game. Output it as a single html file."
+
+You can see the result in my first git commit. 
+
+*************************
+First big surprise: The "Buy Property" button didn't work. It took two attempts to fix. First, I was just confused and asked it how to buy a property, and it told me to click the "Buy Property" button. I told it there wasn't one. It apologized (something it does EVERY time) and made some changes. I told it the button still wasn't there, and it told me it needed to do some refactoring. After that, I had a working "Buy Property" button.
+
+Everything below this is a prompt to Gemini unless otherwise noted.
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 Yes, one player hit "Chance" and drew the card that sent him 3 spaces back. He landed on an unowned property, but was not given the option to buy the property.
 
@@ -16,6 +26,7 @@ The "Roll Dice" button is always enabled after a simulated dice roll. I need the
 
 No. When I do a simulated roll of 1,2, the "Roll Dice" button is enabled and the "End Turn button is disabled. That is not correct. "Roll Dice" should be disabled and "End Turn" should be enabled. A simulated roll should behave exactly like clicking the "Roll Dice" button, except I get to choose the numbers.
 
+*********************
 >>>>>>> it added logging and asked me to open the dev console and copy/paste the logs collected.
 
 Error: ⛔ Core error code: InvalidTabOrUrl injected.js:5:20830
@@ -36,7 +47,7 @@ Uncaught ReferenceError: unmortmortgagableProperties is not defined
     rollDice file:///Users/brandh/Downloads/code10.html:790
     <anonymous> file:///Users/brandh/Downloads/code10.html:1664
 
->>>>>>>>> It said it had a typo!
+>>>>>>>>> It said it had a typo! A misspelled variable name
 
 Can you make a visual distinction between players in jail and players visiting jail?
 >>>>>>>>>>>>> It gave prisoners a dashed border instead of solid.
@@ -52,7 +63,8 @@ prisoners in jail should be placed in the upper right corner of the space
 >>>>>>>>>>> It un-reverted the placement, but also un-reverted the dotted border
 
 jail prisoners should not have a dotted border, but they should remain in the upper right corner of the space.
->>>>>>>>>> It fixed the dotted border, but for some reason changed the spelling of a variable in an if statement, introducing a bug.
+*************************
+>>>>>>>>>> It fixed the dotted border, but for some reason changed the spelling of a variable in an if statement, introducing a bug. Rather than just fix the bug myself, I decided to trigger the bug and tell Gemini the symptoms and let it figure out the error on its own.
 
 you introduced a bug. rolling doubles 3 times in a row no longer sends the player to jail.
 >>>>>>>>>>>>>> It fixed the bug, but made other, unrelated changes - changing a font size and a box-sizing attribute.
@@ -69,7 +81,7 @@ move message-log below main-game-area.
 
 message-log should be below main-game-area and to the left of debug-controls.
 
->>>>>>>>>>>> I started a new chat and loaded the html file in, telling Gemini this was my monopoly program and I wanted to make some enhancements.  This was Gemini's response:
+>>>>>>>>>>>> I had to reboot my machine and I didn't think to save the chat beforedoing so. So I started a new chat and loaded the html file in, telling Gemini this was my monopoly program and I wanted to make some enhancements.  This was Gemini's response:
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Begin >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 This is a well-structured HTML and JavaScript Monopoly game! You've done a great job laying out the board, managing player states, and implementing basic actions like rolling dice, moving players, buying properties, and even some property management (mortgage/unmortgage, build/sell houses) and jail mechanics. The debug controls are also a very helpful addition for development.
@@ -231,9 +243,11 @@ look at the image I uploaded and fix the layout properly. You have the debug con
 the image I uploaded has a three-column layout. The left column should contain the game board and log area. the middle column should contain the game controls. the right column should contain the debug controls when they're visible.
 
 the debug panel used to be a single column. change it back to that.
+**************************
+It had TERRIBLE difficulty getting the layout right, even with a png.
 
+**************************
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 
-
 I tried multiple times to get it to give me patch files. The line numbers were always wrong. It finally said:
 
 You are absolutely right, and I sincerely apologize. My attempts to generate a valid patch file have repeatedly failed, and the malformed line numbers are a clear sign that my internal diffing process is not correctly matching the state of your file. This is my error, and it has caused you unnecessary frustration.
@@ -248,6 +262,7 @@ It then produced the full html, which had two lines changed from the last time. 
 you introduced a bug. when a player has to pay tax, the amount is no longer deducted from their account.
 
 Split this file up.
+>>>>>>>>>>>>>> It split it into .html, .css, and .js
 
 Rename the application "Definitely not Monopoly"
 
@@ -255,6 +270,7 @@ Remove the title from the game screen. Instead, create a snarky logo and put it 
 >>>>>>>>>>>>>> It said it fixed something in the Javascript, but nothing changed.
 
 shrink the logo so it doesn't touch any of the board spaces. And don't output any files that aren't changed.
+********************
 >>>>>>>>>>>>>> It told me it was going to provide the unchanged HTML and javascript files anyway, and then didn't give me the HTML. To quote:
 Only the style.css file needs to be changed for this. I will provide the updated CSS and also the index.html and script.js files for completeness, as they are part of the full project structure.
 1. style.css (Updated)
@@ -280,6 +296,7 @@ The 'Toggle Debug' button is back. Remove it. Also, when the trading dialog is u
 use the costa rican colon currency symbol instead of the dollar sign
 
 add a debug option where I can set how much money a player has
+*******************
 >>>>>>>>>>>>>>>>>> Note the changes in the html file. Currency symbol changes, jail/detention, houses/dwellings.
 
 when I have 4 dwellings on a property and I go to build a fortress, instead of the cost saying, '₡50' it says '₡Fortress'. 
@@ -294,7 +311,7 @@ please split the javascript file up in some logical manner.
 >>>>>>>>>>>>>>>>>> I had to ask it again because it forgot to split up the file.
 
 I'm getting CORS errors.
->>>>>>>>>>>>>>>>>>>> It gave me instructions on how to run a server locally. I chose python3 -m http.server.
+>>>>>>>>>>>>>>>>>>>> It gave me instructions on how to run a server locally. 
 
 Instead of "D-n", represent regular dwellings as green squares and fortresses as red rectangles.
 
@@ -304,6 +321,7 @@ that made it worse.
 >>>>>>>>>>>>>>>>>>>> For some reason, it thought I was talking about the auction code, so it changed the javascript and dumped the whole thing out as a single script.js file.
 
 I'm going to ignore that change because a) we're not using script.js anymore, and b) I wasn't talking about the auction logic. I was talking about the position of the dwelling rectangles in relation to the property names.
+********************
 >>>>>>>>>>>>>>>>>>>> At this point, it told me there were too many tokens and it just wouldn't accept any more requests, even after closing the window, reopening, and reloading the saved chat. So I started a new chat, gave it a zip file with everything in it, and told it, "This is my project. I'd like to make some enhancements." It responded with the following:
 
 >>>>>>>>>>>>>>>>>>>>>>>> Start >>>>>>>>>>>>>>>>>>>
@@ -325,9 +343,7 @@ Proposed Enhancements:
 To implement these changes, we'll need to modify style.css, make a small addition to index.html, and create the main logic in a new main.js file. Because the game logic is complex, I also recommend separating the board data into its own file for better organization.
 >>>>>>>>>>>>>>>>>>>>>>>>> End >>>>>>>>>>>>>>>
 
-This is odd because the doubles rule was already coded, and the debug panel was already behind a toggle - it was just a keystroke toggle instead of a button, so I guess it didn't understand that.
-
-At any rate, the result was a disaster. The trading and auction functionality was completely lost, all the properties were renamed, and most of the debug functionality didn't work.
+I thought this was odd because the doubles rule was already coded, and the debug panel was already behind a toggle - it was just a keystroke toggle instead of a button. At any rate, the result was a disaster. The trading and auction functionality was completely lost, all the properties were renamed, and most of the debug functionality didn't work. The reason for all this becomes clear later.
 
 So I tried again with another new chat. I loaded the zip file and told it I just wanted it to analyze it and understand it. This was the result:
 >>>>>>>>>>>>>>>>>>>>>>>> Start >>>>>>>>>>>>>>>>>>>
@@ -519,3 +535,22 @@ However, you can definitely help me understand your project. Here's how we can d
 
 So, please start by listing the files and folders in your project after you've unzipped it. I'm ready when you are!
 >>>>>>>>>>>>>>>>>>>>>>>>> End >>>>>>>>>>>>>>>
+
+********************
+>>>>>>>>>>>>> So that's why it failed so badly the first time I uploaded the zip. It can't unzip it! But it somehow managed to get the html and css files out of the zip. I also asked it if it could interface directly with github, and it can't, which is a major disappointment. To me, these are SERIOUS limitations when it comes to doing any kind of serious software development with Gemini. If I can't point it at a github repo or upload a zip file, how can I onboard it to any halfway complex project?
+
+ok, this is a monopoly game. it consists of the following files: 
+index.html
+style.css
+main.js 
+config.js
+game.js
+ui.js
+
+*****************
+>>>>>>>>>>>>>>>>>>> I uploaded index.html and style.css fine, but it consistently failed when I tried to upload a .js file. I had to do it by copying and pasting the contents of the files. After uploading all the source files, the token count stands at 53,489.
+
+The dwelling rectangles sometimes overlap the property names. fix this.
+
+*******************
+>>>>>>>>>>>>>>>>>>> Dear God, the carnage! Totally broken.
