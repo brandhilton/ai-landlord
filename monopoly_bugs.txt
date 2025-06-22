@@ -551,3 +551,61 @@ ui.js
 >>>>>>>>>>>>>>>>>>> I uploaded index.html and style.css fine, but it consistently failed when I tried to upload a .js file. I had to do it by copying and pasting the contents of the files. After uploading all the source files, the token count stands at 53,489.
 
 The dwelling rectangles sometimes overlap the property names. fix this.
+
+That's worse. The price now overlaps the owner and the player token obscures both. I want the dwellings on top of the color bar and slightly smaller than the color bar.
+
+That's even worse! I'm uploading a screenshot of the board. It looks like the property name is forcing the other elements off the board space. go back to the original  design of the board space and ONLY change the position and size of the dwellings so that they're on top of and slightly smaller than the color bar.
+
+still wrong. Undo all your changes.
+
+put the dwellings below the color bar, but touching it.
+
+modify the detention block square to look more like the monopoly jail square.
+
+when a player is in jail, all I see is a black circle. I don't see the color of the player token.
+
+the new design of the detention block makes that whole side of the board too wide. the board spaces should all be the same size.
+
+in all spaces except "in dentention", arrange the player tokens as follows: player 1 in the lower left corner with players 2, 3, and 4 lined up to the right of player 1. player 5 above player 1, and player 6 above player 5.
+
+the "In Detention" square is in the wrong place.
+
+Adjust the font size/boldness for "IN DETENTION" so that "DETENTION" fits in the space. Change "JUST" to "VISITING". Move the player tokens in detention up slightly so that all 6 fit within the square.
+
+increase the size of all boards spaces such that all 6 players can fit side-by-side at the bottom of the space. 
+
+un-bold the word "DETENTION"
+
+"Galactic Senate Building" and "Carbon-Freezing Chamber" are too long. They span 3 lines on the board. Rename them something that fits in two lines. Also, the ownership text now overlaps the price. fix that.
+
+un-bold all the property names. also, stop commenting your code changes.
+
+create a logo for "Definitely Not Monopoly" as a png file, then replace "Definitely not Monopoly" in the center of the board with that png file.
+
+don't tilt the logo. also, make the logo totally opaque.
+
+The logo is 1024 × 1536 pixels. Expand the space for the logo so that it takes up as much of the middle of the board as possible while leaving a 100 pixel border
+
+the logo is not centered vertically. fix.
+
+that made things far worse. Now it's not centered vertically OR horizontally. try again.
+
+the "sell dwelling" button doesn't work. move the "build dwelling" button below the "sell dwelling" button. the "x" in the property info dialog doesn't work.
+
+Uncaught SyntaxError: The requested module 'http://localhost:5500/game.js' doesn't provide an export named: 'buildHouse'
+
+I shouldn't be able to mortgage a property when another property in the group has houses on it.
+
+players should be able to buy and sell houses and mortage properties at any time during their turn.
+
+that didn't fix it.
+
+I noticed that you deleted a LOT of code from game.js in the last two updates. I'm going to re-upload the old game.js. I want you to use it as a baseline going forward.
+>>>>>>>>>>>>> it took what I uploaded and tried to implement the changes I asked for above, but it once again generated a file around 1000 lines shorter than the previous version. the new version didn't fix the bugs, and introduced several new ones, including the debug controls not allowing me to change holding ownership.
+
+revert game.js to what I just uploaded.
+
+reformat game.js to make it more readable and remove all comments. don't put comments in your responses anymore.
+
+
+
