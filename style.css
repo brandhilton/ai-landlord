@@ -49,7 +49,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     flex-direction: column;
     gap: 20px;
     flex-shrink: 0;
-    position: relative;
+    /* position: relative; This is no longer needed as logo's parent is #game-board */
 }
 
 /* Middle Column (Game Controls) */
@@ -77,24 +77,23 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     display: grid;
     grid-template-columns: repeat(11, 1fr);
     grid-template-rows: repeat(11, 1fr);
-    position: relative;
+    position: relative; /* THIS IS IMPORTANT for absolute positioning of children like the logo */
     background-color: #e0e0e0;
 }
 
 /* Styles for the image logo */
 #board-logo-img {
     position: absolute;
-    top: 50%; /* Center vertically relative to game-board's padding box */
-    left: 50%;/* Center horizontally relative to game-board's padding box */
+    top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
-    /* Max dimensions based on inner 9x9 area minus 100px border on each side */
-    max-width: 610px;  /* 810px (9 cells * 90px) - 200px */
-    max-height: 610px; /* 810px (9 cells * 90px) - 200px */
-    width: auto;   /* Allow image to scale down based on constraint */
-    height: auto;  /* Allow image to scale down based on constraint */
-    object-fit: contain; /* Ensures the entire image is visible within bounds, maintaining aspect ratio */
+    max-width: 610px;
+    max-height: 610px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
     pointer-events: none;
-    z-index: 1; /* Can be 0 if nothing should go under it, or higher if it needs to be above cells */
+    z-index: 1; /* Should be above board cells if they have content, but below tokens if tokens are on logo */
     opacity: 1;
 }
 
@@ -258,7 +257,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     border-radius: 50%;
     border: 1px solid black;
     box-sizing: border-box;
-    z-index: 5;
+    z-index: 5; /* Tokens should be on top of the logo if they are on central spaces */
 }
 /* Specific Player Token Colors - Applied universally */
 .token.p0 { background-color: red; }
