@@ -5,8 +5,8 @@ import {
     endTurn,
     mortgageProperty,
     unmortgageProperty,
-    sellHouse, // This should be the correct function for selling
-    buildHouse, // Assuming you might have a separate buildHouse function or it's handled by showBuildHouseDialog
+    sellHouse,
+    // buildHouse, // REMOVED this line as it's not directly exported
     payBail,
     useJailCard,
     showTradeModal,
@@ -23,6 +23,8 @@ import {
     debugSetHouses,
     debugSetMoney,
     debugSendToJail
+    // showPropertyManagementActions is internal to game.js and called by setControls etc.
+    // showBuildHouseDialog is also internal to game.js
 } from './game.js';
 
 // --- Event Listeners ---
@@ -44,52 +46,43 @@ DOMElements.endTurnBtn.addEventListener('click', endTurn);
 
 DOMElements.mortgagePropertyBtn.addEventListener('click', () => {
     const propId = parseInt(DOMElements.mortgageSelect.value);
-    if (!isNaN(propId)) mortgageProperty(propId); // Check if value is a number
+    if (!isNaN(propId)) mortgageProperty(propId);
 });
 DOMElements.unmortgagePropertyBtn.addEventListener('click', () => {
     const propId = parseInt(DOMElements.unmortgageSelect.value);
-    if (!isNaN(propId)) unmortgageProperty(propId); // Check if value is a number
+    if (!isNaN(propId)) unmortgageProperty(propId);
 });
 
 DOMElements.sellHouseBtn.addEventListener('click', () => {
     const propId = parseInt(DOMElements.sellHouseSelect.value);
-    if (!isNaN(propId)) sellHouse(propId); // Ensure propId is valid before calling
+    if (!isNaN(propId)) sellHouse(propId);
 });
 
-// The buildHouseBtn might not need a direct listener here if showBuildHouseDialog in game.js handles its own confirm/cancel
-// However, if buildHouse in game.js is meant to be called directly:
-// DOMElements.buildHouseBtn.addEventListener('click', () => {
-//     // This assumes buildHouse expects a property ID or that showBuildHouseDialog is modal
-//     // If buildHouseBtn itself needs to pick from a select, that logic needs to be here or in game.js
-//     // For now, assuming game.js's showPropertyManagementActions or showBuildHouseDialog handles this.
-// });
-
+// The buildHouseBtn (#build-house-btn) in index.html gets its event listener
+// dynamically assigned within game.js -> showPropertyManagementActions -> which sets an onclick
+// to call showBuildHouseDialog. So, no direct listener needed here for that generic button.
 
 DOMElements.payBailBtn.addEventListener('click', payBail);
 DOMElements.useJailCardBtn.addEventListener('click', useJailCard);
 
-// Event listener for clicking on board spaces to show property info
 DOMElements.gameBoardDiv.addEventListener('click', (event) => {
     const clickedSpace = event.target.closest('.board-space');
     if (clickedSpace && clickedSpace.dataset.spaceId) {
         const spaceId = parseInt(clickedSpace.dataset.spaceId);
-        // Check if DOMElements.showPropertyModal is a function before calling
         if (typeof DOMElements.showPropertyModal === 'function') {
             DOMElements.showPropertyModal(spaceId);
         }
     }
 });
 
-// MODIFIED: Ensure DOMElements.hidePropertyModal is correctly called
-// Event listeners for closing the modal
-if (DOMElements.propertyModalCloseBtn) { // Check if element exists
+if (DOMElements.propertyModalCloseBtn) {
     DOMElements.propertyModalCloseBtn.addEventListener('click', () => {
         if (typeof DOMElements.hidePropertyModal === 'function') {
             DOMElements.hidePropertyModal();
         }
     });
 }
-if (DOMElements.propertyModalOverlay) { // Check if element exists
+if (DOMElements.propertyModalOverlay) {
     DOMElements.propertyModalOverlay.addEventListener('click', (event) => {
         if (event.target === DOMElements.propertyModalOverlay) {
             if (typeof DOMElements.hidePropertyModal === 'function') {
@@ -99,27 +92,21 @@ if (DOMElements.propertyModalOverlay) { // Check if element exists
     });
 }
 
-
-// Auction Event Listeners
 DOMElements.auctionPlaceBidBtn.addEventListener('click', handlePlaceBid);
 DOMElements.auctionWithdrawBtn.addEventListener('click', handlePass);
 
-// Trade Event Listeners
 DOMElements.proposeTradeBtn.addEventListener('click', showTradeModal);
 DOMElements.cancelTradeBtn.addEventListener('click', endTrade);
 DOMElements.sendProposalBtn.addEventListener('click', handleSendProposal);
-DOMElements.tradePartnerSelect.addEventListener('change', updateTradeModalAssets);
+DOMElements.tradePartnerSelect.addEventListener('change', updateTradeModalAssets); // This needs to be a direct function call
 DOMElements.acceptTradeBtn.addEventListener('click', handleAcceptTrade);
 DOMElements.rejectTradeBtn.addEventListener('click', handleRejectTrade);
 
-// Initial setup for player name inputs
 DOMElements.numPlayersInput.dispatchEvent(new Event('change'));
 
-// --- Debug Control Listeners ---
 document.addEventListener('keydown', (event) => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'd') {
         event.preventDefault();
-        // Check if DOMElements.toggleDebugControls is a function before calling
         if (typeof DOMElements.toggleDebugControls === 'function') {
             DOMElements.toggleDebugControls();
         }
