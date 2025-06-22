@@ -5,7 +5,8 @@ import {
     endTurn,
     mortgageProperty,
     unmortgageProperty,
-    sellHouse,
+    sellHouse, // This should be the correct function for selling
+    buildHouse, // Assuming you might have a separate buildHouse function or it's handled by showBuildHouseDialog
     payBail,
     useJailCard,
     showTradeModal,
@@ -43,16 +44,26 @@ DOMElements.endTurnBtn.addEventListener('click', endTurn);
 
 DOMElements.mortgagePropertyBtn.addEventListener('click', () => {
     const propId = parseInt(DOMElements.mortgageSelect.value);
-    mortgageProperty(propId);
+    if (!isNaN(propId)) mortgageProperty(propId); // Check if value is a number
 });
 DOMElements.unmortgagePropertyBtn.addEventListener('click', () => {
     const propId = parseInt(DOMElements.unmortgageSelect.value);
-    unmortgageProperty(propId);
+    if (!isNaN(propId)) unmortgageProperty(propId); // Check if value is a number
 });
+
 DOMElements.sellHouseBtn.addEventListener('click', () => {
     const propId = parseInt(DOMElements.sellHouseSelect.value);
-    sellHouse(propId);
+    if (!isNaN(propId)) sellHouse(propId); // Ensure propId is valid before calling
 });
+
+// The buildHouseBtn might not need a direct listener here if showBuildHouseDialog in game.js handles its own confirm/cancel
+// However, if buildHouse in game.js is meant to be called directly:
+// DOMElements.buildHouseBtn.addEventListener('click', () => {
+//     // This assumes buildHouse expects a property ID or that showBuildHouseDialog is modal
+//     // If buildHouseBtn itself needs to pick from a select, that logic needs to be here or in game.js
+//     // For now, assuming game.js's showPropertyManagementActions or showBuildHouseDialog handles this.
+// });
+
 
 DOMElements.payBailBtn.addEventListener('click', payBail);
 DOMElements.useJailCardBtn.addEventListener('click', useJailCard);
@@ -62,17 +73,32 @@ DOMElements.gameBoardDiv.addEventListener('click', (event) => {
     const clickedSpace = event.target.closest('.board-space');
     if (clickedSpace && clickedSpace.dataset.spaceId) {
         const spaceId = parseInt(clickedSpace.dataset.spaceId);
-        DOMElements.showPropertyModal(spaceId);
+        // Check if DOMElements.showPropertyModal is a function before calling
+        if (typeof DOMElements.showPropertyModal === 'function') {
+            DOMElements.showPropertyModal(spaceId);
+        }
     }
 });
 
+// MODIFIED: Ensure DOMElements.hidePropertyModal is correctly called
 // Event listeners for closing the modal
-DOMElements.propertyModalCloseBtn.addEventListener('click', DOMElements.hidePropertyModal);
-DOMElements.propertyModalOverlay.addEventListener('click', (event) => {
-    if (event.target === DOMElements.propertyModalOverlay) {
-        DOMElements.hidePropertyModal();
-    }
-});
+if (DOMElements.propertyModalCloseBtn) { // Check if element exists
+    DOMElements.propertyModalCloseBtn.addEventListener('click', () => {
+        if (typeof DOMElements.hidePropertyModal === 'function') {
+            DOMElements.hidePropertyModal();
+        }
+    });
+}
+if (DOMElements.propertyModalOverlay) { // Check if element exists
+    DOMElements.propertyModalOverlay.addEventListener('click', (event) => {
+        if (event.target === DOMElements.propertyModalOverlay) {
+            if (typeof DOMElements.hidePropertyModal === 'function') {
+                DOMElements.hidePropertyModal();
+            }
+        }
+    });
+}
+
 
 // Auction Event Listeners
 DOMElements.auctionPlaceBidBtn.addEventListener('click', handlePlaceBid);
@@ -93,7 +119,10 @@ DOMElements.numPlayersInput.dispatchEvent(new Event('change'));
 document.addEventListener('keydown', (event) => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'd') {
         event.preventDefault();
-        DOMElements.toggleDebugControls();
+        // Check if DOMElements.toggleDebugControls is a function before calling
+        if (typeof DOMElements.toggleDebugControls === 'function') {
+            DOMElements.toggleDebugControls();
+        }
     }
 });
 

@@ -24,9 +24,7 @@
             <!-- Left Column: Game Board and Message Log -->
             <div id="left-column">
                 <div id="game-board">
-                    <!-- Logo image is INSIDE #game-board -->
                     <img id="board-logo-img" src="logo.png" alt="Definitely Not Monopoly Logo">
-                    <!-- Game board cell content will be generated here by JS, around/after the logo -->
                 </div>
                 <div id="message-log-area">
                     <div id="message-log"></div>
@@ -50,13 +48,17 @@
                         <div id="property-actions" style="display: none;">
                             <h3>Property Actions</h3>
                             <button id="buy-property-btn" style="display: none;">Buy Holding</button>
+                            
+                            <!-- MODIFIED: Order of Sell and Build buttons swapped -->
+                            <select id="sell-house-select" class="action-select" style="display: none;"></select>
+                            <button id="sell-house-btn" style="display: none;">Sell Dwelling</button>
+                            
                             <button id="build-house-btn" style="display: none;">Build Dwelling</button>
+                            
                             <select id="mortgage-select" class="action-select" style="display: none;"></select>
                             <button id="mortgage-property-btn" style="display: none;">Mortgage Holding</button>
                             <select id="unmortgage-select" class="action-select" style="display: none;"></select>
                             <button id="unmortgage-property-btn" style="display: none;">Unmortgage Holding</button>
-                            <select id="sell-house-select" class="action-select" style="display: none;"></select>
-                            <button id="sell-house-btn" style="display: none;">Sell Dwelling</button>
                         </div>
 
                         <div id="jail-actions" style="display: none;">

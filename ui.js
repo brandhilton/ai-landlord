@@ -94,28 +94,35 @@ export const DOMElements = {
     rejectTradeBtn: document.getElementById('reject-trade-btn'),
 
     showPropertyModal: function(spaceId) {
-        const space = board[spaceId];
+        const space = board.find(s => s.id === spaceId); // Use find for safety
         if (!space || !['location', 'hyperspace_lane', 'facility'].includes(space.type)) {
+            console.warn(`showPropertyModal called for invalid spaceId or type: ${spaceId}`);
             return;
         }
+
         this.modalPropertyName.textContent = space.name;
         this.modalPropertyType.textContent = space.type.replace('_', ' ').toUpperCase();
         this.modalPropertyPrice.textContent = space.price;
-        this.modalPropertyOwner.textContent = space.owner !== null && state.players[space.owner] ? state.players[space.owner].name : 'Unowned';
+        const ownerPlayer = space.owner !== null ? state.players.find(p => p.id === space.owner) : null;
+        this.modalPropertyOwner.textContent = ownerPlayer ? ownerPlayer.name : 'Unowned';
         this.modalPropertyMortgaged.textContent = space.mortgaged ? 'Yes' : 'No';
         this.modalPropertyMortgageValue.textContent = space.price / 2;
+
         this.modalPropertyColorBar.className = 'color-bar';
         if (space.colorGroup) {
             this.modalPropertyColorBar.classList.add(space.colorGroup);
         } else {
             this.modalPropertyColorBar.style.backgroundColor = 'transparent';
         }
+
         this.modalPropertyRentList.innerHTML = '';
+
         if (space.type === 'location') {
             this.modalPropertyHousesRow.style.display = 'block';
             this.modalPropertyHouseCostRow.style.display = 'block';
             this.modalPropertyHouses.textContent = space.houses === 5 ? 'Fortress' : space.houses;
             this.modalPropertyHouseCost.textContent = space.houseCost;
+
             this.modalPropertyRentList.innerHTML += `<li><strong>Rent:</strong> ₡${space.rent[0]}</li>`;
             for (let i = 1; i <= 4; i++) {
                 this.modalPropertyRentList.innerHTML += `<li>With ${i} Dwelling${i > 1 ? 's' : ''}: ₡${space.rent[i]}</li>`;
@@ -133,11 +140,14 @@ export const DOMElements = {
             this.modalPropertyRentList.innerHTML += `<li><strong>Rent (1 Facility):</strong> 4 times amount shown on dice</li>`;
             this.modalPropertyRentList.innerHTML += `<li><strong>Rent (2 Facilities):</strong> 10 times amount shown on dice</li>`;
         }
+
         this.propertyModalOverlay.style.display = 'flex';
     },
+
     hidePropertyModal: function() {
         this.propertyModalOverlay.style.display = 'none';
     },
+
     toggleDebugControls: function() {
         if (this.debugControlsDiv.style.display === 'none' || this.debugControlsDiv.style.display === '') {
             this.debugControlsDiv.style.display = 'flex';
@@ -163,21 +173,23 @@ export function logMessage(message, type = 'info') {
 export function updatePlayerInfo() {
     DOMElements.playerListContainer.innerHTML = '';
     if (!state.players || state.players.length === 0) return;
+
     state.players.forEach((player, index) => {
         const playerDiv = document.createElement('div');
         playerDiv.className = `player-status ${index === state.currentPlayerIndex ? 'current' : ''}`;
-        let propertiesString = player.properties.map(pId => {
-            const prop = board[pId];
-            if (!prop) return 'Unknown Holding';
-            return prop.name +
-                   (prop.mortgaged ? ' (M)' : '') +
-                   (prop.houses > 0 ? ` (D:${prop.houses === 5 ? 'F' : prop.houses})` : '');
-        }).join(', ') || 'None';
+        let propertiesString = board
+            .filter(s => s.owner === player.id && ['location', 'hyperspace_lane', 'facility'].includes(s.type))
+            .map(prop => {
+                return prop.name +
+                       (prop.mortgaged ? ' (M)' : '') +
+                       (prop.type === 'location' && prop.houses > 0 ? ` (D:${prop.houses === 5 ? 'F' : prop.houses})` : '');
+            }).join(', ') || 'None';
+
         playerDiv.innerHTML = `
             <h4>${player.name} (P${player.id + 1})</h4>
             <ul>
                 <li>Credits: ₡${player.money}</li>
-                <li>Location: ${board[player.position] ? board[player.position].name : 'Unknown'}</li>
+                <li>Location: ${board.find(s => s.id === player.position) ? board.find(s => s.id === player.position).name : 'Unknown'}</li>
                 ${player.inJail ? `<li><span style="color:red;">In Detention Block (Turn ${player.jailTurns}/3)</span></li>` : ''}
                 ${player.getOutOfJailFreeCards > 0 ? `<li>Get Out of Detention Free Cards: ${player.getOutOfJailFreeCards}</li>` : ''}
                 <li>Holdings: ${propertiesString}</li>
@@ -187,7 +199,7 @@ export function updatePlayerInfo() {
     });
     if (state.players[state.currentPlayerIndex]) {
         DOMElements.currentPlayerDisplay.textContent = `Current Player: ${state.players[state.currentPlayerIndex].name}`;
-    } else if (state.players.length > 0) {
+    } else if (state.players.length > 0 && state.players[0]) { // Fallback if index is bad
         DOMElements.currentPlayerDisplay.textContent = `Current Player: ${state.players[0].name}`;
     } else {
         DOMElements.currentPlayerDisplay.textContent = `Current Player: -`;
@@ -209,7 +221,7 @@ export function updateBoardUI() {
                     if (jailCell) {
                         jailCell.appendChild(token);
                     } else {
-                        spaceDiv.appendChild(token);
+                        spaceDiv.appendChild(token); // Fallback
                     }
                 } else {
                     spaceDiv.appendChild(token);
@@ -219,17 +231,20 @@ export function updateBoardUI() {
     }
 
     board.forEach(space => {
-        if (['location', 'hyperspace_lane', 'facility'].includes(space.type) && space.id !== 10) {
+        if (space.id === 10) return; // Jail appearance is static after creation
+
+        if (['location', 'hyperspace_lane', 'facility'].includes(space.type)) {
             const spaceDiv = document.getElementById(`space-${space.id}`);
             if (spaceDiv) {
                 let ownerSpan = spaceDiv.querySelector('.space-owner');
-                if (!ownerSpan) {
+                if (!ownerSpan) { // Should exist from createBoardUI
                     ownerSpan = document.createElement('div');
                     ownerSpan.className = 'space-owner';
                     spaceDiv.appendChild(ownerSpan);
                 }
-                if (space.owner !== null && state.players && state.players[space.owner]) {
-                    ownerSpan.textContent = `Owner: ${state.players[space.owner].name}`;
+                const ownerPlayer = space.owner !== null ? state.players.find(p => p.id === space.owner) : null;
+                if (ownerPlayer) {
+                    ownerSpan.textContent = `Owner: ${ownerPlayer.name}`;
                     ownerSpan.style.color = space.mortgaged ? 'red' : 'green';
                 } else {
                     ownerSpan.textContent = '';
@@ -237,12 +252,12 @@ export function updateBoardUI() {
 
                 if (space.type === 'location') {
                     let dwellingContainer = spaceDiv.querySelector('.dwelling-container');
-                    if (!dwellingContainer) {
+                    if (!dwellingContainer) { // Should exist
                         dwellingContainer = document.createElement('div');
                         dwellingContainer.className = 'dwelling-container';
                         spaceDiv.appendChild(dwellingContainer);
                     }
-                    dwellingContainer.innerHTML = '';
+                    dwellingContainer.innerHTML = ''; // Clear previous
 
                     if (space.houses === 5) {
                         const fortress = document.createElement('div');
@@ -262,7 +277,6 @@ export function updateBoardUI() {
 }
 
 export function createBoardUI() {
-    // Remove only .board-space elements, leave the hardcoded logo
     const existingSpaces = DOMElements.gameBoardDiv.querySelectorAll('.board-space');
     existingSpaces.forEach(space => space.remove());
 
