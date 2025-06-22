@@ -23,9 +23,11 @@
         <div id="main-game-layout">
             <!-- Left Column: Game Board and Message Log -->
             <div id="left-column">
-                <div id="game-board"></div> <!-- Game board content will be generated here by JS -->
-                <!-- MODIFIED: Replaced div with img tag for the logo -->
-                <img id="board-logo-img" src="logo.png" alt="Definitely Not Monopoly Logo">
+                <div id="game-board">
+                    <!-- Logo image is INSIDE #game-board -->
+                    <img id="board-logo-img" src="logo.png" alt="Definitely Not Monopoly Logo">
+                    <!-- Game board cell content will be generated here by JS, around/after the logo -->
+                </div>
                 <div id="message-log-area">
                     <div id="message-log"></div>
                 </div>

@@ -49,7 +49,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     flex-direction: column;
     gap: 20px;
     flex-shrink: 0;
-    /* position: relative; This is no longer needed as logo's parent is #game-board */
+    /* No position:relative needed here if logo's parent is #game-board */
 }
 
 /* Middle Column (Game Controls) */
@@ -77,7 +77,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     display: grid;
     grid-template-columns: repeat(11, 1fr);
     grid-template-rows: repeat(11, 1fr);
-    position: relative; /* THIS IS IMPORTANT for absolute positioning of children like the logo */
+    position: relative; /* This IS IMPORTANT for absolute positioning of child logo */
     background-color: #e0e0e0;
 }
 
@@ -93,7 +93,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     height: auto;
     object-fit: contain;
     pointer-events: none;
-    z-index: 1; /* Should be above board cells if they have content, but below tokens if tokens are on logo */
+    z-index: 0; /* Behind board spaces if spaces have higher z-index or content */
     opacity: 1;
 }
 
@@ -110,9 +110,10 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     padding-top: 20px;
     padding-bottom: 15px;
     box-sizing: border-box;
-    position: relative;
+    position: relative; /* For z-indexing of content above logo if necessary */
     cursor: pointer;
     overflow: hidden;
+    z-index: 2; /* Make sure board spaces are above the logo image */
 }
 .board-space.corner {
     background-color: #d0d0d0;
@@ -130,6 +131,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     justify-content: initial;
     align-items: initial;
     overflow: hidden;
+    z-index: 2; /* Ensure jail also above logo */
 }
 
 .jail-cell {
@@ -257,7 +259,7 @@ body.trade-active > *:not(#trade-modal-overlay):not(#trade-review-modal-overlay)
     border-radius: 50%;
     border: 1px solid black;
     box-sizing: border-box;
-    z-index: 5; /* Tokens should be on top of the logo if they are on central spaces */
+    z-index: 5;
 }
 /* Specific Player Token Colors - Applied universally */
 .token.p0 { background-color: red; }

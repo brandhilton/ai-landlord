@@ -262,7 +262,10 @@ export function updateBoardUI() {
 }
 
 export function createBoardUI() {
-    DOMElements.gameBoardDiv.innerHTML = '';
+    // Remove only .board-space elements, leave the hardcoded logo
+    const existingSpaces = DOMElements.gameBoardDiv.querySelectorAll('.board-space');
+    existingSpaces.forEach(space => space.remove());
+
     board.forEach((space, index) => {
         const spaceDiv = document.createElement('div');
         spaceDiv.id = `space-${space.id}`;
@@ -273,15 +276,15 @@ export function createBoardUI() {
             spaceDiv.classList.add('jail-square-layout');
             spaceDiv.classList.add('corner');
 
-            const justTextContainer = document.createElement('div'); // Will contain "VISITING" for the bottom path
+            const justTextContainer = document.createElement('div');
             justTextContainer.className = 'jail-just-text-container';
             const justText = document.createElement('span');
             justText.className = 'jail-rotated-text';
-            justText.textContent = 'VISITING'; // MODIFIED: "JUST" changed to "VISITING"
+            justText.textContent = 'VISITING';
             justTextContainer.appendChild(justText);
             spaceDiv.appendChild(justTextContainer);
 
-            const visitingTextContainer = document.createElement('div'); // Will contain "VISITING" for the left path
+            const visitingTextContainer = document.createElement('div');
             visitingTextContainer.className = 'jail-visiting-text-container';
             const visitingText = document.createElement('span');
             visitingText.className = 'jail-rotated-text';
@@ -299,7 +302,7 @@ export function createBoardUI() {
 
             const barsGraphic = document.createElement('div');
             barsGraphic.className = 'jail-bars-graphic';
-            for (let i = 0; i < 3; i++) { // Create 3 bars
+            for (let i = 0; i < 3; i++) {
                 const bar = document.createElement('div');
                 bar.className = 'jail-bar';
                 barsGraphic.appendChild(bar);
