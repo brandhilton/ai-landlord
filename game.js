@@ -6,9 +6,9 @@ export let state = {
     players: [],
     currentPlayerIndex: 0,
     diceRoll: [0, 0],
-    doublesCount: 0, // This seems redundant if player.doublesRolledThisTurn is used
+    // doublesCount: 0, // Redundant
     gameOver: false,
-    currentActionPending: null, // e.g., 'buy', 'manage', or null/undefined
+    currentActionPending: null, // e.g., 'buy', 'manage', or null
     chanceCardsShuffled: [],
     communityChestCardsShuffled: [],
     isAuctionActive: false,
@@ -83,292 +83,196 @@ export function startGame() {
     for (let i = 0; i < numPlayers; i++) {
         const nameInput = document.getElementById(`player-name-${i}`);
         state.players.push({
-            id: i,
-            name: nameInput.value || `Player ${i + 1}`,
-            money: 1500,
-            position: 0,
-            inJail: false,
-            jailTurns: 0,
-            doublesRolledThisTurn: 0,
-            hasRolled: false,
-            getOutOfJailFreeCards: 0
+            id: i, name: nameInput.value || `Player ${i + 1}`, money: 1500, position: 0,
+            inJail: false, jailTurns: 0, doublesRolledThisTurn: 0, hasRolled: false, getOutOfJailFreeCards: 0
         });
     }
     board.forEach(space => {
         if (['location', 'hyperspace_lane', 'facility'].includes(space.type)) {
-            space.owner = null;
-            if (space.type === 'location') space.houses = 0;
-            space.mortgaged = false;
+            space.owner = null; if (space.type === 'location') space.houses = 0; space.mortgaged = false;
         }
     });
     state.chanceCardsShuffled = shuffleArray([...chanceCards]);
     state.communityChestCardsShuffled = shuffleArray([...communityChestCards]);
-    state.currentPlayerIndex = 0;
-    state.gameOver = false;
-    state.diceRoll = [0,0];
-    state.currentActionPending = null;
+    state.currentPlayerIndex = 0; state.gameOver = false; state.diceRoll = [0,0]; state.currentActionPending = null;
 
-    DOMElements.setupScreen.style.display = 'none';
-    DOMElements.gameScreen.style.display = 'block';
-    createBoardUI();
-    updatePlayerInfo();
-    updateBoardUI();
+    DOMElements.setupScreen.style.display = 'none'; DOMElements.gameScreen.style.display = 'block';
+    createBoardUI(); updatePlayerInfo(); updateBoardUI();
     logMessage("Game Started!", "success");
-    setControlsForTurnStart(); // This will set up for the first player
+    setControlsForTurnStart();
     refreshDebugControls();
 }
 
-function refreshDebugControls() {
-    populateDebugPlayerSelects();
-    populateDebugSpaceSelect();
-    populateDebugPropertySelects();
+function refreshDebugControls() { /* ... as before ... */
+    populateDebugPlayerSelects(); populateDebugSpaceSelect(); populateDebugPropertySelects();
 }
 
 export function rollDice(simulatedDie1 = null, simulatedDie2 = null) {
     if (state.isAuctionActive || state.isTradeActive || state.gameOver) return;
     const player = state.players[state.currentPlayerIndex];
 
-    if (player.hasRolled && !(player.doublesRolledThisTurn > 0 && player.doublesRolledThisTurn < 3 && !player.inJail) ) {
-        logMessage("You cannot roll again this turn.", "warning");
-        return;
+    // Prevent rolling if not allowed by current turn state
+    if (player.hasRolled && !(player.doublesRolledThisTurn > 0 && player.doublesRolledThisTurn < 3 && !player.inJail)) {
+        logMessage("You cannot roll again now.", "warning"); return;
     }
-    // If in jail, and already rolled (but didn't get out with doubles), they can't roll again.
-    if (player.inJail && player.hasRolled) {
-        logMessage("You have already attempted your roll to get out of Detention.", "warning");
-        return;
+    if (player.inJail && player.hasRolled && player.doublesRolledThisTurn === 0) { // Already attempted jail roll without doubles
+        logMessage("You have already attempted your roll for this turn in Detention.", "warning"); return;
     }
-
 
     const die1 = simulatedDie1 !== null ? simulatedDie1 : Math.floor(Math.random() * 6) + 1;
     const die2 = simulatedDie2 !== null ? simulatedDie2 : Math.floor(Math.random() * 6) + 1;
     state.diceRoll = [die1, die2];
     DOMElements.diceDisplay.textContent = `Dice: ${die1}, ${die2}`;
-    logMessage(`${player.name} rolled a ${die1} and a ${die2} (total ${die1 + die2}).`);
+    logMessage(`${player.name} rolled ${die1} + ${die2} = ${die1+die2}.`);
     player.hasRolled = true;
-    state.currentActionPending = null; // Clear pending buy action before move
+    state.currentActionPending = null; // Clear pending 'buy' before move
 
     if (die1 === die2) {
-        player.doublesRolledThisTurn++;
-        logMessage(`${player.name} rolled doubles! (${player.doublesRolledThisTurn})`, 'warning');
-        if (player.inJail) { // If in jail, doubles gets them out
-            logMessage(`${player.name} got out of Detention Block with doubles!`, 'success');
-            player.inJail = false;
-            player.jailTurns = 0;
-            player.doublesRolledThisTurn = 0; // Doubles to get out don't count for another turn
-            movePlayer(player, die1 + die2); // Move normally
-            return; // setControls will be called by landOnSpace
-        }
-        if (player.doublesRolledThisTurn === 3) {
-            logMessage(`${player.name} rolled 3 consecutive doubles! Go directly to Detention Block!`, 'error');
-            sendToJail(player); // This calls setControls
+        if (player.inJail) {
+            logMessage(`${player.name} rolled doubles to get out of Detention!`, 'success');
+            player.inJail = false; player.jailTurns = 0; player.doublesRolledThisTurn = 0; // Doubles out of jail don't grant another turn
+            movePlayer(player, die1 + die2); // landOnSpace will call setControls
             return;
         }
-        // If doubles (and not 3rd or getting out of jail), they will roll again.
-        // Controls will be set after movement from this roll.
-    } else {
-        player.doublesRolledThisTurn = 0; // Not doubles, reset counter.
+        player.doublesRolledThisTurn++;
+        logMessage(`${player.name} rolled doubles! (${player.doublesRolledThisTurn} time(s))`, 'warning');
+        if (player.doublesRolledThisTurn === 3) {
+            logMessage(`${player.name} rolled 3 doubles! Go to Detention!`, 'error');
+            sendToJail(player); // sendToJail calls setControls
+            return;
+        }
+        // If 1st or 2nd double, player rolls again. Move first.
+        movePlayer(player, die1 + die2); // landOnSpace will call setControls, which enables roll again
+    } else { // Not doubles
+        player.doublesRolledThisTurn = 0;
+        if (player.inJail) {
+            handleJailRoll(player, die1, die2); // This calls setControls
+        } else {
+            movePlayer(player, die1 + die2); // landOnSpace will call setControls
+        }
     }
-
-    if (player.inJail) { // Still in jail (didn't roll doubles to get out)
-        handleJailRoll(player, die1, die2); // Handles turns increment and messages
-    } else { // Not in jail, normal move
-        movePlayer(player, die1 + die2);
-    }
-    // setControls(); // Called by landOnSpace or handleJailRoll
 }
 
-function movePlayer(player, steps) {
+
+function movePlayer(player, steps) { /* ... as before ... */
     const oldPosition = player.position;
     player.position = (player.position + steps) % board.length;
     logMessage(`${player.name} moved from ${board[oldPosition].name} to ${board[player.position].name}.`);
-    if (player.position < oldPosition && !player.inJail) {
+    if (player.position < oldPosition && !player.inJail) { // Passed START
         player.money += 200;
         logMessage(`${player.name} passed START and collected ₡200!`);
     }
-    updatePlayerInfo();
-    updateBoardUI();
-    landOnSpace(player);
+    updatePlayerInfo(); updateBoardUI();
+    landOnSpace(player); // This is crucial and will call setControls()
 }
 
-function sendToJail(player) {
-    player.position = 10;
-    player.inJail = true;
-    player.jailTurns = 0;
-    player.doublesRolledThisTurn = 0;
-    player.hasRolled = true; // This action counts as having taken their roll phase
+function sendToJail(player) { /* ... as before ... */
+    player.position = 10; player.inJail = true; player.jailTurns = 0;
+    player.doublesRolledThisTurn = 0; player.hasRolled = true; // Considered their roll action
     logMessage(`${player.name} is now in the Detention Block!`);
-    updatePlayerInfo();
-    updateBoardUI();
-    state.currentActionPending = null;
-    setControls(); // Jail controls take over
+    updatePlayerInfo(); updateBoardUI(); state.currentActionPending = null;
+    setControls();
 }
 
-function handleJailRoll(player, die1, die2) { // die1, die2 already established, not doubles
+function handleJailRoll(player, die1, die2) { /* ... as before ... */
     player.jailTurns++;
-    logMessage(`${player.name} did not roll doubles. Still in Detention. Turns in Detention: ${player.jailTurns}.`);
-    if (player.jailTurns >= 3) {
-        logMessage(`${player.name} must pay or use a card next turn to get out.`, "warning");
-    }
-    state.currentActionPending = null; // No buy/manage
-    setControls(); // Update controls: roll disabled, end turn enabled, jail options available
+    logMessage(`${player.name} did not roll doubles. In Detention for ${player.jailTurns} turn(s).`);
+    if (player.jailTurns >= 3) logMessage(`${player.name} must pay or use card next turn.`, "warning");
+    state.currentActionPending = null;
+    setControls();
 }
 
-function landOnSpace(player) {
+function landOnSpace(player) { /* ... largely as before ... ensure all paths call setControls() */
     const space = board[player.position];
     logMessage(`${player.name} landed on ${space.name}.`);
     state.currentActionPending = null;
 
     switch (space.type) {
         case 'location': case 'hyperspace_lane': case 'facility':
-            if (space.owner === null) {
-                state.currentActionPending = 'buy'; // Player can choose to buy
-            } else if (space.owner !== player.id) {
+            if (space.owner === null) state.currentActionPending = 'buy';
+            else if (space.owner !== player.id) { /* ... rent logic ... */
                 const owner = state.players.find(p => p.id === space.owner);
                 if (owner && !space.mortgaged) {
                     let rent = 0;
                     if (space.type === 'location') rent = space.rent[space.houses] * (space.houses === 0 && checkMonopoly(owner, space.colorGroup) ? 2 : 1);
                     else if (space.type === 'hyperspace_lane') rent = calculateHyperspaceLaneRent(owner, space);
                     else if (space.type === 'facility') rent = calculateFacilityRent(owner, state.diceRoll[0] + state.diceRoll[1]);
-                    logMessage(`${space.name} is owned by ${owner.name}. Rent: ₡${rent}.`);
+                    logMessage(`${space.name} owned by ${owner.name}. Rent: ₡${rent}.`);
                     payMoney(player, owner, rent);
-                } else if (owner && space.mortgaged) {
-                    logMessage(`${space.name} is mortgaged. No rent.`);
-                }
-            } else { // Owns the property
-                state.currentActionPending = 'manage';
-            }
+                } else if (owner && space.mortgaged) logMessage(`${space.name} is mortgaged.`);
+            } else state.currentActionPending = 'manage';
             break;
         case 'tax': payMoney(player, 'bank', space.amount); break;
         case 'force_card': drawCard(player, state.chanceCardsShuffled, 'Force Card'); return;
         case 'supply_drop': drawCard(player, state.communityChestCardsShuffled, 'Supply Drop'); return;
         case 'send_to_detention': sendToJail(player); return;
-        case 'detention_block': logMessage(`${player.name} is just visiting.`); break;
-        // START, Smuggler's Hideout - no action
+        // START, Detention (visiting), Free Parking: no action, currentActionPending remains null
     }
-    setControls(); // Update controls AFTER space action resolved
+    setControls(); // This is the key call after landing action resolved
 }
 
-function buyProperty(player, space) {
+function buyProperty(player, space) { /* ... as before ... */
     if (player.money >= space.price && space.owner === null) {
-        player.money -= space.price;
-        space.owner = player.id;
-        logMessage(`${player.name} bought ${space.name} for ₡${space.price}.`, 'success');
-        state.currentActionPending = 'manage'; // Now they can manage it
-    } else {
-        logMessage(`Could not buy ${space.name}.`, 'error');
-        state.currentActionPending = null; // Reset if buy failed
-    }
-    updatePlayerInfo();
-    updateBoardUI();
-    showPropertyManagementActions(player); // Refresh property actions
-    setControls(); // Re-evaluate all controls
+        player.money -= space.price; space.owner = player.id;
+        logMessage(`${player.name} bought ${space.name}.`, 'success');
+        state.currentActionPending = 'manage'; // Now they can manage
+    } else { state.currentActionPending = null; } // Reset if buy failed
+    updatePlayerInfo(); updateBoardUI();
+    // showPropertyManagementActions(player); // setControls will handle this
+    setControls();
 }
 
-function payMoney(fromPlayer, toRecipient, amount) {
+function payMoney(fromPlayer, toRecipient, amount) { /* ... as before ... */
     if (fromPlayer.money >= amount) {
         fromPlayer.money -= amount;
         if (toRecipient !== 'bank' && typeof toRecipient === 'object' && toRecipient !== null) {
             toRecipient.money += amount;
             logMessage(`${fromPlayer.name} paid ₡${amount} to ${toRecipient.name}.`);
-        } else {
-            logMessage(`${fromPlayer.name} paid ₡${amount} to the Bank.`);
-        }
-        updatePlayerInfo();
-        return true;
-    } else {
-        logMessage(`${fromPlayer.name} cannot pay ₡${amount}! Attempting to raise funds...`, 'warning');
-        handleBankruptcy(fromPlayer, toRecipient, amount);
-        // Check if they could cover it after bankruptcy actions
-        return fromPlayer.money >= 0 && fromPlayer.money >= (recipient === 'bank' ? 0 : amount);
-    }
+        } else { logMessage(`${fromPlayer.name} paid ₡${amount} to the Bank.`);}
+        updatePlayerInfo(); return true;
+    } else { handleBankruptcy(fromPlayer, toRecipient, amount); return fromPlayer.money >= 0; }
 }
 
-function handleBankruptcy(bankruptPlayer, recipient, debtAmount) {
+function handleBankruptcy(bankruptPlayer, recipient, debtAmount) { /* ... as before ... */
+    // Ensure that if current player goes bankrupt, game moves to next valid player or ends
     logMessage(`${bankruptPlayer.name} is trying to cover a debt of ₡${debtAmount}.`);
     const ownedLocations = getPlayerOwnedProperties(bankruptPlayer, 'location', true);
-    for (let i = 5; i > 0; i--) {
-        if (bankruptPlayer.money >= debtAmount) break;
-        ownedLocations.forEach(prop => {
-            if (bankruptPlayer.money >= debtAmount) return;
-            if (prop.houses === i) {
-                prop.houses--; bankruptPlayer.money += prop.houseCost / 2;
-                logMessage(`${bankruptPlayer.name} sold a ${i===5 ? 'Fortress' : 'Dwelling'} on ${prop.name}. Credits: ₡${bankruptPlayer.money}`);
-                updateBoardUI(); updatePlayerInfo();
-            }
-        });
-    }
-    if (bankruptPlayer.money < debtAmount) {
-        getPlayerOwnedProperties(bankruptPlayer, null, true).filter(p => !p.mortgaged)
-            .sort((a, b) => (a.price / 2) - (b.price / 2)).forEach(prop => {
-            if (bankruptPlayer.money >= debtAmount) return;
-            prop.mortgaged = true; bankruptPlayer.money += prop.price / 2;
-            logMessage(`${bankruptPlayer.name} mortgaged ${prop.name}. Credits: ₡${bankruptPlayer.money}`);
-            updateBoardUI(); updatePlayerInfo();
-        });
-    }
-    if (bankruptPlayer.money >= debtAmount) {
-        logMessage(`${bankruptPlayer.name} managed to raise funds!`);
-        payMoney(bankruptPlayer, recipient, debtAmount); return;
-    }
+    for (let i = 5; i > 0; i--) { if (bankruptPlayer.money >= debtAmount) break; ownedLocations.forEach(prop => { if (bankruptPlayer.money >= debtAmount) return; if (prop.houses === i) { prop.houses--; bankruptPlayer.money += prop.houseCost / 2; logMessage(`${bankruptPlayer.name} sold a ${i===5 ? 'Fortress' : 'Dwelling'} on ${prop.name}. Credits: ₡${bankruptPlayer.money}`); updateBoardUI(); updatePlayerInfo();}}); }
+    if (bankruptPlayer.money < debtAmount) { getPlayerOwnedProperties(bankruptPlayer, null, true).filter(p => !p.mortgaged).sort((a, b) => (a.price / 2) - (b.price / 2)).forEach(prop => { if (bankruptPlayer.money >= debtAmount) return; prop.mortgaged = true; bankruptPlayer.money += prop.price / 2; logMessage(`${bankruptPlayer.name} mortgaged ${prop.name}. Credits: ₡${bankruptPlayer.money}`); updateBoardUI(); updatePlayerInfo(); }); }
+    if (bankruptPlayer.money >= debtAmount) { logMessage(`${bankruptPlayer.name} managed to raise funds!`); payMoney(bankruptPlayer, recipient, debtAmount); return; }
     logMessage(`${bankruptPlayer.name} is bankrupt! Assets to ${recipient === 'bank' ? 'Bank' : recipient.name}.`, 'error');
     const recipientPlayer = (recipient === 'bank' || recipient === bankruptPlayer) ? null : recipient;
-    board.forEach(prop => {
-        if (prop.owner === bankruptPlayer.id) {
-            prop.owner = recipientPlayer ? recipientPlayer.id : null;
-            prop.mortgaged = !!recipientPlayer; // Mortgaged if to player, clear if to bank
-            prop.houses = 0;
-            logMessage(`${prop.name} ${recipientPlayer ? 'transferred (M)' : 'returned to Bank'}.`);
-        }
-    });
-    if(recipientPlayer && bankruptPlayer.getOutOfJailFreeCards > 0) {
-        recipientPlayer.getOutOfJailFreeCards += bankruptPlayer.getOutOfJailFreeCards;
-    }
-    bankruptPlayer.money = -1; // Mark as fully bankrupt
+    board.forEach(prop => { if (prop.owner === bankruptPlayer.id) { prop.owner = recipientPlayer ? recipientPlayer.id : null; prop.mortgaged = !!recipientPlayer; prop.houses = 0; logMessage(`${prop.name} ${recipientPlayer ? 'transferred (M)' : 'returned to Bank'}.`); } });
+    if(recipientPlayer && bankruptPlayer.getOutOfJailFreeCards > 0) recipientPlayer.getOutOfJailFreeCards += bankruptPlayer.getOutOfJailFreeCards;
+    bankruptPlayer.money = -1;
+    const wasCurrentPlayer = state.players[state.currentPlayerIndex]?.id === bankruptPlayer.id;
     state.players = state.players.filter(p => p.id !== bankruptPlayer.id);
-    let refreshPlayerForTurn = false;
-    if (state.players.length > 0 && state.players.every(p => p.id !== state.players[state.currentPlayerIndex]?.id)) {
-         state.currentPlayerIndex = state.players.findIndex(p => p.id !== bankruptPlayer.id);
-         if(state.currentPlayerIndex === -1 && state.players.length > 0) state.currentPlayerIndex = 0;
-         refreshPlayerForTurn = true;
-    }
     updatePlayerInfo(); updateBoardUI(); checkWinCondition();
-    if (refreshPlayerForTurn && !state.gameOver && state.players[state.currentPlayerIndex]) {
-        logMessage(`Advancing to ${state.players[state.currentPlayerIndex].name}'s turn.`);
-        setControlsForTurnStart();
-    } else if (!state.gameOver && state.players.length > 0) { setControls(); }
-}
-
-function checkWinCondition() {
-    const activePlayers = state.players.filter(p => p.money >= 0);
-    if (activePlayers.length === 1 && state.players.length === 1) { // Ensure only one actual player left
-        state.gameOver = true;
-        logMessage(`${activePlayers[0].name} wins!`, 'success');
-        DOMElements.rollDiceBtn.disabled = true; DOMElements.endTurnBtn.disabled = true;
-        if(DOMElements.propertyActionsDiv) DOMElements.propertyActionsDiv.style.display = 'none';
-        if(DOMElements.jailActionsDiv) DOMElements.jailActionsDiv.style.display = 'none';
-    } else if (activePlayers.length === 0 && state.players.length === 0) {
-        state.gameOver = true;
-        logMessage("All players bankrupt! No winner.", "error");
-        DOMElements.rollDiceBtn.disabled = true; DOMElements.endTurnBtn.disabled = true;
+    if (state.gameOver) return;
+    if (wasCurrentPlayer && state.players.length > 0) { // If current player went bankrupt, effectively end their turn
+        state.currentPlayerIndex = state.currentPlayerIndex % state.players.length; // Adjust index if it was the last player
+        logMessage(`Advancing to next player due to bankruptcy.`);
+        setControlsForTurnStart(); // Setup for the (potentially new) current player
+    } else if (state.players.length > 0) {
+        setControls(); // Re-evaluate for current player if someone else went bankrupt
     }
 }
 
-function drawCard(player, deck, cardType) {
-    const cardText = deck.shift(); deck.push(cardText);
-    logMessage(`${player.name} drew ${cardType}: "${cardText}"`);
+function checkWinCondition() { /* ... as before ... */
+    const activePlayers = state.players.filter(p => p.money >= 0);
+    if (activePlayers.length === 1 && state.players.length === 1) { state.gameOver = true; logMessage(`${activePlayers[0].name} wins!`, 'success'); DOMElements.rollDiceBtn.disabled = true; DOMElements.endTurnBtn.disabled = true; if(DOMElements.propertyActionsDiv) DOMElements.propertyActionsDiv.style.display = 'none'; if(DOMElements.jailActionsDiv) DOMElements.jailActionsDiv.style.display = 'none'; }
+    else if (activePlayers.length === 0 && state.players.length === 0) { state.gameOver = true; logMessage("All players bankrupt! No winner.", "error"); DOMElements.rollDiceBtn.disabled = true; DOMElements.endTurnBtn.disabled = true; }
+}
+
+function drawCard(player, deck, cardType) { /* ... as before ... ensures setControls() or landOnSpace() (which calls setControls()) is hit */
+    const cardText = deck.shift(); deck.push(cardText); logMessage(`${player.name} drew ${cardType}: "${cardText}"`);
     let movedByCard = false, oldPosition = player.position, landOnNewSpace = true;
-    // (Card logic as before, ensuring landOnNewSpace is set correctly)
-    // Example for a move card:
-    // case "Advance to START...": player.position = 0; player.money += 200; movedByCard = true; landOnNewSpace = false; break;
-    // ... other card cases
-    switch (cardText) {
+    switch (cardText) { /* ... all card cases ... */
         case "Advance to START (Collect ₡200)": player.position = 0; player.money += 200; movedByCard = true; landOnNewSpace = false; break;
         case "Advance to Starkiller Base. If you pass START, collect ₡200.": if (player.position > 24) player.money += 200; player.position = 24; movedByCard = true; break;
         case "Advance to Cloud City. If you pass START, collect ₡200.": if (player.position > 11) player.money += 200; player.position = 11; movedByCard = true; break;
-        case "Advance to nearest Facility. If unowned, you may buy it from the Bank. If owned, pay owner 10 times amount shown on dice.":
-            const fac = findNextSpaceType(oldPosition, 'facility'); if (fac) { if (fac.id < oldPosition) player.money+=200; player.position = fac.id; movedByCard = true; } break;
-        case "Advance to nearest Hyperspace Lane. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which he/she is otherwise entitled.":
-            const lane = findNextSpaceType(oldPosition, 'hyperspace_lane'); if (lane) { if (lane.id < oldPosition) player.money+=200; player.position = lane.id; if (lane.owner !== null && lane.owner !== player.id && !lane.mortgaged) { const o = state.players.find(p=>p.id===lane.owner); payMoney(player,o,calculateHyperspaceLaneRent(o,lane)*2); landOnNewSpace=false;} else movedByCard = true;} break;
+        case "Advance to nearest Facility. If unowned, you may buy it from the Bank. If owned, pay owner 10 times amount shown on dice.": const fac = findNextSpaceType(oldPosition, 'facility'); if (fac) { if (fac.id < oldPosition && fac.id !==0) player.money+=200; player.position = fac.id; movedByCard = true; } break;
+        case "Advance to nearest Hyperspace Lane. If unowned, you may buy it from the Bank. If owned, pay owner twice the rental to which he/she is otherwise entitled.": const lane = findNextSpaceType(oldPosition, 'hyperspace_lane'); if (lane) { if (lane.id < oldPosition && lane.id !==0) player.money+=200; player.position = lane.id; if (lane.owner !== null && lane.owner !== player.id && !lane.mortgaged) { const o = state.players.find(p=>p.id===lane.owner); payMoney(player,o,calculateHyperspaceLaneRent(o,lane)*2); landOnNewSpace=false;} else movedByCard = true;} break;
         case "Bank pays you dividend of ₡50": player.money += 50; landOnNewSpace = false; break;
         case "Get Out of Detention Free Card": player.getOutOfJailFreeCards++; landOnNewSpace = false; break;
         case "Go back 3 spaces": player.position = (player.position - 3 + board.length) % board.length; movedByCard = true; break;
@@ -399,12 +303,10 @@ function drawCard(player, deck, cardType) {
     if (movedByCard && landOnNewSpace && !player.inJail) landOnSpace(player); else setControls();
 }
 
-function showBuyPropertyAction(player, space) {
+function showBuyPropertyAction(player, space) { /* ... as before ... */
     if(DOMElements.propertyActionsDiv) DOMElements.propertyActionsDiv.style.display = 'flex';
     if(DOMElements.buyPropertyBtn) DOMElements.buyPropertyBtn.style.display = 'inline-block';
-    DOMElements.buyPropertyBtn.onclick = () => {
-        buyProperty(player, space);
-    };
+    DOMElements.buyPropertyBtn.onclick = () => { buyProperty(player, space); };
     if(DOMElements.buildHouseBtn) DOMElements.buildHouseBtn.style.display = 'none';
     if(DOMElements.sellHouseBtn) DOMElements.sellHouseBtn.style.display = 'none';
     if(DOMElements.sellHouseSelect) DOMElements.sellHouseSelect.style.display = 'none';
@@ -414,10 +316,11 @@ function showBuyPropertyAction(player, space) {
     if(DOMElements.unmortgagePropertyBtn) DOMElements.unmortgagePropertyBtn.style.display = 'none';
 }
 
-function showPropertyManagementActions(player) {
+// showPropertyManagementActions - ensure this logic is correct for enabling mortgage
+function showPropertyManagementActions(player) { /* ... (ensure mortgage logic includes the house check) ... */
     if(DOMElements.buyPropertyBtn) DOMElements.buyPropertyBtn.style.display = 'none';
     const buildable = getPlayerOwnedProperties(player,'location').filter(p=>!p.mortgaged&&p.houses<5&&player.money>=p.houseCost&&checkMonopoly(player,p.colorGroup));
-    let actualBuildable=[];if(buildable.length>0){const g={};buildable.forEach(p=>{if(!g[p.colorGroup])g[p.colorGroup]=[];g[p.colorGroup].push(p);});for(const c in g){const gp=g[c];const m=Math.min(...gp.map(p=>p.houses));gp.forEach(p=>{if(p.houses===m)actualBuildable.push(p);});}}
+    let actualBuildable=[];if(buildable.length>0){const g={};buildable.forEach(p=>{if(!g[p.colorGroup])g[p.colorGroup]=[];g[p.colorGroup].push(p);});for(const c in g){const gp=g[c];const m=Math.min(...gp.map(x=>x.houses));gp.forEach(p=>{if(p.houses===m)actualBuildable.push(p);});}}
     actualBuildable.sort((a,b)=>a.houses-b.houses||a.id-b.id);
     DOMElements.buildHouseBtn.style.display=actualBuildable.length>0?'inline-block':'none';
     DOMElements.buildHouseBtn.onclick=actualBuildable.length>0?()=>showBuildHouseDialog(player,actualBuildable):null;
@@ -435,7 +338,7 @@ function showPropertyManagementActions(player) {
     DOMElements.unmortgagePropertyBtn.disabled=true;
 
     const sellable=getPlayerOwnedProperties(player,'location',true).filter(p=>p.houses>0);
-    let actualSellable=[];if(sellable.length>0){const g={};sellable.forEach(p=>{if(!g[p.colorGroup])g[p.colorGroup]=[];g[p.colorGroup].push(p);});for(const c in g){const gp=g[c];const m=Math.max(...gp.map(p=>p.houses));gp.forEach(p=>{if(p.houses===m)actualSellable.push(p);});}}
+    let actualSellable=[];if(sellable.length>0){const g={};sellable.forEach(p=>{if(!g[p.colorGroup])g[p.colorGroup]=[];g[p.colorGroup].push(p);});for(const c in g){const gp=g[c];const m=Math.max(...gp.map(x=>x.houses));gp.forEach(p=>{if(p.houses===m)actualSellable.push(p);});}}
     actualSellable.sort((a,b)=>b.houses-a.houses||a.id-b.id);
     populateSelect(DOMElements.sellHouseSelect,actualSellable,'Sell Dwelling');
     DOMElements.sellHouseSelect.style.display=actualSellable.length>0?'block':'none';
@@ -445,83 +348,101 @@ function showPropertyManagementActions(player) {
     if(DOMElements.propertyActionsDiv) DOMElements.propertyActionsDiv.style.display=(DOMElements.buildHouseBtn.style.display!=='none'||DOMElements.mortgagePropertyBtn.style.display!=='none'||DOMElements.unmortgagePropertyBtn.style.display!=='none'||DOMElements.sellHouseBtn.style.display!=='none')?'flex':'none';
 }
 
-function populateSelect(select,props,text){select.innerHTML=`<option value="">-- ${text} --</option>`;props.forEach(p=>{const o=document.createElement('option');o.value=p.id;let t=p.name;if(p.mortgaged)t+=' (M)';if(p.type==='location'&&p.houses>0)t+=` (D:${p.houses===5?'F':p.houses})`;if(select===DOMElements.unmortgageSelect&&p.mortgaged)t+=` Cost:₡${Math.ceil(p.price/2*1.1)}`;o.textContent=t;select.appendChild(o);});select.disabled=props.length===0;const btn=({[DOMElements.mortgageSelect.id]:DOMElements.mortgagePropertyBtn,[DOMElements.unmortgageSelect.id]:DOMElements.unmortgagePropertyBtn,[DOMElements.sellHouseSelect.id]:DOMElements.sellHouseBtn})[select.id];if(btn){btn.disabled=true;select.onchange=()=>btn.disabled=!select.value;}}
+function populateSelect(select,props,text){ /* ... as before ... */
+    select.innerHTML=`<option value="">-- ${text} --</option>`;props.forEach(p=>{const o=document.createElement('option');o.value=p.id;let t=p.name;if(p.mortgaged)t+=' (M)';if(p.type==='location'&&p.houses>0)t+=` (D:${p.houses===5?'F':p.houses})`;if(select===DOMElements.unmortgageSelect&&p.mortgaged)t+=` Cost:₡${Math.ceil(p.price/2*1.1)}`;o.textContent=t;select.appendChild(o);});select.disabled=props.length===0;const btn=({[DOMElements.mortgageSelect.id]:DOMElements.mortgagePropertyBtn,[DOMElements.unmortgageSelect.id]:DOMElements.unmortgagePropertyBtn,[DOMElements.sellHouseSelect.id]:DOMElements.sellHouseBtn})[select.id];if(btn){btn.disabled=true;select.onchange=()=>btn.disabled=!select.value;}}
 
-function showBuildHouseDialog(player, props){const ex=DOMElements.propertyActionsDiv.querySelector('.build-house-dialog');if(ex)ex.remove();const d=document.createElement('div');d.className='build-house-dialog';d.style.marginTop='10px';d.innerHTML=`<p>Build on:</p><select id="bld-sel" class="action-select" style="margin-bottom:5px;"></select><button id="conf-bld" class="button-group button" style="width:auto;padding:5px 10px;">Build</button><button id="canc-bld" class="button-group button" style="width:auto;padding:5px 10px;background-color:#6c757d;">Cancel</button>`;const s=d.querySelector('#bld-sel'),c=d.querySelector('#conf-bld'),n=d.querySelector('#canc-bld');props.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=`${p.name}(D:${p.houses===5?'F':p.houses}) Cost:₡${p.houseCost}`;s.appendChild(o);});if(props.length>0)s.value=props[0].id;c.disabled=props.length===0;DOMElements.propertyActionsDiv.appendChild(d);DOMElements.buildHouseBtn.style.display='none';c.onclick=()=>{const pId=parseInt(s.value),p=board.find(x=>x.id===pId);if(!p||p.owner!==player.id||player.money<p.houseCost||p.houses>=5||p.mortgaged){logMessage("Cannot build.","error");return;}const grp=getPropertiesByColor(p.colorGroup).filter(x=>x.owner===player.id),minH=Math.min(...grp.map(x=>x.houses));if(p.houses>minH&&checkMonopoly(player,p.colorGroup)){logMessage(`Build evenly on '${grp.find(x=>x.houses===minH).name}'.`,"error");return;}player.money-=p.houseCost;p.houses++;logMessage(`${player.name} built on ${p.name}. D:${p.houses}.`,'info');updatePlayerInfo();updateBoardUI();d.remove();showPropertyManagementActions(player);setControls();};n.onclick=()=>{d.remove();DOMElements.buildHouseBtn.style.display='inline-block';showPropertyManagementActions(player);};}
 
-export function mortgageProperty(propId){const p=state.players[state.currentPlayerIndex],prop=board.find(x=>x.id===propId);if(!prop||prop.owner!==p.id||prop.mortgaged){logMessage(`Cannot mortgage ${prop?prop.name:'it'}.`,'error');}else if(prop.type==='location'&&getPropertiesByColor(prop.colorGroup).some(x=>x.owner===p.id&&x.houses>0)){logMessage(`Sell Dwellings in ${prop.colorGroup} sector first.`,'error');}else{prop.mortgaged=true;p.money+=prop.price/2;logMessage(`${p.name} mortgaged ${prop.name} for ₡${prop.price/2}.`,'info');updatePlayerInfo();updateBoardUI();}showPropertyManagementActions(p);setControls();}
-export function unmortgageProperty(propId){const p=state.players[state.currentPlayerIndex],prop=board.find(x=>x.id===propId);if(!prop){logMessage("Not found.","error");return;}const cost=Math.ceil(prop.price/2*1.1);if(prop.owner===p.id&&prop.mortgaged&&p.money>=cost){prop.mortgaged=false;p.money-=cost;logMessage(`${p.name} unmortgaged ${prop.name} for ₡${cost}.`,'info');updatePlayerInfo();updateBoardUI();}else{logMessage(`Cannot unmortgage ${prop.name}.`,'error');}showPropertyManagementActions(p);setControls();}
-export function sellHouse(propId){const p=state.players[state.currentPlayerIndex],prop=board.find(x=>x.id===propId);if(!prop||prop.type!=='location'||prop.owner!==p.id||prop.houses===0){logMessage(`Cannot sell on ${prop?prop.name:'it'}.`,'error');}else{const grp=getPropertiesByColor(prop.colorGroup).filter(x=>x.owner===p.id),maxH=Math.max(...grp.map(x=>x.houses));if(prop.houses<maxH&&checkMonopoly(p,prop.colorGroup)){logMessage(`Sell Dwellings evenly in ${prop.colorGroup} sector.`,"error");}else{prop.houses--;p.money+=prop.houseCost/2;logMessage(`${p.name} sold on ${prop.name}. D:${prop.houses}.`,'info');updatePlayerInfo();updateBoardUI();}}showPropertyManagementActions(p);setControls();}
+function showBuildHouseDialog(player, props){ /* ... as before ... calls showPropertyManagementActions & setControls */
+    const ex=DOMElements.propertyActionsDiv.querySelector('.build-house-dialog');if(ex)ex.remove();const d=document.createElement('div');d.className='build-house-dialog';d.style.marginTop='10px';d.innerHTML=`<p>Build on:</p><select id="bld-sel" class="action-select" style="margin-bottom:5px;"></select><button id="conf-bld" class="button-group button" style="width:auto;padding:5px 10px;">Build</button><button id="canc-bld" class="button-group button" style="width:auto;padding:5px 10px;background-color:#6c757d;">Cancel</button>`;const s=d.querySelector('#bld-sel'),c=d.querySelector('#conf-bld'),n=d.querySelector('#canc-bld');props.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=`${p.name}(D:${p.houses===5?'F':p.houses}) Cost:₡${p.houseCost}`;s.appendChild(o);});if(props.length>0)s.value=props[0].id;c.disabled=props.length===0;DOMElements.propertyActionsDiv.appendChild(d);DOMElements.buildHouseBtn.style.display='none';c.onclick=()=>{const pId=parseInt(s.value),p=board.find(x=>x.id===pId);if(!p||p.owner!==player.id||player.money<p.houseCost||p.houses>=5||p.mortgaged){logMessage("Cannot build.","error");return;}const grp=getPropertiesByColor(p.colorGroup).filter(x=>x.owner===player.id),minH=Math.min(...grp.map(x=>x.houses));if(p.houses>minH&&checkMonopoly(player,p.colorGroup)){logMessage(`Build evenly on '${grp.find(x=>x.houses===minH).name}'.`,"error");return;}player.money-=p.houseCost;p.houses++;logMessage(`${player.name} built on ${p.name}. D:${p.houses}.`,'info');updatePlayerInfo();updateBoardUI();d.remove();showPropertyManagementActions(player);setControls();};n.onclick=()=>{d.remove();DOMElements.buildHouseBtn.style.display='inline-block';showPropertyManagementActions(player);setControls();};
+}
 
-export function payBail(){const p=state.players[state.currentPlayerIndex];if(p.inJail&&p.money>=50){p.money-=50;p.inJail=false;p.jailTurns=0;logMessage(`${p.name} paid bail.`,'success');updatePlayerInfo();setControlsForTurnStart();}else{logMessage("Cannot pay bail.","error");}}
-export function useJailCard(){const p=state.players[state.currentPlayerIndex];if(p.inJail&&p.getOutOfJailFreeCards>0){p.getOutOfJailFreeCards--;p.inJail=false;p.jailTurns=0;logMessage(`${p.name} used card.`,'success');updatePlayerInfo();setControlsForTurnStart();}else{logMessage("No card or not in Detention.","error");}}
+export function mortgageProperty(propId){ /* ... as before ... calls showPropertyManagementActions & setControls */
+    const p=state.players[state.currentPlayerIndex],prop=board.find(x=>x.id===propId);if(!prop||prop.owner!==p.id||prop.mortgaged){logMessage(`Cannot mortgage ${prop?prop.name:'it'}.`,'error');}else if(prop.type==='location'&&getPropertiesByColor(prop.colorGroup).some(x=>x.owner===p.id&&x.houses>0)){logMessage(`Sell Dwellings in ${prop.colorGroup} sector first.`,'error');}else{prop.mortgaged=true;p.money+=prop.price/2;logMessage(`${p.name} mortgaged ${prop.name} for ₡${prop.price/2}.`,'info');updatePlayerInfo();updateBoardUI();}showPropertyManagementActions(p);setControls();
+}
+export function unmortgageProperty(propId){ /* ... as before ... calls showPropertyManagementActions & setControls */
+    const p=state.players[state.currentPlayerIndex],prop=board.find(x=>x.id===propId);if(!prop){logMessage("Not found.","error");return;}const cost=Math.ceil(prop.price/2*1.1);if(prop.owner===p.id&&prop.mortgaged&&p.money>=cost){prop.mortgaged=false;p.money-=cost;logMessage(`${p.name} unmortgaged ${prop.name} for ₡${cost}.`,'info');updatePlayerInfo();updateBoardUI();}else{logMessage(`Cannot unmortgage ${prop.name}.`,'error');}showPropertyManagementActions(p);setControls();
+}
+export function sellHouse(propId){ /* ... as before ... calls showPropertyManagementActions & setControls */
+    const p=state.players[state.currentPlayerIndex],prop=board.find(x=>x.id===propId);if(!prop||prop.type!=='location'||prop.owner!==p.id||prop.houses===0){logMessage(`Cannot sell on ${prop?prop.name:'it'}.`,'error');}else{const grp=getPropertiesByColor(prop.colorGroup).filter(x=>x.owner===p.id),maxH=Math.max(...grp.map(x=>x.houses));if(prop.houses<maxH&&checkMonopoly(p,prop.colorGroup)){logMessage(`Sell Dwellings evenly in ${prop.colorGroup} sector.`,"error");}else{prop.houses--;p.money+=prop.houseCost/2;logMessage(`${p.name} sold on ${prop.name}. D:${prop.houses}.`,'info');updatePlayerInfo();updateBoardUI();}}showPropertyManagementActions(p);setControls();
+}
 
-// MODIFIED: setControls to enable property management more often
+export function payBail(){ /* ... as before ... calls setControlsForTurnStart */
+    const p=state.players[state.currentPlayerIndex];if(p.inJail&&p.money>=50){p.money-=50;p.inJail=false;p.jailTurns=0;logMessage(`${p.name} paid bail.`,'success');updatePlayerInfo();setControlsForTurnStart();}else{logMessage("Cannot pay bail.","error");}
+}
+export function useJailCard(){ /* ... as before ... calls setControlsForTurnStart */
+    const p=state.players[state.currentPlayerIndex];if(p.inJail&&p.getOutOfJailFreeCards>0){p.getOutOfJailFreeCards--;p.inJail=false;p.jailTurns=0;logMessage(`${p.name} used card.`,'success');updatePlayerInfo();setControlsForTurnStart();}else{logMessage("No card or not in Detention.","error");}
+}
+
+// MODIFIED: Simplified setControls and setControlsForTurnStart
 function setControls() {
-    if (state.gameOver) { /* ... existing game over logic ... */
-        DOMElements.rollDiceBtn.disabled = true; DOMElements.endTurnBtn.disabled = true; DOMElements.proposeTradeBtn.disabled = true;
+    if (state.gameOver) {
+        DOMElements.rollDiceBtn.disabled = true; DOMElements.endTurnBtn.disabled = true;
+        DOMElements.proposeTradeBtn.disabled = true;
         if(DOMElements.propertyActionsDiv) DOMElements.propertyActionsDiv.style.display = 'none';
         if(DOMElements.jailActionsDiv) DOMElements.jailActionsDiv.style.display = 'none';
         return;
     }
     const player = state.players[state.currentPlayerIndex];
-    if (!player) { checkWinCondition(); return; } // Should not happen if game not over
+    if (!player) { checkWinCondition(); return; }
 
-    // Default states
-    DOMElements.rollDiceBtn.disabled = true;
-    DOMElements.endTurnBtn.disabled = true;
-    DOMElements.proposeTradeBtn.disabled = true;
-    if(DOMElements.jailActionsDiv) DOMElements.jailActionsDiv.style.display = 'none';
-    // propertyActionsDiv visibility is handled by showPropertyManagementActions or showBuy
+    // Default button states
+    let canRoll = false;
+    let canEndTurn = false;
+    let canTrade = false;
+    let showJailActions = false;
 
     if (player.inJail) {
-        if(DOMElements.jailActionsDiv) DOMElements.jailActionsDiv.style.display = 'flex';
+        showJailActions = true;
         if(DOMElements.payBailBtn) DOMElements.payBailBtn.disabled = player.money < 50;
         if(DOMElements.useJailCardBtn) DOMElements.useJailCardBtn.disabled = player.getOutOfJailFreeCards === 0;
-        if (player.hasRolled) { // Rolled but didn't get doubles
-            DOMElements.endTurnBtn.disabled = false;
-        } else { // Haven't rolled yet this turn in jail
-            DOMElements.rollDiceBtn.disabled = false;
-            if (player.jailTurns >= 3) {
-                DOMElements.rollDiceBtn.disabled = true; // Cannot roll on 4th attempt
+
+        if (!player.hasRolled) { // Hasn't attempted to roll out this turn
+            canRoll = true;
+             if (player.jailTurns >= 3) { // Forced action on 3rd turn
+                canRoll = false; // Cannot roll, must pay or use card
                 if (DOMElements.payBailBtn.disabled && DOMElements.useJailCardBtn.disabled) {
-                    handleBankruptcy(player, 'bank', 50);
+                    handleBankruptcy(player, 'bank', 50); // Auto-bankrupt if no other option
+                    // If bankrupt, game might end or turn passes, so controls will be re-evaluated
+                    return; // Stop further control setting for this player this turn
                 }
             }
+        } else { // Already rolled (and failed to get doubles)
+            canEndTurn = true; // Can only end turn or pay/use card
         }
-        if(DOMElements.propertyActionsDiv) DOMElements.propertyActionsDiv.style.display = 'none'; // No prop management in jail
+        if(DOMElements.propertyActionsDiv) DOMElements.propertyActionsDiv.style.display = 'none'; // No property actions in jail
     } else { // Not in jail
-        // Property management is generally allowed if not in jail
-        showPropertyManagementActions(player);
-        DOMElements.proposeTradeBtn.disabled = false; // Can always propose trade if not in jail
+        canTrade = true; // Can generally trade if not in jail
+        showPropertyManagementActions(player); // Show property options
 
-        if (!player.hasRolled) { // Start of turn, hasn't rolled
-            DOMElements.rollDiceBtn.disabled = false;
+        if (!player.hasRolled) {
+            canRoll = true;
         } else { // Has rolled
-            if (player.doublesRolledThisTurn > 0 && player.doublesRolledThisTurn < 3 && player.position !== 10) {
-                DOMElements.rollDiceBtn.disabled = false; // Can roll again
-                // End turn remains disabled
-            } else { // Normal roll done, or 3rd double sent to jail (handled by sendToJail)
-                DOMElements.endTurnBtn.disabled = false;
+            if (player.doublesRolledThisTurn > 0 && player.doublesRolledThisTurn < 3) {
+                canRoll = true; // Can roll again
+            } else {
+                canEndTurn = true; // Normal roll, or 3rd double (which calls sendToJail, then setControls)
             }
         }
-        // If a buy action is pending from landing on a space
         if (state.currentActionPending === 'buy') {
             showBuyPropertyAction(player, board[player.position]);
-            // When buy is an option, general property management (build/mortgage) might be hidden by showBuyPropertyAction
-            // Ensure propertyActionsDiv is visible if buy button is shown
-            if(DOMElements.propertyActionsDiv && DOMElements.buyPropertyBtn.style.display !== 'none') {
-                 DOMElements.propertyActionsDiv.style.display = 'flex';
-            }
+            // Property actions div will be managed by showBuyPropertyAction and showPropertyManagementActions
         }
     }
 
-    if (state.isAuctionActive || state.isTradeActive) { /* ... existing auction/trade override ... */
-        DOMElements.rollDiceBtn.disabled = true; DOMElements.endTurnBtn.disabled = true; DOMElements.proposeTradeBtn.disabled = true;
+    DOMElements.rollDiceBtn.disabled = !canRoll;
+    DOMElements.endTurnBtn.disabled = !canEndTurn;
+    DOMElements.proposeTradeBtn.disabled = !canTrade;
+    if(DOMElements.jailActionsDiv) DOMElements.jailActionsDiv.style.display = showJailActions ? 'flex' : 'none';
+
+    // Auction/Trade overrides
+    if (state.isAuctionActive || state.isTradeActive) {
+        DOMElements.rollDiceBtn.disabled = true; DOMElements.endTurnBtn.disabled = true;
+        DOMElements.proposeTradeBtn.disabled = true;
         if(DOMElements.propertyActionsDiv) DOMElements.propertyActionsDiv.style.display = 'none';
         if(DOMElements.jailActionsDiv) DOMElements.jailActionsDiv.style.display = 'none';
     }
 }
+
 
 function setControlsForTurnStart() {
     if (state.gameOver || !state.players.length || !state.players[state.currentPlayerIndex]) {
@@ -530,11 +451,10 @@ function setControlsForTurnStart() {
     const player = state.players[state.currentPlayerIndex];
     player.hasRolled = false;
     player.doublesRolledThisTurn = 0;
-    state.currentActionPending = null; // Reset any pending buy actions
-
+    state.currentActionPending = null;
     logMessage(`It's ${player.name}'s turn.`);
-    setControls(); // Call the main setControls logic
-    // updatePlayerInfo is called by endTurn for the new player, or by actions within the turn
+    updatePlayerInfo(); // Update for the new current player
+    setControls();      // Call the main setControls logic
 }
 
 export function endTurn() {
@@ -548,22 +468,29 @@ export function endTurn() {
         startAuction(spaceToAuction.id); return;
     }
     logMessage(`${currentPlayer.name}'s turn ended.`);
-    currentPlayer.doublesRolledThisTurn = 0;
+    currentPlayer.doublesRolledThisTurn = 0; // Reset for their next turn
 
     if (state.players.length <= 1) { checkWinCondition(); return; }
+
     let nextPlayerIndex = state.currentPlayerIndex;
     let attempts = 0;
     do {
         nextPlayerIndex = (nextPlayerIndex + 1) % state.players.length; attempts++;
-        if (attempts > state.players.length +1) { /* ... error handling ... */ state.gameOver=true; checkWinCondition(); return;}
-    } while (state.players[nextPlayerIndex].money < 0 && state.players.length > 1); // Simplified: skip if money < 0
+        if (attempts > state.players.length + 1 && state.players.length > 1) {
+            logMessage("Error finding next player. Game may be stuck.", "error");
+            // Potentially force game over or pick first available player
+            const firstAvailable = state.players.findIndex(p => p.money >=0);
+            if(firstAvailable !== -1) state.currentPlayerIndex = firstAvailable;
+            else { state.gameOver = true; checkWinCondition(); return;}
+            break;
+        }
+    } while (state.players[nextPlayerIndex].money < 0 && state.players.length > 1);
 
     state.currentPlayerIndex = nextPlayerIndex;
-    setControlsForTurnStart(); // This will log the new player's turn and set their controls
-    updatePlayerInfo();
+    setControlsForTurnStart(); // This sets up for the new player
 }
 
-// Auction Logic (largely unchanged, ensure it calls setControls or setControlsForTurnStart on end)
+// Auction and Trade logic largely unchanged, ensure they call setControls or setControlsForTurnStart on completion.
 function showAuctionMessage(message) { DOMElements.auctionMessageArea.textContent = message; }
 function startAuction(propId) { /* ... as before ... */ updateAuctionUI(); }
 function updateAuctionUI() { /* ... as before ... */ }
@@ -572,21 +499,12 @@ export function handlePass() { /* ... as before ... if auction ends, call endAuc
 function nextBidder() { /* ... as before ... if auction ends, call endAuction ... else updateAuctionUI */ }
 function endAuction() { /* ... as before ... AT THE END, call setControls(); updatePlayerInfo(); updateBoardUI(); */
     const property = board.find(p => p.id === state.auctionPropertyId);
-    if (state.highestBidderId !== null) {
-        const winner = state.players.find(p => p.id === state.highestBidderId);
-        if (winner && winner.money >= state.currentBid) {
-            logMessage(`${winner.name} wins auction for ${property.name} (₡${state.currentBid}).`, 'success');
-            winner.money -= state.currentBid; property.owner = winner.id;
-        } else { property.owner = null; logMessage(`Auction for ${property.name} ended. Bidder issue. Unowned.`, 'info');}
-    } else { property.owner = null; logMessage(`No bids for ${property.name}. Unowned.`, 'info');}
-    state.isAuctionActive = false; state.auctionPropertyId = null; state.auctionBidders = [];
-    document.body.classList.remove('auction-active'); DOMElements.auctionModalOverlay.style.display = 'none';
-    state.currentActionPending = 'manage'; // Or none, depending on if winner is current player
-    setControls(); updatePlayerInfo(); updateBoardUI();
+    if (state.highestBidderId !== null) { const winner = state.players.find(p => p.id === state.highestBidderId); if (winner && winner.money >= state.currentBid) { logMessage(`${winner.name} wins auction for ${property.name} (₡${state.currentBid}).`, 'success'); winner.money -= state.currentBid; property.owner = winner.id; } else { property.owner = null; logMessage(`Auction for ${property.name} ended. Bidder issue. Unowned.`, 'info');}} else { property.owner = null; logMessage(`No bids for ${property.name}. Unowned.`, 'info');}
+    state.isAuctionActive = false; state.auctionPropertyId = null; state.auctionBidders = []; document.body.classList.remove('auction-active'); DOMElements.auctionModalOverlay.style.display = 'none';
+    state.currentActionPending = null; // Player who's turn it was might not be winner
+    setControls(); updatePlayerInfo(); updateBoardUI(); // Re-evaluate controls for current player
 }
 
-
-// Trade Logic (largely unchanged, ensure it calls setControls on end)
 function showTradeMessage(message) { DOMElements.tradeMessageArea.textContent = message; }
 export function showTradeModal() { /* ... as before ... */ }
 export function updateTradeModalAssets() { /* ... as before ... */ }
@@ -596,9 +514,7 @@ export function handleAcceptTrade() { /* ... as before ... AT THE END call endTr
 export function handleRejectTrade() { /* ... as before ... AT THE END call endTrade(); */ }
 export function endTrade() { /* ... as before ... AT THE END call setControls(); */
     state.isTradeActive = false; state.tradePartnerId = null; state.tradeOffer = {}; state.tradeRequest = {};
-    document.body.classList.remove('trade-active');
-    DOMElements.tradeModalOverlay.style.display = 'none';
-    DOMElements.tradeReviewModalOverlay.style.display = 'none';
+    document.body.classList.remove('trade-active'); DOMElements.tradeModalOverlay.style.display = 'none'; DOMElements.tradeReviewModalOverlay.style.display = 'none';
     updatePlayerInfo(); updateBoardUI(); setControls();
 }
 
